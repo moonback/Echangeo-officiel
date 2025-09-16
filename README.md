@@ -1,138 +1,101 @@
-# 🏠 TrocAll - Plateforme de prêt/troc entre voisins
+## 🏠 TrocAll – Prêt et troc d’objets entre voisins
 
-TrocAll est une application web mobile-first qui permet aux voisins de se prêter ou d'échanger des objets facilement, encourageant la solidarité locale et la réduction de la consommation.
+Application web mobile-first pour emprunter/échanger des objets avec ses voisins. Objectif: encourager l’entraide locale et réduire la surconsommation.
 
-## ⚠️ Avertissement de Sécurité
+## ⚙️ Stack technique
+- **Frontend**: React 18, TypeScript, Vite, React Router v6
+- **État & Data**: Zustand (auth), TanStack Query (server-state)
+- **UI**: Tailwind CSS, Framer Motion, Lucide React
+- **Formulaires**: React Hook Form + Zod
+- **Backend**: Supabase (Auth, Database Postgres, Storage)
+- **Tests**: Vitest, React Testing Library
 
-**Cette version MVP désactive délibérément les politiques RLS (Row Level Security) de Supabase pour simplifier le développement initial.** 
+## ✨ Fonctionnalités (MVP)
+- 🔐 Authentification (inscription, connexion, déconnexion)
+- 👤 Profils utilisateurs (affichage + édition basique via store)
+- 📦 Objets à prêter (création, listing, images via Storage)
+- 🔎 Recherche / filtres par catégories
+- 📋 Demandes de prêt (création, suivi, changement de statut)
+- 💬 Messagerie basique entre voisins (non temps réel)
+- 🧑‍🤝‍🧑 Liste des voisins (profils, accès rapide au chat et au profil)
+- 📱 UI responsive mobile-first
 
-🚨 **ATTENTION** : Ne pas utiliser en production sans activer RLS et implémenter des politiques de sécurité appropriées. Les données sont actuellement accessibles par tous les utilisateurs authentifiés.
+## ⚠️ Sécurité & mise en garde
+Cette version MVP **désactive RLS (Row Level Security)** pour simplifier le dev. Ne pas déployer en production sans activer RLS et définir des policies adaptées. Voir `DB_SCHEMA.md`.
 
-## 🚀 Démarrage rapide
-
-### Prérequis
+## 📦 Prérequis
 - Node.js 18+ et npm
-- Un projet Supabase configuré
+- Compte Supabase et un projet actif
+- (Optionnel) Supabase CLI si vous souhaitez automatiser les migrations/local
 
-### Installation
-
-1. **Cloner et installer les dépendances**
+## 🚀 Installation & Configuration
+1. Cloner et installer
 ```bash
-git clone <votre-repo>
+git clone <VOTRE_REPO>
 cd trocall
 npm install
 ```
 
-2. **Configuration Supabase**
-
-Créez un fichier `.env` à la racine du projet :
-```bash
-cp .env.example .env
-```
-
-Remplissez les variables d'environnement :
+2. Variables d’environnement
+Créez `.env` à la racine et renseignez:
 ```env
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
+Récupérez ces valeurs dans Supabase: Settings → API.
 
-**Comment obtenir ces informations :**
-1. Rendez-vous sur [supabase.com](https://supabase.com)
-2. Créez un nouveau projet ou sélectionnez un projet existant
-3. Allez dans Settings > API
-4. Copiez l'URL du projet (`VITE_SUPABASE_URL`)
-5. Copiez la clé anonyme (`VITE_SUPABASE_ANON_KEY`)
+3. Base de données
+- Ouvrez le SQL Editor de Supabase et exécutez le contenu de `supabase/migrations/20250916192035_old_bird.sql`.
+- Créez un bucket de stockage public nommé `items` (Storage → Create bucket → Public) pour les images d’objets.
 
-3. **Initialiser la base de données**
-
-Exécutez le script SQL fourni (`init.sql`) dans l'éditeur SQL de votre dashboard Supabase pour créer les tables nécessaires.
-
-4. **Lancer l'application**
+4. Démarrage en développement
 ```bash
 npm run dev
 ```
+Application: `http://localhost:5173`
 
-L'application sera accessible sur `http://localhost:5173`
+5. Build & preview de production
+```bash
+npm run build
+npm run preview
+```
 
 ## 🗂️ Structure du projet
-
 ```
 src/
-├── components/          # Composants réutilisables
-├── pages/              # Pages de l'application
-├── hooks/              # Hooks React personnalisés
-├── services/           # Services (Supabase, etc.)
-├── store/              # État global (Zustand)
-├── types/              # Types TypeScript
-├── utils/              # Utilitaires
-└── test/               # Tests
+├─ components/          # Composants UI (layout, navigation, cartes)
+├─ pages/               # Pages (routing)
+├─ hooks/               # Hooks React (items, requests, profiles, messages)
+├─ services/            # Clients externes (Supabase)
+├─ store/               # État global (auth via Zustand)
+├─ types/               # Types TypeScript (domain)
+├─ utils/               # Utilitaires (catégories, helpers)
+└─ test/                # Tests unitaires et de rendu
 ```
 
-## 🎯 Fonctionnalités
-
-### ✅ Implémentées
-- 🔐 Authentification (inscription/connexion)
-- 👤 Gestion de profil utilisateur
-- 📦 CRUD des objets avec upload d'images
-- 🔍 Recherche et filtrage par catégories
-- 📋 Système de demandes de prêt
-- 📱 Interface responsive (mobile-first)
-- 🎨 Animations et transitions fluides
-- ⚡ UI optimiste pour les demandes
-
-### 🚧 À venir
-- 💬 Messagerie en temps réel
-- 🗺️ Géolocalisation et carte des voisins
-- 🔔 Notifications push
-- 🛡️ Système de réputation
-- 📊 Analytics et statistiques
+## 🔑 Variables d’environnement
+- `VITE_SUPABASE_URL`: URL du projet Supabase
+- `VITE_SUPABASE_ANON_KEY`: clé anonyme Supabase
 
 ## 🧪 Tests
-
 ```bash
-# Lancer tous les tests
-npm run test
-
-# Tests avec interface
-npm run test:ui
+npm run test        # exécuter les tests
+npm run test:ui     # mode UI de Vitest
 ```
 
-## 🏗️ Technologies utilisées
+## 🤝 Contribution
+Voir `CONTRIBUTING.md` pour les conventions, process de PR et qualité.
 
-- **Frontend** : React 18, TypeScript, Vite
-- **Styling** : Tailwind CSS
-- **Animations** : Framer Motion
-- **Routing** : React Router v6
-- **State Management** : Zustand, React Query
-- **Forms** : React Hook Form + Zod
-- **Backend** : Supabase (Auth + Database + Storage)
-- **Tests** : Vitest + React Testing Library
-- **Icons** : Lucide React
-
-## 🔧 Scripts disponibles
-
-- `npm run dev` - Démarrer le serveur de développement
-- `npm run build` - Construire pour la production
-- `npm run preview` - Prévisualiser la build de production
-- `npm run test` - Lancer les tests
-- `npm run lint` - Linter le code
-
-## 📝 Contribution
-
-1. Fork le projet
-2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
-3. Commit les changements (`git commit -m 'Add AmazingFeature'`)
-4. Push sur la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrir une Pull Request
+## 📚 Documentation complémentaire
+- `ARCHITECTURE.md`: architecture frontend/backend/DB
+- `API_DOCS.md`: opérations de données et schémas (via Supabase)
+- `DB_SCHEMA.md`: tables, relations, contraintes
+- `ROADMAP.md`: trajectoire produit (MVP → V1 → +)
+- `CONTRIBUTING.md`: guidelines de contribution
 
 ## 📄 Licence
-
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
-
-## 🙋‍♀️ Support
-
-Pour toute question ou problème, ouvrez une issue sur GitHub.
+MIT. Voir `LICENSE`.
 
 ---
 
-**TrocAll** - Partageons plus, consommons mieux ! 🌱
+TrocAll – Partageons plus, consommons mieux. 🌱
