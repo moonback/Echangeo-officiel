@@ -28,10 +28,11 @@ export function useItems(filters?: {
         .from('items')
         .select(`
           *,
-          owner:profiles(*),
+          owner:profiles!items_owner_id_fkey(*),
           ${selectImages}
           ${filters?.favoritesOnly ? `, favorites!inner(user_id)` : ''}
         ` as any)
+        .eq('suspended_by_admin', false) // Exclure les objets suspendus par l'admin
         .order('created_at', { ascending: false });
 
       if (filters?.favoritesOnly) {
@@ -82,7 +83,10 @@ export function useItems(filters?: {
       }
 
       const { data, error } = await query;
-      if (error) throw error;
+      if (error) {
+        console.error('Erreur lors de la récupération des objets:', error);
+        throw error;
+      }
 
       // Nettoyer projection favorites
       const items = ((data as any[]) ?? []).map((row) => {
@@ -134,7 +138,7 @@ export function useItem(id: string) {
         .from('items')
         .select(`
           *,
-          owner:profiles(*),
+          owner:profiles!items_owner_id_fkey(*),
           images:item_images(*)
         `)
         .eq('id', id)

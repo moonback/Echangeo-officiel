@@ -3,15 +3,18 @@ import { motion } from 'framer-motion';
 import { useAdminItems } from '../../hooks/useAdmin';
 import AdminLayout from '../../components/admin/AdminLayout';
 import AdminTable from '../../components/admin/AdminTable';
+import ItemDetailsModal from '../../components/admin/ItemDetailsModal';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import type { ItemManagement } from '../../types/admin';
 
 export default function AdminItemsPage() {
-  const { items, loading, error, refetch, suspendItem, deleteItem } = useAdminItems();
+  const { items, loading, error, refetch, suspendItem, reactivateItem, deleteItem } = useAdminItems();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   const filteredItems = items.filter(item => {
     const matchesSearch = !searchTerm || 
@@ -35,6 +38,17 @@ export default function AdminItemsPage() {
     }
   };
 
+  const handleReactivateItem = async (itemId: string) => {
+    if (window.confirm('Êtes-vous sûr de vouloir réactiver cet objet ?')) {
+      try {
+        await reactivateItem(itemId);
+      } catch (error) {
+        console.error('Erreur lors de la réactivation:', error);
+        alert('Erreur lors de la réactivation de l\'objet');
+      }
+    }
+  };
+
   const handleDeleteItem = async (itemId: string) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer définitivement cet objet ? Cette action est irréversible.')) {
       try {
@@ -44,6 +58,16 @@ export default function AdminItemsPage() {
         alert('Erreur lors de la suppression de l\'objet');
       }
     }
+  };
+
+  const handleShowDetails = (itemId: string) => {
+    setSelectedItemId(itemId);
+    setShowDetailsModal(true);
+  };
+
+  const handleCloseDetails = () => {
+    setShowDetailsModal(false);
+    setSelectedItemId(null);
   };
 
   const categories = [
@@ -241,12 +265,19 @@ export default function AdminItemsPage() {
           emptyMessage="Aucun objet trouvé"
           actions={(item: ItemManagement) => (
             <div className="flex space-x-2">
-              {item.status === 'active' && (
+              {item.status === 'active' ? (
                 <button
                   onClick={() => handleSuspendItem(item.id)}
                   className="px-3 py-1 text-xs font-medium text-yellow-600 bg-yellow-50 border border-yellow-200 rounded-md hover:bg-yellow-100 transition-colors"
                 >
                   Suspendre
+                </button>
+              ) : (
+                <button
+                  onClick={() => handleReactivateItem(item.id)}
+                  className="px-3 py-1 text-xs font-medium text-green-600 bg-green-50 border border-green-200 rounded-md hover:bg-green-100 transition-colors"
+                >
+                  Réactiver
                 </button>
               )}
               <button
@@ -255,12 +286,24 @@ export default function AdminItemsPage() {
               >
                 Supprimer
               </button>
-              <button className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors">
+              <button
+                onClick={() => handleShowDetails(item.id)}
+                className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors"
+              >
                 Détails
               </button>
             </div>
           )}
         />
+
+        {/* Item Details Modal */}
+        {selectedItemId && (
+          <ItemDetailsModal
+            isOpen={showDetailsModal}
+            onClose={handleCloseDetails}
+            itemId={selectedItemId}
+          />
+        )}
       </div>
     </AdminLayout>
   );

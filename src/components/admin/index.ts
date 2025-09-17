@@ -12,3 +12,4 @@ export { default as SearchInput } from './SearchInput';
 export { default as SystemStatus } from './SystemStatus';
 export { default as StatCard } from './StatCard';
 export { default as MobileNav } from './MobileNav';
+export { default as ItemDetailsModal } from './ItemDetailsModal';

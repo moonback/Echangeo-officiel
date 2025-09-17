@@ -269,6 +269,10 @@ export function useAdminItems() {
           category,
           owner_id,
           is_available,
+          suspended_by_admin,
+          suspension_reason,
+          suspended_at,
+          suspended_by,
           created_at,
           profiles!items_owner_id_fkey(full_name)
         `)
@@ -286,7 +290,11 @@ export function useAdminItems() {
         is_available: item.is_available,
         created_at: item.created_at,
         reports_count: 0, // À implémenter avec une table reports
-        status: item.is_available ? 'active' : 'suspended'
+        status: item.is_available ? 'active' : (item.suspended_by_admin ? 'suspended' : 'inactive'),
+        suspended_by_admin: item.suspended_by_admin || false,
+        suspension_reason: item.suspension_reason,
+        suspended_at: item.suspended_at,
+        suspended_by: item.suspended_by
       }));
 
       setItems(enrichedItems);
@@ -300,15 +308,45 @@ export function useAdminItems() {
 
   const suspendItem = async (itemId: string, reason?: string) => {
     try {
+      const { user } = useAuthStore.getState();
+      if (!user) throw new Error('Utilisateur non authentifié');
+
       const { error } = await supabase
         .from('items')
-        .update({ is_available: false })
+        .update({ 
+          is_available: false,
+          suspended_by_admin: true,
+          suspension_reason: reason || 'Suspendu par l\'administrateur',
+          suspended_at: new Date().toISOString(),
+          suspended_by: user.id
+        })
         .eq('id', itemId);
 
       if (error) throw error;
       fetchItems();
     } catch (err) {
       console.error('Erreur lors de la suspension:', err);
+      throw err;
+    }
+  };
+
+  const reactivateItem = async (itemId: string) => {
+    try {
+      const { error } = await supabase
+        .from('items')
+        .update({ 
+          is_available: true,
+          suspended_by_admin: false,
+          suspension_reason: null,
+          suspended_at: null,
+          suspended_by: null
+        })
+        .eq('id', itemId);
+
+      if (error) throw error;
+      fetchItems();
+    } catch (err) {
+      console.error('Erreur lors de la réactivation:', err);
       throw err;
     }
   };
@@ -332,7 +370,7 @@ export function useAdminItems() {
     fetchItems();
   }, []);
 
-  return { items, loading, error, refetch: fetchItems, suspendItem, deleteItem };
+  return { items, loading, error, refetch: fetchItems, suspendItem, reactivateItem, deleteItem };
 }
 
 export function useAdminCommunities() {
