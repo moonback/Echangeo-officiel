@@ -1,53 +1,87 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useProfile, useItemsByOwner, useBorrowHistory, useLendHistory } from '../hooks/useProfiles';
+import { useProfile, useBorrowHistory, useLendHistory } from '../hooks/useProfiles';
 import { supabase } from '../services/supabase';
-import { Star, MapPin, Package, MessageCircle, Link as LinkIcon } from 'lucide-react';
+import { categories } from '../utils/categories';
+import { Star, MapPin, MessageCircle, Link as LinkIcon } from 'lucide-react';
 import Card from '../components/ui/Card';
 import EmptyState from '../components/EmptyState';
 import Button from '../components/ui/Button';
-import Badge from '../components/ui/Badge';
+
+type OwnedItem = { id: string; title: string; description?: string; created_at: string; is_available: boolean; category: string };
+type ReviewRow = { id: string; item_id: string; item_title: string; rater_name: string; score: number; comment?: string; created_at: string };
 
 const ProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { data: profile, isLoading } = useProfile(id);
-  const { data: items } = useItemsByOwner(id);
+  // Client-managed items with server pagination & filters
+  const [items, setItems] = React.useState<OwnedItem[]>([]);
+  const [itemsPage, setItemsPage] = React.useState(0);
+  const itemsPageSize = 6;
+  const [itemsHasMore, setItemsHasMore] = React.useState(true);
+  const [filterCategory, setFilterCategory] = React.useState<string>('');
+  const [filterOnlyAvailable, setFilterOnlyAvailable] = React.useState<boolean>(false);
   const { data: borrows } = useBorrowHistory(id);
   const { data: lends } = useLendHistory(id);
 
-  const [itemsLimit, setItemsLimit] = React.useState(6);
+  
   const [ratingStats, setRatingStats] = React.useState<{ average?: number; count?: number }>({});
   const [itemStatsMap, setItemStatsMap] = React.useState<Record<string, { average?: number; count?: number }>>({});
   const [sortMode, setSortMode] = React.useState<'recent' | 'popular'>('recent');
-  const [reviews, setReviews] = React.useState<Array<{ id: string; item_id: string; item_title: string; rater_name: string; score: number; comment?: string; created_at: string }>>([]);
+  const [reviews, setReviews] = React.useState<ReviewRow[]>([]);
+  const [reviewsPage, setReviewsPage] = React.useState(0);
+  const reviewsPageSize = 10;
+  const [reviewsHasMore, setReviewsHasMore] = React.useState(true);
   const [copied, setCopied] = React.useState(false);
 
   React.useEffect(() => {
     const loadRatingStats = async () => {
       if (!id) return;
-      // Aggregate ratings across items owned by this profile via view and join; fail-soft if not available
+      // Aggregate from item_ratings joined to items owned by this user
       const { data, error } = await supabase
-        .from('item_rating_stats')
-        .select('average_rating, ratings_count, items!inner(owner_id)')
-        .eq('items.owner_id', id);
+        .from('item_ratings')
+        .select('score, item:items!inner(id,owner_id)')
+        .eq('item.owner_id', id);
       if (error || !data) {
         setRatingStats({});
         return;
       }
       let totalReviews = 0;
-      let weightedSum = 0;
-      for (const row of data as any[]) {
-        const count = Number(row.ratings_count ?? 0);
-        const avg = Number(row.average_rating ?? 0);
-        totalReviews += count;
-        weightedSum += avg * count;
+      let totalScore = 0;
+      for (const row of data as { score: number }[]) {
+        const score = Number(row.score ?? 0);
+        totalReviews += 1;
+        totalScore += score;
       }
-      const average = totalReviews > 0 ? weightedSum / totalReviews : undefined;
+      const average = totalReviews > 0 ? totalScore / totalReviews : undefined;
       setRatingStats({ average, count: totalReviews });
     };
     loadRatingStats();
   }, [id]);
+
+  // Load items with pagination & filters
+  React.useEffect(() => {
+    const loadItems = async () => {
+      if (!id) return;
+      const from = itemsPage * itemsPageSize;
+      const to = from + itemsPageSize - 1;
+      let query = supabase
+        .from('items')
+        .select('id,title,description,created_at,is_available,category', { count: 'exact' })
+        .eq('owner_id', id)
+        .order('created_at', { ascending: false })
+        .range(from, to);
+      if (filterCategory) query = query.eq('category', filterCategory);
+      if (filterOnlyAvailable) query = query.eq('is_available', true);
+      const { data, error, count } = await query;
+      if (error) return;
+      setItems((prev) => itemsPage === 0 ? (data as OwnedItem[]) : [...prev, ...(data as OwnedItem[])]);
+      const loaded = (data?.length ?? 0);
+      setItemsHasMore(typeof count === 'number' ? from + loaded < count : loaded === itemsPageSize);
+    };
+    loadItems();
+  }, [id, itemsPage, filterCategory, filterOnlyAvailable]);
 
   // Per-item stats for sorting
   React.useEffect(() => {
@@ -55,31 +89,41 @@ const ProfilePage: React.FC = () => {
       if (!items || items.length === 0) return;
       const ids = items.map((it) => it.id);
       const { data, error } = await supabase
-        .from('item_rating_stats')
-        .select('item_id, average_rating, ratings_count')
+        .from('item_ratings')
+        .select('item_id, score')
         .in('item_id', ids);
       if (error || !data) return;
+      const totals: Record<string, { sum: number; count: number }> = {};
+      for (const row of data as { item_id: string; score: number }[]) {
+        const itemId = row.item_id as string;
+        const score = Number(row.score ?? 0);
+        if (!totals[itemId]) totals[itemId] = { sum: 0, count: 0 };
+        totals[itemId].sum += score;
+        totals[itemId].count += 1;
+      }
       const map: Record<string, { average?: number; count?: number }> = {};
-      for (const row of data as any[]) {
-        map[row.item_id] = { average: row.average_rating ?? undefined, count: row.ratings_count ?? 0 };
+      for (const [itemId, t] of Object.entries(totals)) {
+        map[itemId] = { average: t.count > 0 ? t.sum / t.count : undefined, count: t.count };
       }
       setItemStatsMap(map);
     };
     loadItemStatsForSort();
   }, [items]);
 
-  // Latest detailed reviews across this user's items
+  // Latest detailed reviews across this user's items with pagination
   React.useEffect(() => {
     const loadReviews = async () => {
       if (!id) return;
-      const { data, error } = await supabase
+      const from = reviewsPage * reviewsPageSize;
+      const to = from + reviewsPageSize - 1;
+      const { data, error, count } = await supabase
         .from('item_ratings')
-        .select('id, item_id, score, comment, created_at, rater:profiles(full_name, email), item:items!inner(id, title, owner_id)')
-        .eq('items.owner_id', id)
+        .select('id, item_id, score, comment, created_at, rater:profiles(full_name, email), item:items!inner(id, title, owner_id)', { count: 'exact' })
+        .eq('item.owner_id', id)
         .order('created_at', { ascending: false })
-        .limit(10);
+        .range(from, to);
       if (error || !data) return;
-      const rows = (data as any[]).map((r) => ({
+      const rows: ReviewRow[] = (data as { id: string; item_id: string; score: number; comment: string; created_at: string; rater: { full_name: string; email: string }; item: { id: string; title: string; owner_id: string } }[]).map((r) => ({
         id: r.id as string,
         item_id: r.item?.id as string,
         item_title: r.item?.title as string,
@@ -88,10 +132,12 @@ const ProfilePage: React.FC = () => {
         comment: r.comment as string | undefined,
         created_at: r.created_at as string,
       }));
-      setReviews(rows);
+      setReviews((prev) => reviewsPage === 0 ? rows : [...prev, ...rows]);
+      const loaded = rows.length;
+      setReviewsHasMore(typeof count === 'number' ? from + loaded < count : loaded === reviewsPageSize);
     };
     loadReviews();
-  }, [id]);
+  }, [id, reviewsPage]);
 
   return (
     <div className="p-4 max-w-5xl mx-auto">
@@ -125,13 +171,13 @@ const ProfilePage: React.FC = () => {
                       {profile.bio && (
                         <p className="mt-2 text-gray-700 text-sm md:text-base max-w-prose">{profile.bio}</p>
                       )}
-                      <div className="mt-3 flex items-center gap-2 flex-wrap">
-                        <Badge variant="info" className="px-3 py-1"><Package className="w-3 h-3 mr-1" /> {(profile as any).items_count ?? 0} objets</Badge>
-                        <Badge variant="success" className="px-3 py-1">{(profile as any).completed_borrows ?? 0} emprunts</Badge>
+                      {/* <div className="mt-3 flex items-center gap-2 flex-wrap">
+                        <Badge variant="info" className="px-3 py-1"><Package className="w-3 h-3 mr-1" /> {(profile as any)?.items_count ?? 0} objets</Badge>
+                        <Badge variant="success" className="px-3 py-1">{(profile as any)?.completed_borrows ?? 0} emprunts</Badge>
                         {ratingStats.count ? (
                           <Badge variant="warning" className="px-3 py-1"><Star className="w-3 h-3 mr-1 text-yellow-600" /> {ratingStats.average?.toFixed(1)} ({ratingStats.count})</Badge>
                         ) : null}
-                      </div>
+                      </div> */}
                     </div>
                     <div className="flex items-center gap-2">
                       {id && (
@@ -144,7 +190,9 @@ const ProfilePage: React.FC = () => {
                           await navigator.clipboard.writeText(window.location.href);
                           setCopied(true);
                           setTimeout(() => setCopied(false), 1500);
-                        } catch {}
+                        } catch {
+                          // Do nothing
+                        }
                       }}>{copied ? 'Copié' : 'Copier le lien'}</Button>
                     </div>
                   </div>
@@ -159,8 +207,19 @@ const ProfilePage: React.FC = () => {
               <div className="p-4 border-b border-gray-100 font-medium flex items-center justify-between">
                 <span>Objets publiés</span>
                 <div className="flex items-center gap-2 text-sm">
-                  <span className="text-gray-600">Trier:</span>
-                  <select value={sortMode} onChange={(e) => setSortMode(e.target.value as any)} className="px-2 py-1 border border-gray-300 rounded-lg text-sm">
+                  <span className="text-gray-600">Catégorie:</span>
+                  <select value={filterCategory} onChange={(e) => { setItemsPage(0); setItems([]); setFilterCategory(e.target.value); }} className="px-2 py-1 border border-gray-300 rounded-lg text-sm">
+                    <option value="">Toutes</option>
+                    {categories.map((c) => (
+                      <option key={c.value} value={c.value}>{c.label}</option>
+                    ))}
+                  </select>
+                  <label className="flex items-center gap-1 ml-2">
+                    <input type="checkbox" checked={filterOnlyAvailable} onChange={(e) => { setItemsPage(0); setItems([]); setFilterOnlyAvailable(e.target.checked); }} />
+                    <span>Disponibles</span>
+                  </label>
+                  <span className="text-gray-600 ml-4">Trier:</span>
+                  <select value={sortMode} onChange={(e) => setSortMode(e.target.value as 'recent' | 'popular')} className="px-2 py-1 border border-gray-300 rounded-lg text-sm">
                     <option value="recent">Plus récents</option>
                     <option value="popular">Plus populaires</option>
                   </select>
@@ -181,7 +240,6 @@ const ProfilePage: React.FC = () => {
                       const ab = itemStatsMap[b.id]?.average ?? 0;
                       return ab - aa;
                     })
-                    .slice(0, itemsLimit)
                     .map((it) => (
                     <Card key={it.id} className="p-4">
                       <div className="flex items-start justify-between">
@@ -195,9 +253,9 @@ const ProfilePage: React.FC = () => {
                       </div>
                     </Card>
                   ))}
-                  {items && items.length > itemsLimit && (
+                  {itemsHasMore && (
                     <div className="col-span-full flex justify-center pt-2">
-                      <Button variant="ghost" className="border border-gray-300" onClick={() => setItemsLimit((n) => n + 6)}>Voir plus</Button>
+                      <Button variant="ghost" className="border border-gray-300" onClick={() => setItemsPage((n) => n + 1)}>Voir plus</Button>
                     </div>
                   )}
                 </div>
@@ -214,6 +272,7 @@ const ProfilePage: React.FC = () => {
                 ) : null}
               </div>
               {reviews && reviews.length > 0 ? (
+                <>
                 <ul className="divide-y divide-gray-100">
                   {reviews.map((rev) => (
                     <li key={rev.id} className="p-4">
@@ -237,6 +296,12 @@ const ProfilePage: React.FC = () => {
                     </li>
                   ))}
                 </ul>
+                {reviewsHasMore && (
+                  <div className="p-4 flex justify-center">
+                    <Button variant="ghost" className="border border-gray-300" onClick={() => setReviewsPage((n) => n + 1)}>Voir plus</Button>
+                  </div>
+                )}
+                </>
               ) : (
                 <div className="p-6"><EmptyState title="Aucun avis" description="Aucun avis publié pour l'instant." /></div>
               )}
