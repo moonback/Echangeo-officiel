@@ -118,7 +118,7 @@ const RequestsPage: React.FC = () => {
           ) : (
             <div className="space-y-4">
               {receivedRequests.map((request) => (
-                <div key={request.id} className="bg-white rounded-xl p-4 border border-gray-200">
+                <div key={request.id} className="bg-white rounded-xl p-4 border border-gray-200 glass">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
                       <h3 className="font-semibold text-gray-900">
@@ -185,7 +185,7 @@ const RequestsPage: React.FC = () => {
           ) : (
             <div className="space-y-4">
               {myRequests.map((request) => (
-                <div key={request.id} className="bg-white rounded-xl p-4 border border-gray-200">
+                <div key={request.id} className="bg-white rounded-xl p-4 border border-gray-200 glass">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
                       <h3 className="font-semibold text-gray-900">
@@ -233,7 +233,7 @@ const RequestsPage: React.FC = () => {
                   </div>
                   {openRatingFor === request.id && (
                     <form
-                      className="mt-3 bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-2"
+                      className="mt-3 bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-2 glass"
                       onSubmit={async (e) => {
                         e.preventDefault();
                         if (!request.item_id) return;

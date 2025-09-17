@@ -78,7 +78,7 @@ const ItemsPage: React.FC = () => {
 
       {/* Category Filters */}
       <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: showFilters ? 'auto' : 0, opacity: showFilters ? 1 : 0 }} className="overflow-hidden mb-6">
-        <Card className="p-4 space-y-4">
+        <Card className="p-4 space-y-4 glass">
           <p className="text-sm font-medium text-gray-700 mb-3">Catégories</p>
           <div className="flex flex-wrap gap-2">
             <button

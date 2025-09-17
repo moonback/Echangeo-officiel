@@ -30,7 +30,7 @@ const ChatPage: React.FC = () => {
           {otherProfile?.full_name || otherProfile?.email || 'Chat'}
         </h1>
 
-          <div className="bg-white rounded-xl border border-gray-200 flex flex-col h-[70vh]">
+          <div className="bg-white rounded-xl border border-gray-200 flex flex-col h-[70vh] glass">
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {isLoading && (
               <div className="text-gray-500 text-sm">Chargement…</div>
@@ -57,7 +57,7 @@ const ChatPage: React.FC = () => {
             })}
           </div>
 
-          <form onSubmit={onSend} className="border-t border-gray-200 p-3 flex gap-2">
+          <form onSubmit={onSend} className="border-t border-gray-200 p-3 flex gap-2 bg-white/60 backdrop-blur">
             <input
               value={content}
               onChange={(e) => setContent(e.target.value)}

@@ -50,4 +50,11 @@
     100% { transform: scale(1); opacity: 1; }
   }
   .pop-in { animation: popIn .35s ease-out both; }
+
+  /* Dark mode variants */
+  @media (prefers-color-scheme: dark) {
+    .card { background-color: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); }
+    .btn-outline { @apply border-gray-600 text-gray-200 hover:bg-white/5; }
+    .input { @apply bg-white/5 border-white/15 text-gray-100 placeholder:text-gray-400; }
+  }
 }

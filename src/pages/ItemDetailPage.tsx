@@ -123,7 +123,7 @@ const ItemDetailPage: React.FC = () => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="aspect-square bg-gray-100 overflow-hidden mb-4">
+          <Card className="aspect-square bg-gray-100 overflow-hidden mb-4 glass">
             {item.images && item.images.length > 0 ? (
               <img
                 src={item.images[currentImageIndex]?.url || item.images[0].url}
@@ -143,7 +143,7 @@ const ItemDetailPage: React.FC = () => {
                 <button
                   key={image.id}
                   onClick={() => setCurrentImageIndex(index)}
-                  className={`aspect-square rounded-lg overflow-hidden ${
+                  className={`aspect-square rounded-lg overflow-hidden transition-transform hover:scale-[1.02] ${
                     currentImageIndex === index ? 'ring-2 ring-blue-500' : ''
                   }`}
                 >
@@ -189,7 +189,7 @@ const ItemDetailPage: React.FC = () => {
           </div>
 
           {/* Owner Info */}
-          <Card className="p-4 bg-gray-50">
+          <Card className="p-4 bg-gray-50 glass">
             <h3 className="font-semibold text-gray-900 mb-3">Propriétaire</h3>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -228,7 +228,7 @@ const ItemDetailPage: React.FC = () => {
 
           {/* Additional fields */}
           {(item.brand || item.model || item.estimated_value || (item.tags && item.tags.length) || item.available_from || item.available_to || item.location_hint) && (
-            <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+            <div className="bg-gray-50 rounded-xl p-4 space-y-3 glass">
               <h3 className="font-semibold text-gray-900">Informations supplémentaires</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 {item.brand && (

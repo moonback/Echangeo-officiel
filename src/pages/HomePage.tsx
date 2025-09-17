@@ -50,7 +50,7 @@ const HomePage: React.FC = () => {
     <div className="max-w-7xl mx-auto p-4 space-y-12">
       {/* Hero */}
       <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden glass">
         <div className="relative p-6 md:p-10 bg-gradient-to-br from-brand-50 to-white">
           <div className="max-w-3xl">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">Partagez. Empruntez. Réduisez. 🌱</h1>
@@ -86,7 +86,7 @@ const HomePage: React.FC = () => {
 
       {/* Carte interactive */}
       <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        <Card className="p-0">
+        <Card className="p-0 glass">
           <div className="p-4 flex items-center justify-between">
             <h2 className="text-xl font-semibold text-gray-900">Autour de moi</h2>
             <span className="text-sm text-gray-600">{items?.length || 0} objets</span>
