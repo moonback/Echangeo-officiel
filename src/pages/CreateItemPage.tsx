@@ -4,16 +4,18 @@ import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, Upload, X } from 'lucide-react';
+import { ArrowLeft, Upload, X, Sparkles, AlertCircle, CheckCircle } from 'lucide-react';
 import { useCreateItem } from '../hooks/useItems';
 import { categories } from '../utils/categories';
 import { offerTypes } from '../utils/offerTypes';
 import type { ItemCategory, OfferType } from '../types';
+import type { AIAnalysisResult } from '../services/aiService';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import TextArea from '../components/ui/TextArea';
 import Card from '../components/ui/Card';
+import AIImageUpload from '../components/AIImageUpload';
 
 const createItemSchema = z.object({
   title: z.string().min(1, 'Le titre est requis').max(100, 'Le titre est trop long'),
@@ -54,6 +56,7 @@ const CreateItemPage: React.FC = () => {
   const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number; fileName?: string } | null>(null);
   const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
   const [isLocating, setIsLocating] = useState(false);
+  const [aiAnalysisApplied, setAiAnalysisApplied] = useState(false);
 
   const {
     register,
@@ -69,16 +72,29 @@ const CreateItemPage: React.FC = () => {
   const [step, setStep] = useState(1);
   const TOTAL_STEPS = 4;
   const steps = [
-    { id: 1, label: 'Informations' },
-    { id: 2, label: 'Détails' },
-    { id: 3, label: 'Disponibilité' },
-    { id: 4, label: 'Photos' },
+    { id: 1, label: 'Photos & IA' },
+    { id: 2, label: 'Informations' },
+    { id: 3, label: 'Détails' },
+    { id: 4, label: 'Récapitulatif' },
   ];
 
   const goPrev = () => setStep((s) => Math.max(1, s - 1));
   const goNext = async () => {
     let fieldsToValidate: (keyof CreateItemForm)[] = [];
-    if (step === 1) fieldsToValidate = ['title', 'category', 'condition', 'offer_type'];
+    // Étape 1 : Photos (recommandé mais pas obligatoire)
+    if (step === 1) {
+      // Permettre de continuer sans photos, mais afficher un avertissement
+      if (selectedImages.length === 0) {
+        setImagesError('Aucune photo ajoutée - L\'analyse IA ne sera pas disponible');
+      } else {
+        setImagesError(null);
+      }
+    }
+    // Étape 2 : Informations de base
+    if (step === 2) fieldsToValidate = ['title', 'category', 'condition', 'offer_type'];
+    // Étape 3 : Détails (pas de validation obligatoire)
+    // Étape 4 : Disponibilité (pas de validation obligatoire)
+    
     const isValid = fieldsToValidate.length ? await trigger(fieldsToValidate as (keyof CreateItemForm)[]) : true;
     if (isValid) setStep((s) => Math.min(TOTAL_STEPS, s + 1));
   };
@@ -155,79 +171,53 @@ const CreateItemPage: React.FC = () => {
     setTagSuggestions(Array.from(suggestions).slice(0, 8));
   }, [watch('brand'), watch('model'), watch('category')]);
 
-  const acceptFiles = (files: File[]) => {
-    const MAX_FILES = 8;
-    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-    const valid: File[] = [];
-    for (const f of files) {
-      if (!f.type.startsWith('image/')) {
-        setImagesError('Seules les images sont autorisées.');
-        continue;
-      }
-      if (f.size > MAX_SIZE) {
-        setImagesError('Taille maximale par image: 5 Mo.');
-        continue;
-      }
-      valid.push(f);
-    }
-    if (valid.length === 0) return;
-    const merged = [...selectedImages, ...valid].slice(0, MAX_FILES);
-    setSelectedImages(merged);
-    setImagePreviews(merged.map((f) => URL.createObjectURL(f)));
-    setImagesError(null);
+
+  // Gérer les résultats de l'analyse IA (ne pas appliquer automatiquement)
+  const handleAIAnalysisResult = (analysis: AIAnalysisResult) => {
+    // Ne rien faire automatiquement - laisser l'utilisateur choisir
+    console.log('Analyse IA terminée:', analysis);
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) return;
-    acceptFiles(files);
-  };
-
-  const onDropImages: React.DragEventHandler<HTMLLabelElement> = (e) => {
-    e.preventDefault();
-    const files = Array.from(e.dataTransfer.files || []);
-    acceptFiles(files);
-  };
-
-  const moveImage = (index: number, direction: -1 | 1) => {
-    const newIndex = index + direction;
-    if (newIndex < 0 || newIndex >= selectedImages.length) return;
-    const imgs = [...selectedImages];
-    const prevs = [...imagePreviews];
-    [imgs[index], imgs[newIndex]] = [imgs[newIndex], imgs[index]];
-    [prevs[index], prevs[newIndex]] = [prevs[newIndex], prevs[index]];
-    setSelectedImages(imgs);
-    setImagePreviews(prevs);
-  };
-
-  const setPrimaryImage = (index: number) => {
-    if (index === 0) return;
-    const imgs = [...selectedImages];
-    const prevs = [...imagePreviews];
-    const [img] = imgs.splice(index, 1);
-    const [prev] = prevs.splice(index, 1);
-    imgs.unshift(img);
-    prevs.unshift(prev);
-    setSelectedImages(imgs);
-    setImagePreviews(prevs);
-  };
-
-  const removeImage = (index: number) => {
-    const newImages = selectedImages.filter((_, i) => i !== index);
-    const newPreviews = imagePreviews.filter((_, i) => i !== index);
+  // Appliquer manuellement les suggestions de l'IA
+  const applyAIResults = (analysis: AIAnalysisResult) => {
+    setValue('title', analysis.title, { shouldValidate: true, shouldDirty: true });
+    setValue('description', analysis.description, { shouldValidate: true, shouldDirty: true });
+    setValue('category', analysis.category, { shouldValidate: true, shouldDirty: true });
+    setValue('condition', analysis.condition, { shouldValidate: true, shouldDirty: true });
     
-    URL.revokeObjectURL(imagePreviews[index]); // Clean up old URL
-    setSelectedImages(newImages);
-    setImagePreviews(newPreviews);
+    if (analysis.brand) {
+      setValue('brand', analysis.brand, { shouldValidate: true, shouldDirty: true });
+    }
+    
+    if (analysis.model) {
+      setValue('model', analysis.model, { shouldValidate: true, shouldDirty: true });
+    }
+    
+    if (analysis.estimated_value) {
+      setValue('estimated_value', analysis.estimated_value, { shouldValidate: true, shouldDirty: true });
+    }
+    
+    if (analysis.tags.length > 0) {
+      setValue('tags', analysis.tags.join(', '), { shouldValidate: true, shouldDirty: true });
+    }
+
+    setAiAnalysisApplied(true);
   };
 
   const onSubmit = async (data: CreateItemForm) => {
     try {
+      // Permettre la création sans photos (mais recommander d'en ajouter)
       if (selectedImages.length === 0) {
-        setStep(4);
-        setImagesError('Veuillez ajouter au moins une photo.');
+        const confirm = window.confirm(
+          'Aucune photo ajoutée. Votre annonce sera moins attractive sans photos. Voulez-vous continuer ?'
+        );
+        if (!confirm) {
+          setStep(1);
+          setImagesError('Ajoutez au moins une photo pour une meilleure visibilité');
         return;
+        }
       }
+      
       await createItem.mutateAsync({
         ...data,
         images: selectedImages,
@@ -255,7 +245,7 @@ const CreateItemPage: React.FC = () => {
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-2xl font-bold text-gray-900">
-          Ajouter un objet
+          Ajouter un objet <span className="text-sm text-gray-500 font-normal">(Étape {step}/{TOTAL_STEPS})</span>
         </h1>
       </motion.div>
 
@@ -281,18 +271,131 @@ const CreateItemPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Step 1: Informations */}
+        {/* Step 1: Photos & IA */}
         {step === 1 && (
           <>
+            <div className="space-y-4">
+              <div className="text-center mb-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-2 flex items-center justify-center gap-2">
+                  <Sparkles className="w-5 h-5 text-purple-600" />
+                  Ajoutez des photos pour une analyse IA automatique
+                </h2>
+                <p className="text-gray-600">
+                  Notre IA analysera vos photos pour pré-remplir automatiquement les informations de l'objet
+                </p>
+              </div>
+              
+              <AIImageUpload
+                images={selectedImages}
+                imagePreviews={imagePreviews}
+                onImagesChange={(images, previews) => {
+                  setSelectedImages(images);
+                  setImagePreviews(previews);
+                  setImagesError(null);
+                }}
+                onAIAnalysisResult={handleAIAnalysisResult}
+                onApplyAIResults={applyAIResults}
+                maxImages={8}
+                error={imagesError}
+              />
+            </div>
+          </>
+        )}
+
+        {/* Step 2: Informations de base */}
+        {step === 2 && (
+          <>
+            {/* Indicateur IA si des données ont été appliquées */}
+            {aiAnalysisApplied && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4"
+              >
+                <div className="flex items-center gap-2 p-3 bg-purple-50 border border-purple-200 rounded-xl">
+                  <Sparkles className="w-4 h-4 text-purple-600" />
+                  <span className="text-sm text-purple-800 font-medium">
+                    Informations pré-remplies par l'IA - Vous pouvez les modifier
+                  </span>
+                </div>
+              </motion.div>
+            )}
+            
+            {/* Message informatif si pas de photos */}
+            {selectedImages.length === 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4"
+              >
+                <div className="flex items-center justify-between p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-amber-600" />
+                    <span className="text-sm text-amber-800">
+                      Aucune photo ajoutée - Remplissez manuellement les informations
+                    </span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setStep(1)}
+                    className="text-amber-700 hover:bg-amber-100 border border-amber-300"
+                  >
+                    Ajouter des photos
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+            
+            {/* Résumé des photos ajoutées */}
+            {selectedImages.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4"
+              >
+                <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span className="text-sm text-green-800">
+                      {selectedImages.length} photo{selectedImages.length > 1 ? 's' : ''} ajoutée{selectedImages.length > 1 ? 's' : ''}
+                      {aiAnalysisApplied ? ' - Analysées par IA' : ''}
+                    </span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setStep(1)}
+                    className="text-green-700 hover:bg-green-100 border border-green-300"
+                  >
+                    Modifier les photos
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+            
             <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
-              <Input label="Titre *" placeholder="Ex: Perceuse électrique Bosch" {...register('title')} error={errors.title?.message} />
+              <Input 
+                label="Titre *" 
+                placeholder="Ex: Perceuse électrique Bosch" 
+                {...register('title')} 
+                error={errors.title?.message}
+                className={aiAnalysisApplied ? 'bg-purple-50/50 border-purple-200' : ''}
+              />
               <div className="text-xs text-gray-500 mt-1">{(watch('title')?.length || 0)}/100</div>
             </div>
+            
             <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
               <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
                 Catégorie *
               </label>
-              <Select {...register('category')} id="category">
+              <Select 
+                {...register('category')} 
+                id="category"
+                className={aiAnalysisApplied ? 'bg-purple-50/50 border-purple-200' : ''}
+              >
                 <option value="">Choisissez une catégorie</option>
                 {categories.map((category) => (
                   <option key={category.value} value={category.value}>
@@ -304,11 +407,16 @@ const CreateItemPage: React.FC = () => {
                 <p className="text-red-500 text-xs mt-1">{errors.category.message}</p>
               )}
             </div>
+            
             <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
               <label htmlFor="condition" className="block text-sm font-medium text-gray-700 mb-1">
                 État *
               </label>
-              <Select {...register('condition')} id="condition">
+              <Select 
+                {...register('condition')} 
+                id="condition"
+                className={aiAnalysisApplied ? 'bg-purple-50/50 border-purple-200' : ''}
+              >
                 <option value="">Choisissez l'état</option>
                 {conditions.map((condition) => (
                   <option key={condition.value} value={condition.value}>
@@ -320,6 +428,7 @@ const CreateItemPage: React.FC = () => {
                 <p className="text-red-500 text-xs mt-1">{errors.condition.message}</p>
               )}
             </div>
+            
             <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
               <label htmlFor="offer_type" className="block text-sm font-medium text-gray-700 mb-1">
                 Type d'offre *
@@ -340,6 +449,7 @@ const CreateItemPage: React.FC = () => {
                 <p className="text-red-500 text-xs mt-1">{errors.offer_type.message}</p>
               )}
             </div>
+            
             {watch('offer_type') === 'trade' && (
               <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
                 <label htmlFor="desired_items" className="block text-sm font-medium text-gray-700 mb-1">
@@ -359,24 +469,46 @@ const CreateItemPage: React.FC = () => {
                 )}
               </div>
             )}
+            
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                Description
+              </label>
+              <TextArea 
+                {...register('description')} 
+                id="description" 
+                rows={4} 
+                placeholder="Décrivez votre objet, son état, ses accessoires..."
+                className={aiAnalysisApplied ? 'bg-purple-50/50 border-purple-200' : ''}
+              />
+              <div className="text-xs text-gray-500 mt-1">{(watch('description')?.length ?? 0)} caractères</div>
+            </div>
           </>
         )}
 
-        {/* Step 2: Détails */}
-        {step === 2 && (
+        {/* Step 3: Détails */}
+        {step === 3 && (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
                 <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-1">
                   Marque
                 </label>
-                <Input {...register('brand')} id="brand" />
+                <Input 
+                  {...register('brand')} 
+                  id="brand" 
+                  className={aiAnalysisApplied ? 'bg-purple-50/50 border-purple-200' : ''}
+                />
               </div>
               <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
                 <label htmlFor="model" className="block text-sm font-medium text-gray-700 mb-1">
                   Modèle
                 </label>
-                <Input {...register('model')} id="model" />
+                <Input 
+                  {...register('model')} 
+                  id="model" 
+                  className={aiAnalysisApplied ? 'bg-purple-50/50 border-purple-200' : ''}
+                />
               </div>
             </div>
 
@@ -384,14 +516,27 @@ const CreateItemPage: React.FC = () => {
               <label htmlFor="estimated_value" className="block text-sm font-medium text-gray-700 mb-1">
                 Valeur estimée (€)
               </label>
-              <Input {...register('estimated_value')} type="number" step="0.01" min="0" id="estimated_value" />
+              <Input 
+                {...register('estimated_value')} 
+                type="number" 
+                step="0.01" 
+                min="0" 
+                id="estimated_value" 
+                className={aiAnalysisApplied ? 'bg-purple-50/50 border-purple-200' : ''}
+              />
             </div>
 
             <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
               <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-1">
                 Tags (séparés par des virgules)
               </label>
-              <Input {...register('tags')} type="text" id="tags" placeholder="ex: perceuse, bosch, 18v" />
+              <Input 
+                {...register('tags')} 
+                type="text" 
+                id="tags" 
+                placeholder="ex: perceuse, bosch, 18v" 
+                className={aiAnalysisApplied ? 'bg-purple-50/50 border-purple-200' : ''}
+              />
               {watch('tags') && (
                 <div className="mt-2 flex flex-wrap gap-2">
                   {watch('tags')!.split(',').map(t => t.trim()).filter(Boolean).map((t) => (
@@ -423,161 +568,169 @@ const CreateItemPage: React.FC = () => {
                 </div>
               )}
             </div>
-
-            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                Description
-              </label>
-              <TextArea {...register('description')} id="description" rows={4} placeholder="Décrivez votre objet, son état, ses accessoires..." />
-              <div className="text-xs text-gray-500 mt-1">{(watch('description')?.length ?? 0)} caractères</div>
-            </div>
-          </>
-        )}
-
-        {/* Step 3: Disponibilité */}
-        {step === 3 && (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
-                <label htmlFor="available_from" className="block text-sm font-medium text-gray-700 mb-1">
-                  Disponible à partir du
-                </label>
-                <Input {...register('available_from')} type="date" id="available_from" />
-              </div>
-              <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
-                <label htmlFor="available_to" className="block text-sm font-medium text-gray-700 mb-1">
-                  Disponible jusqu'au
-                </label>
-                <Input {...register('available_to')} type="date" id="available_to" />
-              </div>
-            </div>
-
-            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
-              <label htmlFor="location_hint" className="block text-sm font-medium text-gray-700 mb-1">
-                Indication de localisation (ex: étage, bâtiment, etc.)
-              </label>
-              <Input {...register('location_hint')} id="location_hint" />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
-                <label htmlFor="latitude" className="block text-sm font-medium text-gray-700 mb-1">
-                  Latitude
-                </label>
-                <Input {...register('latitude')} type="number" step="any" id="latitude" />
-              </div>
-              <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
-                <label htmlFor="longitude" className="block text-sm font-medium text-gray-700 mb-1">
-                  Longitude
-                </label>
-                <Input {...register('longitude')} type="number" step="any" id="longitude" />
-              </div>
-              <div className="flex items-end p-4 rounded-xl border border-gray-200 bg-white glass">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="w-full border border-gray-300"
-                  onClick={() => {
-                    if (!navigator.geolocation) {
-                      console.warn('Geolocation non supportée');
-                      return;
-                    }
-                    setIsLocating(true);
-                    navigator.geolocation.getCurrentPosition((pos) => {
-                      const lat = pos.coords.latitude;
-                      const lng = pos.coords.longitude;
-                      setValue('latitude', lat as unknown as number, { shouldValidate: true, shouldDirty: true });
-                      setValue('longitude', lng as unknown as number, { shouldValidate: true, shouldDirty: true });
-
-                      fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`, {
-                        headers: { 'Accept-Language': 'fr' },
-                      })
-                        .then((r) => r.json())
-                        .then((json) => {
-                          const display = json?.display_name as string | undefined;
-                          if (display) {
-                            setValue('location_hint', display, { shouldValidate: true, shouldDirty: true });
-                          }
-                        })
-                        .catch((e) => console.warn('Reverse geocoding failed', e))
-                        .finally(() => setIsLocating(false));
-                    }, (err) => {
-                      console.warn('Geolocation error', err);
-                      setIsLocating(false);
-                    }, { enableHighAccuracy: true, timeout: 10000 });
-                  }}
-                >
-                  {isLocating ? 'Localisation…' : 'Utiliser ma position'}
-                </Button>
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Step 4: Photos */}
-        {step === 4 && (
-          <Card className="p-4 glass">
-            <div className="flex items-center justify-between mb-3">
-              <label className="block text-sm font-medium text-gray-900">
-                Photos (au moins 1, max 8)
-              </label>
-              <span className="text-xs text-gray-500">{selectedImages.length}/8</span>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
-              {imagePreviews.map((preview, index) => (
-                <div key={index} className="relative aspect-square group">
-                  <img
-                    src={preview}
-                    alt={`Aperçu ${index + 1}`}
-                    className="w-full h-full object-cover rounded-lg border border-gray-200"
-                  />
-                  <div className="absolute top-2 left-2 flex gap-2">
-                    {index === 0 ? (
-                      <span className="px-2 py-0.5 text-xs rounded bg-blue-600 text-white shadow">Principale</span>
-                    ) : (
-                      <button type="button" onClick={() => setPrimaryImage(index)} className="px-2 py-0.5 text-xs rounded bg-white/95 border border-gray-300 hover:bg-white shadow-sm">Définir principale</button>
-                    )}
-                  </div>
-                  <div className="absolute bottom-2 left-2 right-2 flex justify-between opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button type="button" onClick={() => moveImage(index, -1)} className="px-2 py-1 text-xs rounded bg-white/95 border border-gray-300 hover:bg-white shadow-sm">◀</button>
-                    <button type="button" onClick={() => moveImage(index, 1)} className="px-2 py-1 text-xs rounded bg-white/95 border border-gray-300 hover:bg-white shadow-sm">▶</button>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow"
-                    aria-label="Supprimer l'image"
-                    title="Supprimer"
-                  >
-                    <X size={16} />
-                  </button>
+            
+            {/* Section Disponibilité et Localisation */}
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Disponibilité et Localisation</h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+                  <label htmlFor="available_from" className="block text-sm font-medium text-gray-700 mb-1">
+                    Disponible à partir du
+                  </label>
+                  <Input {...register('available_from')} type="date" id="available_from" />
                 </div>
-              ))}
+                <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+                  <label htmlFor="available_to" className="block text-sm font-medium text-gray-700 mb-1">
+                    Disponible jusqu'au
+                  </label>
+                  <Input {...register('available_to')} type="date" id="available_to" />
+                </div>
+              </div>
 
-              {selectedImages.length < 8 && (
-                <label onDragOver={(e) => e.preventDefault()} onDrop={onDropImages} className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
-                  <div className="text-center">
-                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <span className="text-sm text-gray-600">Glisser-déposer ou cliquer</span>
-                    <div className="text-xs text-gray-400">PNG, JPG, GIF</div>
-                  </div>
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                  />
+              <div className="p-4 rounded-xl border border-gray-200 bg-white glass mb-4">
+                <label htmlFor="location_hint" className="block text-sm font-medium text-gray-700 mb-1">
+                  Indication de localisation (ex: étage, bâtiment, etc.)
                 </label>
-              )}
+                <Input {...register('location_hint')} id="location_hint" />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+                  <label htmlFor="latitude" className="block text-sm font-medium text-gray-700 mb-1">
+                    Latitude
+                  </label>
+                  <Input {...register('latitude')} type="number" step="any" id="latitude" />
+                </div>
+                <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+                  <label htmlFor="longitude" className="block text-sm font-medium text-gray-700 mb-1">
+                    Longitude
+                  </label>
+                  <Input {...register('longitude')} type="number" step="any" id="longitude" />
+                </div>
+                <div className="flex items-end p-4 rounded-xl border border-gray-200 bg-white glass">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full border border-gray-300"
+                    onClick={() => {
+                      if (!navigator.geolocation) {
+                        console.warn('Geolocation non supportée');
+                        return;
+                      }
+                      setIsLocating(true);
+                      navigator.geolocation.getCurrentPosition((pos) => {
+                        const lat = pos.coords.latitude;
+                        const lng = pos.coords.longitude;
+                        setValue('latitude', lat as unknown as number, { shouldValidate: true, shouldDirty: true });
+                        setValue('longitude', lng as unknown as number, { shouldValidate: true, shouldDirty: true });
+
+                        fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`, {
+                          headers: { 'Accept-Language': 'fr' },
+                        })
+                          .then((r) => r.json())
+                          .then((json) => {
+                            const display = json?.display_name as string | undefined;
+                            if (display) {
+                              setValue('location_hint', display, { shouldValidate: true, shouldDirty: true });
+                            }
+                          })
+                          .catch((e) => console.warn('Reverse geocoding failed', e))
+                          .finally(() => setIsLocating(false));
+                      }, (err) => {
+                        console.warn('Geolocation error', err);
+                        setIsLocating(false);
+                      }, { enableHighAccuracy: true, timeout: 10000 });
+                    }}
+                  >
+                    {isLocating ? 'Localisation…' : 'Utiliser ma position'}
+                  </Button>
+                </div>
+              </div>
             </div>
-            {imagesError && <p className="text-xs text-red-600">{imagesError}</p>}
-          </Card>
+          </>
         )}
+
         
 
 
+
+        {/* Step 4: Récapitulatif et validation finale */}
+        {step === 4 && (
+          <>
+            <Card className="p-6 glass-strong">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+                Récapitulatif de votre annonce
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Aperçu des photos */}
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Photos ({selectedImages.length})</h4>
+                  {selectedImages.length > 0 ? (
+                    <div className="grid grid-cols-3 gap-2">
+                      {imagePreviews.slice(0, 6).map((preview, index) => (
+                        <img
+                          key={index}
+                    src={preview}
+                    alt={`Aperçu ${index + 1}`}
+                          className="aspect-square object-cover rounded-lg border border-gray-200"
+                        />
+                      ))}
+                      {selectedImages.length > 6 && (
+                        <div className="aspect-square bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center text-sm text-gray-600">
+                          +{selectedImages.length - 6}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">Aucune photo ajoutée</p>
+                  )}
+                </div>
+                
+                {/* Informations principales */}
+                <div className="space-y-3">
+                  <div>
+                    <h4 className="font-medium text-gray-900">Titre</h4>
+                    <p className="text-sm text-gray-700">{watch('title') || 'Non renseigné'}</p>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900">Catégorie</h4>
+                    <p className="text-sm text-gray-700">
+                      {watch('category') ? categories.find(c => c.value === watch('category'))?.label : 'Non renseignée'}
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900">État</h4>
+                    <p className="text-sm text-gray-700 capitalize">
+                      {watch('condition') ? conditions.find(c => c.value === watch('condition'))?.label : 'Non renseigné'}
+                    </p>
+                  </div>
+                  {watch('estimated_value') && (
+                    <div>
+                      <h4 className="font-medium text-gray-900">Valeur estimée</h4>
+                      <p className="text-sm text-gray-700">
+                        {Number(watch('estimated_value')).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {aiAnalysisApplied && (
+                <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-purple-600" />
+                    <span className="text-sm text-purple-800 font-medium">
+                      Cette annonce a été enrichie par l'analyse IA
+                    </span>
+                  </div>
+                </div>
+              )}
+          </Card>
+          </>
+        )}
 
         {/* Navigation */}
         <div className="flex flex-col gap-3 sm:flex-row sm:space-x-4">
@@ -587,9 +740,11 @@ const CreateItemPage: React.FC = () => {
             <Button type="button" variant="ghost" onClick={() => navigate(-1)} className="flex-1 border border-gray-300">Annuler</Button>
           )}
           {step < TOTAL_STEPS ? (
-            <Button type="button" onClick={goNext} className="flex-1">Suivant</Button>
+            <Button type="button" onClick={goNext} className="flex-1">
+              Suivant ({step}/{TOTAL_STEPS})
+            </Button>
           ) : (
-            <Button type="submit" disabled={createItem.isPending || selectedImages.length === 0} className="flex-1 disabled:opacity-50">
+            <Button type="submit" disabled={createItem.isPending} className="flex-1 disabled:opacity-50">
               {createItem.isPending ? 'Création...' : "Créer l'objet"}
             </Button>
           )}
