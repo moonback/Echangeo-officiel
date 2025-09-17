@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { MapPin, User, Star } from 'lucide-react';
 import type { Item } from '../types';
 import { getCategoryIcon, getCategoryLabel } from '../utils/categories';
+import { getOfferTypeIcon, getOfferTypeLabel } from '../utils/offerTypes';
 import Card from './ui/Card';
 import Badge from './ui/Badge';
 
@@ -15,6 +16,7 @@ interface ItemCardProps {
 
 const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation }) => {
   const CategoryIcon = getCategoryIcon(item.category);
+  const OfferTypeIcon = getOfferTypeIcon(item.offer_type);
   const distanceKm = React.useMemo(() => {
     if (!userLocation || item.latitude === undefined || item.longitude === undefined) return null;
     const toRad = (v: number) => (v * Math.PI) / 180;
@@ -61,6 +63,20 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation 
               </Badge>
             </div>
             
+            {/* Offer Type Badge */}
+            <div className="absolute top-3 left-3 mt-8">
+              <Badge 
+                className={`shadow-lg border border-white/20 ${
+                  item.offer_type === 'trade' 
+                    ? 'bg-orange-100/95 text-orange-700' 
+                    : 'bg-blue-100/95 text-blue-700'
+                } backdrop-blur-sm`}
+              >
+                <OfferTypeIcon className="w-3 h-3 mr-1.5" />
+                {getOfferTypeLabel(item.offer_type)}
+              </Badge>
+            </div>
+            
             {/* Availability Status */}
             {!item.is_available && (
               <div className="absolute top-3 right-3">
@@ -87,6 +103,13 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation 
             
             {item.description && (
               <p className="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">{item.description}</p>
+            )}
+            
+            {item.offer_type === 'trade' && item.desired_items && (
+              <div className="mb-4 p-3 bg-orange-50 rounded-lg border-l-4 border-orange-200">
+                <p className="text-xs font-medium text-orange-700 mb-1">Recherche en échange :</p>
+                <p className="text-sm text-orange-600 line-clamp-2">{item.desired_items}</p>
+              </div>
             )}
             
             {/* Footer */}

@@ -14,6 +14,7 @@ import { useItem, useUpdateItem } from '../hooks/useItems';
 import { useUpsertItemRating } from '../hooks/useRatings';
 import { useCreateRequest, useRequests } from '../hooks/useRequests';
 import { getCategoryIcon, getCategoryLabel } from '../utils/categories';
+import { getOfferTypeIcon, getOfferTypeLabel } from '../utils/offerTypes';
 import { useAuthStore } from '../store/authStore';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
@@ -65,6 +66,7 @@ const ItemDetailPage: React.FC = () => {
   }
 
   const CategoryIcon = getCategoryIcon(item.category);
+  const OfferTypeIcon = getOfferTypeIcon(item.offer_type);
   const isOwner = user?.id === item.owner_id;
 
   const handleRequestSubmit = async (e: React.FormEvent) => {
@@ -167,7 +169,19 @@ const ItemDetailPage: React.FC = () => {
         >
           {/* Category & Status */}
           <div className="flex items-center justify-between">
-            <Badge variant="info"><CategoryIcon className="w-4 h-4 mr-2 inline" />{getCategoryLabel(item.category)}</Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant="info"><CategoryIcon className="w-4 h-4 mr-2 inline" />{getCategoryLabel(item.category)}</Badge>
+              <Badge 
+                className={`${
+                  item.offer_type === 'trade' 
+                    ? 'bg-orange-100 text-orange-700 border-orange-200' 
+                    : 'bg-blue-100 text-blue-700 border-blue-200'
+                }`}
+              >
+                <OfferTypeIcon className="w-4 h-4 mr-2 inline" />
+                {getOfferTypeLabel(item.offer_type)}
+              </Badge>
+            </div>
             <Badge variant={item.is_available ? 'success' : 'danger'}>
               {item.is_available ? 'Disponible' : 'Non disponible'}
             </Badge>
@@ -184,7 +198,17 @@ const ItemDetailPage: React.FC = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">{item.title}</h1>
             {item.description && (
-              <p className="text-gray-600 leading-relaxed">{item.description}</p>
+              <p className="text-gray-600 leading-relaxed mb-4">{item.description}</p>
+            )}
+            
+            {item.offer_type === 'trade' && item.desired_items && (
+              <div className="p-4 bg-orange-50 rounded-lg border-l-4 border-orange-300">
+                <h3 className="font-semibold text-orange-800 mb-2 flex items-center">
+                  <OfferTypeIcon className="w-5 h-5 mr-2" />
+                  Recherche en échange :
+                </h3>
+                <p className="text-orange-700 leading-relaxed">{item.desired_items}</p>
+              </div>
             )}
           </div>
 
@@ -307,7 +331,9 @@ const ItemDetailPage: React.FC = () => {
             <div className="space-y-4">
               {!showRequestForm ? (
                 <div className="flex space-x-3">
-                  <Button className="flex-1" onClick={() => setShowRequestForm(true)}>Demander à emprunter</Button>
+                  <Button className="flex-1" onClick={() => setShowRequestForm(true)}>
+                    {item.offer_type === 'trade' ? 'Proposer un échange' : 'Demander à emprunter'}
+                  </Button>
                   <Link
                     to={`/profile/${item.owner_id}`}
                     className="flex items-center px-4 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
@@ -325,13 +351,19 @@ const ItemDetailPage: React.FC = () => {
                       id="message"
                       value={requestMessage}
                       onChange={(e) => setRequestMessage(e.target.value)}
-                      placeholder="Expliquez pourquoi vous souhaitez emprunter cet objet..."
+                      placeholder={
+                        item.offer_type === 'trade' 
+                          ? "Décrivez ce que vous proposez en échange..."
+                          : "Expliquez pourquoi vous souhaitez emprunter cet objet..."
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                       rows={3}
                     />
                   </div>
                   <div className="flex space-x-3">
-                    <Button type="submit" disabled={createRequest.isPending} className="flex-1 disabled:opacity-50">{createRequest.isPending ? 'Envoi...' : 'Envoyer la demande'}</Button>
+                    <Button type="submit" disabled={createRequest.isPending} className="flex-1 disabled:opacity-50">
+                      {createRequest.isPending ? 'Envoi...' : (item.offer_type === 'trade' ? 'Envoyer la proposition' : 'Envoyer la demande')}
+                    </Button>
                     <Button type="button" variant="ghost" className="border border-gray-300" onClick={() => setShowRequestForm(false)}>Annuler</Button>
                   </div>
                 </form>
@@ -430,10 +462,14 @@ const ItemDetailPage: React.FC = () => {
             {!showRequestForm ? (
               <button
                 onClick={() => setShowRequestForm(true)}
-                className="px-6 py-3 rounded-full shadow-soft bg-blue-600 text-white font-medium hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                aria-label="Demander à emprunter"
+                className={`px-6 py-3 rounded-full shadow-soft text-white font-medium focus-visible:outline-none focus-visible:ring-2 ${
+                  item.offer_type === 'trade' 
+                    ? 'bg-orange-600 hover:bg-orange-700 focus-visible:ring-orange-500' 
+                    : 'bg-blue-600 hover:bg-blue-700 focus-visible:ring-blue-500'
+                }`}
+                aria-label={item.offer_type === 'trade' ? 'Proposer un échange' : 'Demander à emprunter'}
               >
-                Demander à emprunter
+                {item.offer_type === 'trade' ? 'Proposer un échange' : 'Demander à emprunter'}
               </button>
             ) : null}
           </div>

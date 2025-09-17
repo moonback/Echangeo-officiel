@@ -6,7 +6,8 @@ import {
   ChefHat, 
   Flower2, 
   Gamepad2,
-  Package
+  Package,
+  Users
 } from 'lucide-react';
 import type { ItemCategory } from '../types';
 
@@ -19,6 +20,7 @@ export function getCategoryIcon(category: ItemCategory) {
     kitchen: ChefHat,
     garden: Flower2,
     toys: Gamepad2,
+    services: Users,
     other: Package,
   };
   
@@ -34,6 +36,7 @@ export function getCategoryLabel(category: ItemCategory) {
     kitchen: 'Cuisine',
     garden: 'Jardin',
     toys: 'Jouets',
+    services: 'Services',
     other: 'Autre',
   };
   
@@ -48,5 +51,6 @@ export const categories: { value: ItemCategory; label: string }[] = [
   { value: 'kitchen', label: 'Cuisine' },
   { value: 'garden', label: 'Jardin' },
   { value: 'toys', label: 'Jouets' },
+  { value: 'services', label: 'Services' },
   { value: 'other', label: 'Autre' },
 ];

@@ -19,6 +19,8 @@ export interface Item {
   description?: string;
   category: ItemCategory;
   condition: ItemCondition;
+  offer_type: OfferType;
+  desired_items?: string;
   brand?: string;
   model?: string;
   estimated_value?: number;
@@ -87,9 +89,12 @@ export type ItemCategory =
   | 'kitchen' 
   | 'garden' 
   | 'toys' 
+  | 'services'
   | 'other';
 
 export type ItemCondition = 'excellent' | 'good' | 'fair' | 'poor';
+
+export type OfferType = 'loan' | 'trade';
 
 export type RequestStatus = 'pending' | 'approved' | 'rejected' | 'completed';
 

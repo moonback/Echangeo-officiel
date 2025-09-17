@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../services/supabase';
-import type { Item, ItemCategory } from '../types';
+import type { Item, ItemCategory, OfferType } from '../types';
 
 export function useItems(filters?: {
   category?: ItemCategory;
@@ -157,6 +157,8 @@ export function useCreateItem() {
       description?: string;
       category: ItemCategory;
       condition: string;
+      offer_type: OfferType;
+      desired_items?: string;
       brand?: string;
       model?: string;
       estimated_value?: number;
@@ -180,6 +182,8 @@ export function useCreateItem() {
           description: data.description,
           category: data.category,
           condition: data.condition,
+          offer_type: data.offer_type,
+          desired_items: data.desired_items || null,
           owner_id: user.data.user.id,
           brand: data.brand || null,
           model: data.model || null,

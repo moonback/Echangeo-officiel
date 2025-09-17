@@ -279,7 +279,7 @@ const MyProfilePage: React.FC = () => {
                     );
                   })()}
                 </div>
-              </div>
+              </motion.div>
             </div>
             <div className="flex items-center gap-2 self-end md:self-auto">
               {!isEditing ? (
@@ -300,7 +300,7 @@ const MyProfilePage: React.FC = () => {
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       </motion.div>
 
       {/* Enhanced Tabs */}
