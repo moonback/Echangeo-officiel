@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useProfile, useItemsByOwner, useBorrowHistory, useLendHistory } from '../hooks/useProfiles';
+import { supabase } from '../services/supabase';
 import { Star, MapPin, Package, MessageCircle } from 'lucide-react';
 import Card from '../components/ui/Card';
 import EmptyState from '../components/EmptyState';
@@ -14,6 +15,35 @@ const ProfilePage: React.FC = () => {
   const { data: items } = useItemsByOwner(id);
   const { data: borrows } = useBorrowHistory(id);
   const { data: lends } = useLendHistory(id);
+
+  const [itemsLimit, setItemsLimit] = React.useState(6);
+  const [ratingStats, setRatingStats] = React.useState<{ average?: number; count?: number }>({});
+
+  React.useEffect(() => {
+    const loadRatingStats = async () => {
+      if (!id) return;
+      // Aggregate ratings across items owned by this profile via view and join; fail-soft if not available
+      const { data, error } = await supabase
+        .from('item_rating_stats')
+        .select('average_rating, ratings_count, items!inner(owner_id)')
+        .eq('items.owner_id', id);
+      if (error || !data) {
+        setRatingStats({});
+        return;
+      }
+      let totalReviews = 0;
+      let weightedSum = 0;
+      for (const row of data as any[]) {
+        const count = Number(row.ratings_count ?? 0);
+        const avg = Number(row.average_rating ?? 0);
+        totalReviews += count;
+        weightedSum += avg * count;
+      }
+      const average = totalReviews > 0 ? weightedSum / totalReviews : undefined;
+      setRatingStats({ average, count: totalReviews });
+    };
+    loadRatingStats();
+  }, [id]);
 
   return (
     <div className="p-4 max-w-5xl mx-auto">
@@ -50,6 +80,9 @@ const ProfilePage: React.FC = () => {
                       <div className="mt-3 flex items-center gap-2 flex-wrap">
                         <Badge variant="info" className="px-3 py-1"><Package className="w-3 h-3 mr-1" /> {(profile as any).items_count ?? 0} objets</Badge>
                         <Badge variant="success" className="px-3 py-1">{(profile as any).completed_borrows ?? 0} emprunts</Badge>
+                        {ratingStats.count ? (
+                          <Badge variant="warning" className="px-3 py-1"><Star className="w-3 h-3 mr-1 text-yellow-600" /> {ratingStats.average?.toFixed(1)} ({ratingStats.count})</Badge>
+                        ) : null}
                       </div>
                     </div>
                     {id && (
@@ -69,7 +102,7 @@ const ProfilePage: React.FC = () => {
               <div className="p-4 border-b border-gray-100 font-medium">Objets publiés</div>
               {items && items.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4">
-                  {items.map((it) => (
+                  {items.slice(0, itemsLimit).map((it) => (
                     <Card key={it.id} className="p-4">
                       <div className="flex items-start justify-between">
                         <div className="min-w-0 pr-3">
@@ -82,6 +115,11 @@ const ProfilePage: React.FC = () => {
                       </div>
                     </Card>
                   ))}
+                  {items && items.length > itemsLimit && (
+                    <div className="col-span-full flex justify-center pt-2">
+                      <Button variant="ghost" className="border border-gray-300" onClick={() => setItemsLimit((n) => n + 6)}>Voir plus</Button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="p-6"><EmptyState title="Aucun objet" description="Cet utilisateur n'a pas encore publié d'objet." /></div>
