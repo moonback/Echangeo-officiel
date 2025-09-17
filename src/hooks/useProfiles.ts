@@ -102,7 +102,7 @@ export function useLendHistory(userId?: string) {
       const { data, error } = await supabase
         .from('requests')
         .select(`*, item:items!inner(*), requester:profiles(*)`)
-        .eq('items.owner_id', userId)
+        .eq('item.owner_id', userId)
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data as any[];

@@ -30,9 +30,9 @@ const ItemDetailPage: React.FC = () => {
   const [showRatingForm, setShowRatingForm] = useState(false);
   const [ratingScore, setRatingScore] = useState<number>(5);
   const [ratingComment, setRatingComment] = useState<string>('');
-  const hasCompletedBorrow = !!allRequests?.some(
+  const hasCompletedBorrow = !!(item && allRequests?.some(
     (r) => r.requester_id === user?.id && r.item_id === item.id && r.status === 'completed'
-  );
+  ));
 
   if (isLoading) {
     return (
