@@ -46,7 +46,7 @@ const HelpPage: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8"
+        className="bg-blue-50/70 border border-blue-200 rounded-xl p-6 mb-8 glass"
       >
         <div className="flex items-center mb-4">
           <Package className="w-8 h-8 text-blue-600 mr-3" />
@@ -73,7 +73,7 @@ const HelpPage: React.FC = () => {
         
         <div className="space-y-4">
           {faqs.map((faq, index) => (
-            <div key={index} className="bg-white rounded-xl p-6 border border-gray-200">
+            <div key={index} className="bg-white rounded-xl p-6 border border-gray-200 glass">
               <div className="flex items-start space-x-4">
                 <div className="p-2 bg-gray-100 rounded-lg">
                   <faq.icon className="w-5 h-5 text-gray-600" />
@@ -97,7 +97,7 @@ const HelpPage: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="mt-8 bg-white rounded-xl p-6 border border-gray-200 text-center"
+        className="mt-8 bg-white rounded-xl p-6 border border-gray-200 text-center glass"
       >
         <HelpCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
         <h3 className="text-lg font-semibold text-gray-900 mb-2">

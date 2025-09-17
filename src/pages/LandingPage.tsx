@@ -39,10 +39,10 @@ const LandingPage: React.FC = () => {
             </div>
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6 }} className="relative">
               <div className="absolute -inset-6 bg-brand-100/40 blur-3xl rounded-full" />
-              <Card className="relative p-6">
+              <Card className="relative p-6 glass">
                 <div className="grid grid-cols-2 gap-3">
                   {[...Array(6)].map((_, i) => (
-                    <div key={i} className="h-24 rounded-xl bg-gradient-to-br from-white to-brand-50 border border-brand-100" />
+                    <div key={i} className="h-24 rounded-xl bg-gradient-to-br from-white/60 to-brand-50/60 border border-brand-100" />
                   ))}
                 </div>
               </Card>
@@ -53,7 +53,7 @@ const LandingPage: React.FC = () => {
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="py-6">
           <div className="grid md:grid-cols-3 gap-4">
             {[{ title: 'Local et responsable', desc: 'Privilégiez le partage de proximité', icon: <Users className="w-5 h-5" /> }, { title: 'Simple et rapide', desc: 'Trouvez en quelques clics', icon: <Search className="w-5 h-5" /> }, { title: 'Sûr et fiable', desc: 'Profils et messagerie intégrés', icon: <Shield className="w-5 h-5" /> }].map(card => (
-              <Card key={card.title} className="p-5">
+              <Card key={card.title} className="p-5 glass">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center">
                     {card.icon}

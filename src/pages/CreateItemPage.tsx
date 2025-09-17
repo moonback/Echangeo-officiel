@@ -281,11 +281,11 @@ const CreateItemPage: React.FC = () => {
         {/* Step 1: Informations */}
         {step === 1 && (
           <>
-            <div>
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
               <Input label="Titre *" placeholder="Ex: Perceuse électrique Bosch" {...register('title')} error={errors.title?.message} />
               <div className="text-xs text-gray-500 mt-1">{(watch('title')?.length || 0)}/100</div>
             </div>
-            <div>
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
               <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
                 Catégorie *
               </label>
@@ -301,7 +301,7 @@ const CreateItemPage: React.FC = () => {
                 <p className="text-red-500 text-xs mt-1">{errors.category.message}</p>
               )}
             </div>
-            <div>
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
               <label htmlFor="condition" className="block text-sm font-medium text-gray-700 mb-1">
                 État *
               </label>
@@ -324,13 +324,13 @@ const CreateItemPage: React.FC = () => {
         {step === 2 && (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
+              <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
                 <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-1">
                   Marque
                 </label>
                 <Input {...register('brand')} id="brand" />
               </div>
-              <div>
+              <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
                 <label htmlFor="model" className="block text-sm font-medium text-gray-700 mb-1">
                   Modèle
                 </label>
@@ -338,14 +338,14 @@ const CreateItemPage: React.FC = () => {
               </div>
             </div>
 
-            <div>
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
               <label htmlFor="estimated_value" className="block text-sm font-medium text-gray-700 mb-1">
                 Valeur estimée (€)
               </label>
               <Input {...register('estimated_value')} type="number" step="0.01" min="0" id="estimated_value" />
             </div>
 
-            <div>
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
               <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-1">
                 Tags (séparés par des virgules)
               </label>
@@ -382,7 +382,7 @@ const CreateItemPage: React.FC = () => {
               )}
             </div>
 
-            <div>
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
                 Description
               </label>
@@ -396,13 +396,13 @@ const CreateItemPage: React.FC = () => {
         {step === 3 && (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
+              <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
                 <label htmlFor="available_from" className="block text-sm font-medium text-gray-700 mb-1">
                   Disponible à partir du
                 </label>
                 <Input {...register('available_from')} type="date" id="available_from" />
               </div>
-              <div>
+              <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
                 <label htmlFor="available_to" className="block text-sm font-medium text-gray-700 mb-1">
                   Disponible jusqu'au
                 </label>
@@ -410,7 +410,7 @@ const CreateItemPage: React.FC = () => {
               </div>
             </div>
 
-            <div>
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
               <label htmlFor="location_hint" className="block text-sm font-medium text-gray-700 mb-1">
                 Indication de localisation (ex: étage, bâtiment, etc.)
               </label>
@@ -418,19 +418,19 @@ const CreateItemPage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
+              <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
                 <label htmlFor="latitude" className="block text-sm font-medium text-gray-700 mb-1">
                   Latitude
                 </label>
                 <Input {...register('latitude')} type="number" step="any" id="latitude" />
               </div>
-              <div>
+              <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
                 <label htmlFor="longitude" className="block text-sm font-medium text-gray-700 mb-1">
                   Longitude
                 </label>
                 <Input {...register('longitude')} type="number" step="any" id="longitude" />
               </div>
-              <div className="flex items-end">
+              <div className="flex items-end p-4 rounded-xl border border-gray-200 bg-white glass">
                 <Button
                   type="button"
                   variant="ghost"

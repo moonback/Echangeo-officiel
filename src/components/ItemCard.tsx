@@ -29,7 +29,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation 
   return (
     <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} className={className}>
       <Link to={`/items/${item.id}`}>
-        <Card className="relative overflow-hidden p-0">
+        <Card className="relative overflow-hidden p-0 transition-transform hover:scale-[1.01]">
           <div className="bg-gray-100" style={{ aspectRatio: '4 / 3' }}>
           {item.images && item.images.length > 0 ? (
             <img
