@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { MapPin, User, Star } from 'lucide-react';
 import type { Item } from '../types';
 import { getCategoryIcon, getCategoryLabel } from '../utils/categories';
+import Card from './ui/Card';
+import Badge from './ui/Badge';
 
 interface ItemCardProps {
   item: Item;
@@ -25,13 +27,10 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation 
   }, [userLocation, item.latitude, item.longitude]);
   
   return (
-    <motion.div
-      whileHover={{ y: -2 }}
-      whileTap={{ scale: 0.98 }}
-      className={`bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden ${className}`}
-    >
+    <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} className={className}>
       <Link to={`/items/${item.id}`}>
-        <div className="bg-gray-100 relative overflow-hidden" style={{ aspectRatio: '4 / 3' }}>
+        <Card className="relative overflow-hidden p-0">
+          <div className="bg-gray-100" style={{ aspectRatio: '4 / 3' }}>
           {item.images && item.images.length > 0 ? (
             <img
               src={item.images[0].url}
@@ -45,20 +44,18 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation 
             </div>
           )}
           <div className="absolute top-2 left-2">
-            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/90 text-gray-700 shadow">
+            <Badge className="bg-white/90 text-gray-700">
               <CategoryIcon className="w-3 h-3 mr-1" />
               {getCategoryLabel(item.category)}
-            </span>
+            </Badge>
           </div>
           {!item.is_available && (
             <div className="absolute top-2 right-2">
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 shadow">
-                Indisponible
-              </span>
+              <Badge variant="danger">Indisponible</Badge>
             </div>
           )}
-        </div>
-        
+          </div>
+
         <div className="p-4">
           <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{item.title}</h3>
           {typeof item.average_rating === 'number' && item.ratings_count ? (
@@ -84,6 +81,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation 
             </div>
           </div>
         </div>
+        </Card>
       </Link>
     </motion.div>
   );
