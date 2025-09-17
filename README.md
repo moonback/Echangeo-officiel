@@ -1,108 +1,270 @@
-## 🏠 TrocAll – Prêt et troc d’objets entre voisins
+# TrocAll 🛠️
 
-Application web mobile-first pour prêter, emprunter et échanger des objets entre voisins. Réduisez la surconsommation, économisez de l’argent et créez du lien local.
+**Une plateforme communautaire de prêt et d'échange d'objets entre voisins, permettant de partager des ressources localement tout en renforçant les liens de quartier.**
 
-## ⚙️ Stack technique
-- **Frontend**: React 18, TypeScript, Vite, React Router v6
-- **State/Server**: Zustand (auth), TanStack Query (server-state)
-- **UI/Design**: Tailwind CSS (thème custom), Framer Motion, Lucide React
-- **Formulaires**: React Hook Form + Zod
-- **Backend**: Supabase (Auth, Postgres, Storage, Policies)
-- **Tests**: Vitest, React Testing Library
+TrocAll facilite le prêt, l'emprunt et l'échange d'objets du quotidien (outils, livres, équipements sportifs, etc.) entre voisins, avec un système de réputation et de géolocalisation pour créer une économie collaborative de proximité.
 
-## ✨ Fonctionnalités (MVP actuel)
-- 🔐 Auth: inscription (avec confirmation email), connexion, déconnexion
-- 👤 Profils: affichage, mise à jour basique
-- 📦 Objets: création avec images (Storage), géolocalisation, informations détaillées (marque, modèle, tags, valeur, disponibilité)
-- 🗺️ Localisation: auto-remplissage d’adresse via reverse-geocoding (Nominatim), coordonnées lat/lng
-- 🔎 Filtres avancés: catégorie, état, marque, tags, valeur min/max, période, avec photos, disponibilité
-- 📋 Demandes de prêt: création, suivi, changement de statut; vue combinée (demandeur/propriétaire)
-- 💬 Messagerie basique (non temps réel)
-- ⭐ Avis: note moyenne et nombre d’avis par objet (agrégations)
-- 📱 UI responsive avec thème affiné (typographie compacte, composants utilitaires)
-- 🔧 Propriétaire: modification, désactivation/réactivation, suppression d’un objet
+## 🚀 Stack Technique
 
-## ⚠️ Sécurité & déploiement
-- En dev, RLS peut être assouplie. En prod, activer RLS et écrire des policies strictes (voir `DB_SCHEMA.md`).
-- Supabase Storage: créer le bucket `items` et définir des policies (lecture publique, écriture authentifiée, ou par dossier utilisateur).
+### Frontend
+- **React 18** avec TypeScript
+- **Vite** pour le build et le dev server
+- **Tailwind CSS** pour le styling
+- **Framer Motion** pour les animations
+- **React Router** pour la navigation
+- **React Hook Form** + **Zod** pour les formulaires
+- **TanStack Query** pour la gestion d'état serveur
+- **Zustand** pour l'état global client
+- **Lucide React** pour les icônes
 
-## 📦 Prérequis
-- Node.js 18+ et npm
-- Compte Supabase (projet actif)
-- (Optionnel) Supabase CLI pour automatiser les migrations
+### Backend & Base de données
+- **Supabase** (PostgreSQL + Auth + Storage + Realtime)
+- **PostgreSQL** avec extensions UUID
+- **Row Level Security** (RLS) désactivé en MVP
 
-## 🚀 Installation & Configuration
-1) Cloner et installer
+### Outils de développement
+- **ESLint** + **TypeScript** pour la qualité du code
+- **Vitest** + **Testing Library** pour les tests
+- **Mapbox GL** pour la géolocalisation
+
+## ✨ Fonctionnalités Principales (MVP)
+
+### 🔐 Authentification & Profils
+- Inscription/Connexion sécurisée
+- Profils utilisateurs complets (nom, bio, localisation, avatar)
+- Géolocalisation automatique
+- Système de badges et de réputation
+
+### 📦 Gestion d'Objets
+- Publication d'objets avec photos, descriptions, catégories
+- 8 catégories : Outils, Électronique, Livres, Sports, Cuisine, Jardin, Jouets, Autre
+- Système de condition (excellent, bon, correct, mauvais)
+- Géolocalisation des objets
+- Gestion de la disponibilité
+
+### 🤝 Système d'Échanges
+- **Prêts** : Demande d'emprunt d'objets
+- **Troc** : Échange d'objets entre utilisateurs
+- Workflow complet : Demande → Validation → Échange → Retour
+- Messagerie intégrée pour la communication
+- Notifications de statut
+
+### ⭐ Système de Réputation
+- Évaluations mutuelles après chaque transaction
+- 3 critères : Communication, Ponctualité, Soin de l'objet
+- Système de badges automatique (Super Prêteur, Voisin Fiable, etc.)
+- Affichage des scores de confiance sur les profils
+
+### 🗺️ Géolocalisation
+- Carte interactive des objets disponibles
+- Calcul de distance avec les utilisateurs
+- Filtrage par proximité
+
+## 📋 Prérequis
+
+- **Node.js** 18+ 
+- **npm** ou **yarn**
+- **Compte Supabase** (gratuit)
+- **Clé API Mapbox** (gratuite)
+
+## 🛠️ Installation & Configuration
+
+### 1. Cloner le projet
 ```bash
-git clone <VOTRE_REPO>
+git clone <repository-url>
 cd trocall
+```
+
+### 2. Installer les dépendances
+```bash
 npm install
+# ou
+yarn install
 ```
 
-2) Variables d’environnement
-Créez `.env` à la racine:
+### 3. Configuration Supabase
+
+#### Créer un projet Supabase
+1. Aller sur [supabase.com](https://supabase.com)
+2. Créer un nouveau projet
+3. Récupérer l'URL et la clé anonyme
+
+#### Exécuter les migrations
+```bash
+# Installer Supabase CLI
+npm install -g supabase
+
+# Se connecter à votre projet
+supabase link --project-ref <your-project-ref>
+
+# Appliquer les migrations
+supabase db push
+```
+
+### 4. Configuration des variables d'environnement
+
+Créer un fichier `.env.local` :
 ```env
-VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_MAPBOX_TOKEN=your_mapbox_token
 ```
-Supabase Dashboard → Settings → API.
 
-3) Base de données & storage
-- Exécuter les migrations dans l’ordre:
-  - `supabase/migrations/20250916192035_old_bird.sql` (schéma de base)
-  - `supabase/migrations/20250917120000_add_item_fields.sql` (champs items additionnels)
-  - `supabase/migrations/20250917121000_add_item_location.sql` (latitude/longitude)
-  - `supabase/migrations/20250917123000_add_item_ratings.sql` (table des avis)
-- Storage: créer le bucket public `items` (Dashboard → Storage). Ajouter les policies (voir `DB_SCHEMA.md`).
+### 5. Configuration Mapbox (optionnel)
+1. Créer un compte sur [mapbox.com](https://mapbox.com)
+2. Générer un token d'accès public
+3. L'ajouter dans `.env.local`
 
-4) Démarrer en développement
+## 🚀 Lancement du Projet
+
+### Développement
 ```bash
 npm run dev
+# ou
+yarn dev
 ```
-Accéder à `http://localhost:5173`
 
-5) Build & Preview production
+L'application sera disponible sur `http://localhost:5173`
+
+### Build de production
 ```bash
 npm run build
+# ou
+yarn build
+```
+
+### Preview de production
+```bash
 npm run preview
+# ou
+yarn preview
 ```
 
-## 🗂️ Structure du projet
-```
-src/
-├─ components/          # UI (layout, navigation, cartes)
-├─ pages/               # Pages & routing
-├─ hooks/               # Hooks (items, requests, profiles, messages)
-├─ services/            # Clients externes (Supabase)
-├─ store/               # État global (auth via Zustand)
-├─ types/               # Types TypeScript (domaine)
-├─ utils/               # Utilitaires (catégories…)
-└─ test/                # Tests unitaires & rendu
-```
-
-## 🔑 Variables d’environnement
-- `VITE_SUPABASE_URL`: URL du projet Supabase
-- `VITE_SUPABASE_ANON_KEY`: clé anonyme Supabase
-
-## 🧪 Tests
+### Tests
 ```bash
 npm run test
+# ou
+yarn test
+
+# Interface de test
 npm run test:ui
+# ou
+yarn test:ui
 ```
 
-## 🤝 Contribution
-Voir `CONTRIBUTING.md` (style, conventions, branchement, qualité, CI). Les PRs sont bienvenues !
+## 📁 Structure du Projet
 
-## 📚 Documentation
-- `ARCHITECTURE.md`: frontend, backend, DB et flux clefs
-- `API_DOCS.md`: opérations (items, requests, messages, storage…) et exemples
-- `DB_SCHEMA.md`: tables, relations, contraintes et policies
-- `ROADMAP.md`: trajectoire MVP → V1 → +
-- `CONTRIBUTING.md`: contribuer proprement au projet
+```
+src/
+├── components/           # Composants réutilisables
+│   ├── ui/              # Composants UI de base
+│   ├── AuthGuard.tsx    # Protection des routes
+│   ├── BottomNavigation.tsx
+│   ├── ItemCard.tsx     # Carte d'objet
+│   ├── MapboxMap.tsx    # Carte interactive
+│   ├── Shell.tsx        # Layout principal
+│   └── Topbar.tsx       # Barre de navigation
+├── hooks/               # Hooks personnalisés
+│   ├── useItems.ts      # Gestion des objets
+│   ├── useProfiles.ts   # Gestion des profils
+│   ├── useRequests.ts   # Gestion des demandes
+│   ├── useRatings.ts    # Système d'évaluation
+│   └── useMediaQuery.ts # Responsive design
+├── pages/               # Pages de l'application
+│   ├── HomePage.tsx     # Page d'accueil
+│   ├── ItemsPage.tsx    # Liste des objets
+│   ├── ItemDetailPage.tsx
+│   ├── CreateItemPage.tsx
+│   ├── RequestsPage.tsx # Gestion des échanges
+│   ├── ProfilePage.tsx  # Profil utilisateur
+│   ├── MyProfilePage.tsx
+│   ├── ChatPage.tsx     # Messagerie
+│   └── ...
+├── services/            # Services externes
+│   └── supabase.ts      # Configuration Supabase
+├── store/               # État global
+│   └── authStore.ts     # Store d'authentification
+├── types/               # Types TypeScript
+│   ├── index.ts         # Types principaux
+│   └── database.ts      # Types Supabase
+├── utils/               # Utilitaires
+│   └── categories.ts    # Catégories d'objets
+└── test/                # Tests
+    ├── setup.ts
+    └── *.test.tsx
+```
+
+## 🔧 Variables d'Environnement
+
+| Variable | Description | Requis |
+|----------|-------------|--------|
+| `VITE_SUPABASE_URL` | URL de votre projet Supabase | ✅ |
+| `VITE_SUPABASE_ANON_KEY` | Clé anonyme Supabase | ✅ |
+| `VITE_MAPBOX_TOKEN` | Token d'accès Mapbox | ❌ |
+
+## 🗄️ Base de Données
+
+### Tables principales
+- **profiles** : Profils utilisateurs
+- **items** : Objets à prêter/échanger
+- **item_images** : Images des objets
+- **requests** : Demandes d'emprunt
+- **messages** : Messagerie
+- **item_ratings** : Évaluations d'objets
+- **user_ratings** : Évaluations mutuelles
+
+### Vues
+- **profile_reputation_stats** : Statistiques de réputation
+- **profile_activity_counts** : Compteurs d'activité
+- **profile_badges** : Badges automatiques
+- **item_rating_stats** : Statistiques d'objets
+
+## 🧪 Tests
+
+Le projet utilise **Vitest** et **Testing Library** :
+
+```bash
+# Tests unitaires
+npm run test
+
+# Tests avec interface graphique
+npm run test:ui
+
+# Tests en mode watch
+npm run test -- --watch
+```
+
+## 📦 Déploiement
+
+### Netlify (recommandé)
+1. Connecter le repository GitHub
+2. Build command : `npm run build`
+3. Publish directory : `dist`
+4. Variables d'environnement : Ajouter les variables Supabase
+
+### Vercel
+1. Importer le projet
+2. Variables d'environnement : Configurer Supabase
+3. Build automatique
+
+## 🤝 Contribution
+
+Voir [CONTRIBUTING.md](./CONTRIBUTING.md) pour les guidelines de contribution.
 
 ## 📄 Licence
-MIT — voir `LICENSE`.
+
+MIT License - Voir [LICENSE](./LICENSE) pour plus de détails.
+
+## 🆘 Support
+
+- **Documentation** : Voir les fichiers dans `/docs`
+- **Issues** : Utiliser GitHub Issues
+- **Discussions** : GitHub Discussions
+
+## 🗺️ Roadmap
+
+Voir [ROADMAP.md](./ROADMAP.md) pour les fonctionnalités à venir.
 
 ---
 
-TrocAll – Partageons plus, consommons mieux. 🌱
+**TrocAll** - *Partageons localement, vivons mieux ensemble* 🌱
