@@ -125,3 +125,133 @@ export interface ProfileBadgeRow {
   badge_slug: string;
   badge_label: string;
 }
+
+// ===== COMMUNITIES TYPES =====
+
+export interface Community {
+  id: string;
+  name: string;
+  description?: string;
+  city: string;
+  postal_code?: string;
+  country: string;
+  center_latitude?: number;
+  center_longitude?: number;
+  radius_km: number;
+  is_active: boolean;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+  // Relations
+  stats?: CommunityStats;
+  members?: CommunityMember[];
+  events?: CommunityEvent[];
+  discussions?: CommunityDiscussion[];
+}
+
+export interface CommunityMember {
+  id: string;
+  community_id: string;
+  user_id: string;
+  role: CommunityRole;
+  joined_at: string;
+  is_active: boolean;
+  // Relations
+  user?: Profile;
+  community?: Community;
+}
+
+export interface CommunityEvent {
+  id: string;
+  community_id: string;
+  title: string;
+  description?: string;
+  event_type: EventType;
+  location?: string;
+  latitude?: number;
+  longitude?: number;
+  start_date: string;
+  end_date?: string;
+  max_participants?: number;
+  created_by?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  // Relations
+  community?: Community;
+  creator?: Profile;
+  participants?: EventParticipant[];
+}
+
+export interface EventParticipant {
+  id: string;
+  event_id: string;
+  user_id: string;
+  status: ParticipantStatus;
+  registered_at: string;
+  // Relations
+  user?: Profile;
+  event?: CommunityEvent;
+}
+
+export interface CommunityDiscussion {
+  id: string;
+  community_id: string;
+  title: string;
+  content?: string;
+  author_id?: string;
+  category: DiscussionCategory;
+  is_pinned: boolean;
+  is_locked: boolean;
+  created_at: string;
+  updated_at: string;
+  // Relations
+  community?: Community;
+  author?: Profile;
+  replies?: DiscussionReply[];
+}
+
+export interface DiscussionReply {
+  id: string;
+  discussion_id: string;
+  author_id?: string;
+  content: string;
+  parent_reply_id?: string;
+  created_at: string;
+  updated_at: string;
+  // Relations
+  discussion?: CommunityDiscussion;
+  author?: Profile;
+  parent_reply?: DiscussionReply;
+  replies?: DiscussionReply[];
+}
+
+export interface CommunityStats {
+  id: string;
+  community_id: string;
+  total_members: number;
+  active_members: number;
+  total_items: number;
+  total_exchanges: number;
+  total_events: number;
+  last_activity?: string;
+  calculated_at: string;
+}
+
+// Enums
+export type CommunityRole = 'member' | 'moderator' | 'admin';
+export type EventType = 'meetup' | 'swap' | 'workshop' | 'social' | 'other';
+export type ParticipantStatus = 'registered' | 'confirmed' | 'cancelled';
+export type DiscussionCategory = 'general' | 'items' | 'events' | 'help' | 'announcements';
+
+// Types utilitaires
+export interface NearbyCommunity {
+  community_id: string;
+  community_name: string;
+  distance_km: number;
+  member_count: number;
+}
+
+export interface CommunityOverview extends Community {
+  activity_level: 'active' | 'moderate' | 'inactive';
+}

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { User, Edit3, Save, X, CheckCircle, Clock, XCircle, ArrowRight, Mail, Phone, MapPin, Shield, Star, Calendar, Trophy, Award } from 'lucide-react';
+import { User, Edit3, Save, X, CheckCircle, Clock, XCircle, ArrowRight, Mail, Phone, MapPin, Shield, Star, Calendar, Trophy, Award, Users } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useTransactions } from '../hooks/useProfiles';
 import { useGamificationStats, useUserLevel, useUserBadges } from '../hooks/useGamification';
@@ -13,6 +13,7 @@ import TextArea from '../components/ui/TextArea';
 import Card from '../components/ui/Card';
 import EmptyState from '../components/EmptyState';
 import ReputationDisplay from '../components/ReputationDisplay';
+import UserCommunities from '../components/UserCommunities';
 import { supabase } from '../services/supabase';
 
 const profileSchema = z.object({
@@ -37,7 +38,7 @@ const MyProfilePage: React.FC = () => {
   const { data: userBadges } = useUserBadges();
   const [avatarUploading, setAvatarUploading] = useState(false);
   const { data: transactions } = useTransactions(profile?.id);
-  const [activeTab, setActiveTab] = useState<'profil' | 'gamification' | 'transactions' | 'parametres'>('profil');
+  const [activeTab, setActiveTab] = useState<'profil' | 'gamification' | 'transactions' | 'communities' | 'parametres'>('profil');
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const [itemsCount, setItemsCount] = useState<number>(0);
   const [completedBorrows, setCompletedBorrows] = useState<number>(0);
@@ -322,6 +323,7 @@ const MyProfilePage: React.FC = () => {
             { id: 'profil', label: 'Profil', icon: User },
             { id: 'gamification', label: 'Gamification', icon: Trophy },
             { id: 'transactions', label: 'Transactions', icon: Calendar },
+            { id: 'communities', label: 'Quartiers', icon: Users },
             { id: 'parametres', label: 'Paramètres', icon: Shield },
           ].map((tab: any) => (
             <motion.button
@@ -535,6 +537,13 @@ const MyProfilePage: React.FC = () => {
               )}
             </ul>
           </Card>
+        </motion.div>
+      )}
+
+      {/* Tab content: Quartiers */}
+      {activeTab === 'communities' && (
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+          <UserCommunities userId={profile?.id || ''} />
         </motion.div>
       )}
 

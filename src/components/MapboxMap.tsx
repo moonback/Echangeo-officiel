@@ -24,7 +24,7 @@ interface MapboxMapProps {
 }
 
 const MapboxMap: React.FC<MapboxMapProps> = ({
-  accessToken = import.meta.env.VITE_MAPBOX_TOKEN,
+  accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || import.meta.env.VITE_MAPBOX_TOKEN,
   center,
   zoom = 11,
   height = 360,
@@ -36,277 +36,187 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
 }) => {
   const mapContainerRef = React.useRef<HTMLDivElement | null>(null);
   const mapRef = React.useRef<mapboxgl.Map | null>(null);
-  const hoverPopupRef = React.useRef<mapboxgl.Popup | null>(null);
-  const userMarkerRef = React.useRef<mapboxgl.Marker | null>(null);
+  const markersRef = React.useRef<mapboxgl.Marker[]>([]);
 
   React.useEffect(() => {
-    if (!accessToken) return; // Do not init without token
-    if (!mapContainerRef.current) return;
-
-    mapboxgl.accessToken = accessToken as string;
-    const map = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style: 'mapbox://styles/mapbox/streets-v11',
-      center: [center.lng, center.lat],
-      zoom,
-    });
-    mapRef.current = map;
-
-    map.addControl(new mapboxgl.NavigationControl({ showCompass: false }));
-
-    map.on('load', () => {
-      // Fallback for missing sprite images referenced by the style
-      map.on('styleimagemissing', (e: any) => {
-        const id = e?.id;
-        if (!id || map.hasImage(id)) return;
-        try {
-          const canvas = document.createElement('canvas');
-          canvas.width = 2;
-          canvas.height = 2;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) return;
-          ctx.clearRect(0, 0, 2, 2);
-          const imageData = ctx.getImageData(0, 0, 2, 2);
-          map.addImage(id, { width: 2, height: 2, data: imageData.data } as any, { pixelRatio: 1 });
-        } catch {}
-      });
-      // Initialize an empty clustered source; data will be set by the markers effect
-      if (!map.getSource('items')) {
-        map.addSource('items', {
-          type: 'geojson',
-          data: { type: 'FeatureCollection', features: [] },
-          cluster: true,
-          clusterMaxZoom: 14,
-          clusterRadius: 50,
-        } as any);
-
-        // Cluster circles
-        map.addLayer({
-          id: 'clusters',
-          type: 'circle',
-          source: 'items',
-          filter: ['has', 'point_count'],
-          paint: {
-            'circle-color': [
-              'step',
-              ['get', 'point_count'],
-              '#93c5fd',
-              10,
-              '#60a5fa',
-              25,
-              '#3b82f6',
-              50,
-              '#2563eb',
-            ],
-            'circle-radius': [
-              'step',
-              ['get', 'point_count'],
-              14,
-              10,
-              18,
-              25,
-              22,
-              50,
-              26,
-            ],
-          },
-        });
-
-        // Cluster count labels
-        map.addLayer({
-          id: 'cluster-count',
-          type: 'symbol',
-          source: 'items',
-          filter: ['has', 'point_count'],
-          layout: {
-            'text-field': ['get', 'point_count_abbreviated'],
-            'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-            'text-size': 12,
-          },
-          paint: { 'text-color': '#ffffff' },
-        });
-
-        // Unclustered points
-        map.addLayer({
-          id: 'unclustered-point',
-          type: 'circle',
-          source: 'items',
-          filter: ['!', ['has', 'point_count']],
-          paint: {
-            'circle-color': '#2563eb',
-            'circle-radius': 6,
-            'circle-stroke-width': 2,
-            'circle-stroke-color': 'rgba(37,99,235,0.25)',
-          },
-        });
-
-        // Interactions
-        map.on('click', 'clusters', (e) => {
-          const features = map.queryRenderedFeatures(e.point, { layers: ['clusters'] });
-          const clusterId = features[0].properties && (features[0].properties as any).cluster_id;
-          const source = map.getSource('items') as mapboxgl.GeoJSONSource;
-          if (!source) return;
-          source.getClusterExpansionZoom(clusterId, (err, zoomLevel) => {
-            if (err) return;
-            const coords = (features[0].geometry as any).coordinates as [number, number];
-            map.easeTo({ center: coords, zoom: zoomLevel });
-          });
-        });
-
-        map.on('click', 'unclustered-point', (e) => {
-          const features = map.queryRenderedFeatures(e.point, { layers: ['unclustered-point'] });
-          const feature = features[0];
-          if (!feature) return;
-          const id = feature.properties && (feature.properties as any).id;
-          const title = feature.properties && (feature.properties as any).title;
-          const coords = (feature.geometry as any).coordinates as [number, number];
-
-          const imageUrl = feature.properties && (feature.properties as any).imageUrl;
-          const category = feature.properties && (feature.properties as any).category;
-          const wrapper = document.createElement('div');
-          wrapper.innerHTML = `<div style="min-width:220px">`
-            + (imageUrl ? `<div style="margin-bottom:8px;overflow:hidden;border-radius:8px;"><img src="${imageUrl}" alt="${title || ''}" style="width:100%;height:120px;object-fit:cover;display:block;" /></div>` : '')
-            + `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;">
-                 <div style="font-weight:600;color:#111827;">${title || 'Objet'}</div>
-                 ${category ? `<span style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:9999px;padding:2px 8px;font-size:12px;">${category}</span>` : ''}
-               </div>
-               <button id="popup-open-item" style="display:inline-flex;align-items:center;gap:6px;background:#2563eb;color:white;border:none;border-radius:8px;padding:6px 10px;cursor:pointer">Voir</button>
-             </div>`;
-
-          const popup = new mapboxgl.Popup({ offset: 12 })
-            .setDOMContent(wrapper)
-            .setLngLat(coords)
-            .addTo(map);
-
-          const btn = wrapper.querySelector('#popup-open-item');
-          if (btn && id) {
-            btn.addEventListener('click', () => {
-              popup.remove();
-              if (onMarkerClick) onMarkerClick(String(id));
-            });
-          }
-        });
-
-        // Hover tooltip (title)
-        map.on('mouseenter', 'unclustered-point', (e) => {
-          map.getCanvas().style.cursor = 'pointer';
-          const features = map.queryRenderedFeatures(e.point, { layers: ['unclustered-point'] });
-          const feature = features[0];
-          if (!feature) return;
-          const title = feature.properties && (feature.properties as any).title;
-          const coords = (feature.geometry as any).coordinates as [number, number];
-          if (!title) return;
-          if (hoverPopupRef.current) {
-            hoverPopupRef.current.remove();
-            hoverPopupRef.current = null;
-          }
-          const hoverPopup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false, offset: 8 })
-            .setLngLat(coords)
-            .setHTML(`<div style="font-size:12px;font-weight:600;color:#111827;padding:4px 6px;background:#ffffff;border:1px solid #e5e7eb;border-radius:6px;box-shadow:0 4px 10px rgba(0,0,0,0.08);">${String(title)}</div>`)
-            .addTo(map);
-          hoverPopupRef.current = hoverPopup;
-        });
-        map.on('mouseleave', 'unclustered-point', () => {
-          map.getCanvas().style.cursor = '';
-          if (hoverPopupRef.current) {
-            hoverPopupRef.current.remove();
-            hoverPopupRef.current = null;
-          }
-        });
-
-        map.on('mouseenter', 'clusters', () => (map.getCanvas().style.cursor = 'pointer'));
-        map.on('mouseleave', 'clusters', () => (map.getCanvas().style.cursor = ''));
-        map.on('mouseenter', 'unclustered-point', () => (map.getCanvas().style.cursor = 'pointer'));
-        map.on('mouseleave', 'unclustered-point', () => (map.getCanvas().style.cursor = ''));
-      }
-    });
-
-    return () => {
-      map.remove();
-      mapRef.current = null;
-    };
-  }, [accessToken]);
-
-  React.useEffect(() => {
-    if (!mapRef.current) return;
-    mapRef.current.setCenter([center.lng, center.lat]);
-  }, [center.lat, center.lng]);
-
-  React.useEffect(() => {
-    if (!mapRef.current) return;
-    const map = mapRef.current;
-    const source = map.getSource('items') as mapboxgl.GeoJSONSource | undefined;
-    if (!source) return;
-
-    const features = (markers || [])
-      .filter((m) => typeof m.latitude === 'number' && typeof m.longitude === 'number')
-      .map((m) => ({
-        type: 'Feature',
-        geometry: { type: 'Point', coordinates: [m.longitude, m.latitude] },
-        properties: { id: m.id, title: m.title || '', imageUrl: m.imageUrl || '', category: m.category || '' },
-      }));
-
-    const data: GeoJSON.FeatureCollection = {
-      type: 'FeatureCollection',
-      features: features as any,
-    };
-
-    source.setData(data as any);
-
-    // Auto-fit to markers (and optionally user location)
-    if (autoFit && features.length > 0) {
-      const bounds = new mapboxgl.LngLatBounds();
-      for (const f of features as any[]) {
-        bounds.extend(f.geometry.coordinates as [number, number]);
-      }
-      if (showUserLocation && userLocation) {
-        bounds.extend([userLocation.lng, userLocation.lat]);
-      }
-      map.fitBounds(bounds, { padding: 40, maxZoom: 14, duration: 600 });
-    }
-  }, [markers]);
-
-  // User location marker (pulsing)
-  React.useEffect(() => {
-    if (!mapRef.current) return;
-    const map = mapRef.current;
-    if (!showUserLocation || !userLocation) {
-      if (userMarkerRef.current) {
-        userMarkerRef.current.remove();
-        userMarkerRef.current = null;
-      }
+    if (!accessToken) {
+      console.warn('Token Mapbox manquant. Ajoutez VITE_MAPBOX_ACCESS_TOKEN dans votre .env.local');
       return;
     }
-    const el = document.createElement('div');
-    el.style.width = '16px';
-    el.style.height = '16px';
-    el.style.borderRadius = '9999px';
-    el.style.background = '#2563eb';
-    el.style.boxShadow = '0 0 0 0 rgba(37,99,235,0.7)';
-    el.style.animation = 'pulseMapUser 2s infinite';
+    if (!mapContainerRef.current) return;
 
-    // Inject keyframes once
-    const styleId = 'map-user-pulse-style';
-    if (!document.getElementById(styleId)) {
-      const style = document.createElement('style');
-      style.id = styleId;
-      style.innerHTML = `@keyframes pulseMapUser { 0% { box-shadow: 0 0 0 0 rgba(37,99,235,0.7);} 70% { box-shadow: 0 0 0 16px rgba(37,99,235,0);} 100% { box-shadow: 0 0 0 0 rgba(37,99,235,0);} }`;
-      document.head.appendChild(style);
+    try {
+      mapboxgl.accessToken = accessToken as string;
+      const map = new mapboxgl.Map({
+        container: mapContainerRef.current,
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center: [center.lng, center.lat],
+        zoom,
+        attributionControl: false,
+      });
+      mapRef.current = map;
+
+      map.addControl(new mapboxgl.NavigationControl({ showCompass: false }));
+
+      map.on('load', () => {
+        // Ajouter les marqueurs
+        markers.forEach((marker) => {
+          if (typeof marker.latitude === 'number' && typeof marker.longitude === 'number') {
+            const el = document.createElement('div');
+            el.className = 'marker';
+            el.style.width = '20px';
+            el.style.height = '20px';
+            el.style.borderRadius = '50%';
+            el.style.backgroundColor = '#2563eb';
+            el.style.border = '2px solid white';
+            el.style.cursor = 'pointer';
+            el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+
+            const mapboxMarker = new mapboxgl.Marker(el)
+              .setLngLat([marker.longitude, marker.latitude])
+              .addTo(map);
+
+            if (onMarkerClick) {
+              el.addEventListener('click', () => {
+                onMarkerClick(marker.id);
+              });
+            }
+
+            markersRef.current.push(mapboxMarker);
+          }
+        });
+
+        // Ajouter le marqueur utilisateur
+        if (showUserLocation && userLocation) {
+          const userEl = document.createElement('div');
+          userEl.style.width = '16px';
+          userEl.style.height = '16px';
+          userEl.style.borderRadius = '50%';
+          userEl.style.backgroundColor = '#2563eb';
+          userEl.style.border = '2px solid white';
+          userEl.style.boxShadow = '0 0 0 4px rgba(37,99,235,0.3)';
+          userEl.style.animation = 'pulse 2s infinite';
+
+          const userMarker = new mapboxgl.Marker(userEl)
+            .setLngLat([userLocation.lng, userLocation.lat])
+            .addTo(map);
+
+          markersRef.current.push(userMarker);
+        }
+
+        // Auto-fit si demandé
+        if (autoFit && markers.length > 0) {
+          const bounds = new mapboxgl.LngLatBounds();
+          markers.forEach((marker) => {
+            if (typeof marker.latitude === 'number' && typeof marker.longitude === 'number') {
+              bounds.extend([marker.longitude, marker.latitude]);
+            }
+          });
+          if (showUserLocation && userLocation) {
+            bounds.extend([userLocation.lng, userLocation.lat]);
+          }
+          map.fitBounds(bounds, { padding: 40, maxZoom: 14, duration: 600 });
+        }
+      });
+
+    } catch (error) {
+      console.error('Erreur lors de l\'initialisation de Mapbox:', error);
     }
 
-    if (userMarkerRef.current) {
-      userMarkerRef.current.setLngLat([userLocation.lng, userLocation.lat]);
-    } else {
-      userMarkerRef.current = new mapboxgl.Marker({ element: el, anchor: 'center' })
+    return () => {
+      // Nettoyer les marqueurs
+      markersRef.current.forEach(marker => marker.remove());
+      markersRef.current = [];
+      
+      // Nettoyer la carte
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, [accessToken, center.lat, center.lng, zoom, markers, onMarkerClick, autoFit, showUserLocation, userLocation]);
+
+  // Mettre à jour les marqueurs quand ils changent
+  React.useEffect(() => {
+    if (!mapRef.current) return;
+
+    // Supprimer les anciens marqueurs
+    markersRef.current.forEach(marker => marker.remove());
+    markersRef.current = [];
+
+    // Ajouter les nouveaux marqueurs
+    markers.forEach((marker) => {
+      if (typeof marker.latitude === 'number' && typeof marker.longitude === 'number') {
+        const el = document.createElement('div');
+        el.className = 'marker';
+        el.style.width = '20px';
+        el.style.height = '20px';
+        el.style.borderRadius = '50%';
+        el.style.backgroundColor = '#2563eb';
+        el.style.border = '2px solid white';
+        el.style.cursor = 'pointer';
+        el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+
+        const mapboxMarker = new mapboxgl.Marker(el)
+          .setLngLat([marker.longitude, marker.latitude])
+          .addTo(mapRef.current!);
+
+        if (onMarkerClick) {
+          el.addEventListener('click', () => {
+            onMarkerClick(marker.id);
+          });
+        }
+
+        markersRef.current.push(mapboxMarker);
+      }
+    });
+  }, [markers, onMarkerClick]);
+
+  // Mettre à jour le marqueur utilisateur
+  React.useEffect(() => {
+    if (!mapRef.current) return;
+
+    // Supprimer l'ancien marqueur utilisateur
+    const userMarkers = markersRef.current.filter(marker => 
+      marker.getElement().style.animation === 'pulse 2s infinite'
+    );
+    userMarkers.forEach(marker => marker.remove());
+
+    // Ajouter le nouveau marqueur utilisateur
+    if (showUserLocation && userLocation) {
+      const userEl = document.createElement('div');
+      userEl.style.width = '16px';
+      userEl.style.height = '16px';
+      userEl.style.borderRadius = '50%';
+      userEl.style.backgroundColor = '#2563eb';
+      userEl.style.border = '2px solid white';
+      userEl.style.boxShadow = '0 0 0 4px rgba(37,99,235,0.3)';
+      userEl.style.animation = 'pulse 2s infinite';
+
+      const userMarker = new mapboxgl.Marker(userEl)
         .setLngLat([userLocation.lng, userLocation.lat])
-        .addTo(map);
+        .addTo(mapRef.current);
+
+      markersRef.current.push(userMarker);
     }
-  }, [showUserLocation, userLocation?.lat, userLocation?.lng]);
+  }, [showUserLocation, userLocation]);
 
   if (!accessToken) {
     return (
       <div className="p-4 rounded-xl border border-yellow-300 bg-yellow-50 text-yellow-800 text-sm">
-        Clé Mapbox manquante. Ajoutez VITE_MAPBOX_TOKEN dans votre fichier .env.local pour afficher la carte.
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-4 h-4 bg-yellow-400 rounded-full"></div>
+          <span className="font-medium">Carte temporairement indisponible</span>
+        </div>
+        <p className="text-sm">
+          Pour activer les cartes interactives, ajoutez votre clé Mapbox dans le fichier <code className="bg-yellow-100 px-1 rounded">.env.local</code> :
+        </p>
+        <code className="block mt-2 p-2 bg-yellow-100 rounded text-xs">
+          VITE_MAPBOX_ACCESS_TOKEN=pk.eyJ1...
+        </code>
+        <p className="text-xs mt-2 text-yellow-700">
+          Obtenez une clé gratuite sur <a href="https://mapbox.com" target="_blank" rel="noopener noreferrer" className="underline">mapbox.com</a>
+        </p>
       </div>
     );
   }
@@ -321,5 +231,3 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
 };
 
 export default MapboxMap;
-
-

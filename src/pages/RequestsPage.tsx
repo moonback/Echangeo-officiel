@@ -21,6 +21,7 @@ const RequestsPage: React.FC = () => {
   const [ratingComment, setRatingComment] = React.useState<string>('');
   const [ratingStatsMap, setRatingStatsMap] = React.useState<Record<string, { average_rating?: number; ratings_count?: number }>>({});
   const [hasUserRatedMap, setHasUserRatedMap] = React.useState<Record<string, boolean>>({});
+  const [hasItemRatedMap, setHasItemRatedMap] = React.useState<Record<string, boolean>>({});
   const [openUserRatingFor, setOpenUserRatingFor] = React.useState<string | null>(null);
   const [commScore, setCommScore] = React.useState<number>(5);
   const [punctScore, setPunctScore] = React.useState<number>(5);
@@ -66,6 +67,26 @@ const RequestsPage: React.FC = () => {
       setHasUserRatedMap(map);
     };
     loadUserRatings();
+  }, [requests, user]);
+
+  React.useEffect(() => {
+    const loadItemRatings = async () => {
+      if (!user || !requests || requests.length === 0) return;
+      const itemIds = Array.from(new Set(requests.filter(r => r.status === 'completed' && r.item_id).map(r => r.item_id))) as string[];
+      if (itemIds.length === 0) return;
+      const { data, error } = await supabase
+        .from('item_ratings')
+        .select('item_id, rater_id')
+        .in('item_id', itemIds)
+        .eq('rater_id', user.id);
+      if (error) return;
+      const map: Record<string, boolean> = {};
+      for (const row of (data ?? []) as { item_id: string; rater_id: string }[]) {
+        map[row.item_id] = true;
+      }
+      setHasItemRatedMap(map);
+    };
+    loadItemRatings();
   }, [requests, user]);
 
   if (isLoading) {
@@ -195,6 +216,11 @@ const RequestsPage: React.FC = () => {
                             Évaluer l'emprunteur
                           </button>
                         )}
+                        {hasUserRatedMap[request.id] && (
+                          <span className="px-3 py-1 bg-green-100 text-green-700 rounded-lg text-sm">
+                            ✓ Emprunteur évalué
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>
@@ -215,6 +241,8 @@ const RequestsPage: React.FC = () => {
                         });
                         setOpenUserRatingFor(null);
                         setUserRatingComment('');
+                        // Marquer comme évalué dans le state local
+                        setHasUserRatedMap(prev => ({ ...prev, [request.id]: true }));
                       }}
                     >
                       <div>
@@ -328,12 +356,19 @@ const RequestsPage: React.FC = () => {
                     )}
                     {request.status === 'completed' && request.requester_id === user?.id && (
                       <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => setOpenRatingFor(openRatingFor === request.id ? null : request.id)}
-                          className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition-colors"
-                        >
-                          Laisser un avis
-                        </button>
+                        {!hasItemRatedMap[request.item_id || ''] && (
+                          <button
+                            onClick={() => setOpenRatingFor(openRatingFor === request.id ? null : request.id)}
+                            className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition-colors"
+                          >
+                            Laisser un avis
+                          </button>
+                        )}
+                        {hasItemRatedMap[request.item_id || ''] && (
+                          <span className="px-3 py-1 bg-green-100 text-green-700 rounded-lg text-sm">
+                            ✓ Avis donné
+                          </span>
+                        )}
                         {!hasUserRatedMap[request.id] && (
                           <button
                             onClick={() => setOpenUserRatingFor(openUserRatingFor === request.id ? null : request.id)}
@@ -341,6 +376,11 @@ const RequestsPage: React.FC = () => {
                           >
                             Évaluer le propriétaire
                           </button>
+                        )}
+                        {hasUserRatedMap[request.id] && (
+                          <span className="px-3 py-1 bg-green-100 text-green-700 rounded-lg text-sm">
+                            ✓ Propriétaire évalué
+                          </span>
                         )}
                       </div>
                     )}
@@ -354,6 +394,8 @@ const RequestsPage: React.FC = () => {
                         await upsertRating.mutateAsync({ item_id: request.item_id, score: ratingScore, comment: ratingComment });
                         setOpenRatingFor(null);
                         setRatingComment('');
+                        // Marquer comme évalué dans le state local
+                        setHasItemRatedMap(prev => ({ ...prev, [request.item_id!]: true }));
                       }}
                     >
                       <div>
@@ -406,6 +448,8 @@ const RequestsPage: React.FC = () => {
                         });
                         setOpenUserRatingFor(null);
                         setUserRatingComment('');
+                        // Marquer comme évalué dans le state local
+                        setHasUserRatedMap(prev => ({ ...prev, [request.id]: true }));
                       }}
                     >
                       <div>
