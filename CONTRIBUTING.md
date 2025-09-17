@@ -1,88 +1,76 @@
-# Guide de Contribution - TrocAll 🤝
+# Guide de Contribution TrocAll 🤝
 
-Merci de votre intérêt pour contribuer à TrocAll ! Ce guide vous aidera à comprendre comment participer au développement de la plateforme.
+## Bienvenue !
+
+Merci de votre intérêt pour contribuer à TrocAll ! Ce guide vous aidera à comprendre comment participer au développement de cette plateforme de partage d'objets entre voisins.
 
 ## 🎯 Comment Contribuer
 
-### Types de Contributions
-- 🐛 **Bug fixes** : Correction de bugs
-- ✨ **Nouvelles fonctionnalités** : Ajout de features
-- 📚 **Documentation** : Amélioration de la doc
-- 🧪 **Tests** : Ajout de tests
-- 🎨 **UI/UX** : Améliorations design
-- 🔧 **Refactoring** : Amélioration du code
+### 🐛 **Signaler un Bug**
+1. Vérifiez que le bug n'a pas déjà été signalé dans les [Issues](../../issues)
+2. Créez une nouvelle issue avec le label `bug`
+3. Utilisez le template de bug report
+4. Incluez des captures d'écran si possible
 
-## 🚀 Démarrage Rapide
+### 💡 **Suggérer une Amélioration**
+1. Vérifiez que l'idée n'existe pas déjà
+2. Créez une issue avec le label `enhancement`
+3. Décrivez clairement le problème et la solution proposée
+4. Expliquez pourquoi cette fonctionnalité serait utile
 
-### 1. Fork du Repository
+### 🔧 **Contribuer au Code**
+
+#### **Fork et Clone**
 ```bash
-# Fork sur GitHub, puis cloner
+# Fork le repository sur GitHub
+# Puis clonez votre fork
 git clone https://github.com/votre-username/trocall.git
 cd trocall
+
+# Ajoutez le repository original comme remote
+git remote add upstream https://github.com/original-owner/trocall.git
 ```
 
-### 2. Configuration de l'Environnement
+#### **Configuration de l'Environnement**
 ```bash
-# Installer les dépendances
+# Installez les dépendances
 npm install
 
-# Copier les variables d'environnement
+# Configurez les variables d'environnement
 cp .env.example .env.local
+# Éditez .env.local avec vos clés API
 
-# Configurer Supabase (voir README.md)
+# Lancez le serveur de développement
+npm run dev
 ```
 
-### 3. Branche de Développement
+#### **Workflow de Développement**
 ```bash
-# Créer une branche pour votre feature
+# Créez une branche pour votre feature
 git checkout -b feature/nom-de-votre-feature
 
-# Ou pour un bug fix
-git checkout -b fix/description-du-bug
-```
+# Faites vos modifications
+# ...
 
-## 📋 Workflow de Développement
-
-### 1. Avant de Commencer
-- [ ] Vérifier les [issues ouvertes](https://github.com/trocall/trocall/issues)
-- [ ] Commenter sur l'issue pour indiquer votre intention
-- [ ] Attendre l'approbation des maintainers
-
-### 2. Développement
-```bash
-# Synchroniser avec la branche principale
-git fetch origin
-git rebase origin/main
-
-# Développer votre feature
-# ... votre code ...
-
-# Tester localement
-npm run dev
+# Testez vos changements
 npm run test
 npm run lint
-```
 
-### 3. Commit & Push
-```bash
-# Ajouter vos changements
+# Committez vos changements
 git add .
-
-# Commit avec un message descriptif
-git commit -m "feat: ajouter système de notifications push"
+git commit -m "feat: ajouter nouvelle fonctionnalité"
 
 # Push vers votre fork
 git push origin feature/nom-de-votre-feature
+
+# Créez une Pull Request sur GitHub
 ```
 
-### 4. Pull Request
-- Créer une PR depuis votre fork vers `main`
-- Remplir le template de PR
-- Attendre la review des maintainers
+## 📋 Standards de Code
 
-## 📝 Standards de Code
+### 🎨 **Style de Code**
 
-### TypeScript
+#### **TypeScript/React**
 ```typescript
 // ✅ Bon
 interface UserProfile {
@@ -91,303 +79,329 @@ interface UserProfile {
   email: string;
 }
 
-const getUserProfile = async (id: string): Promise<UserProfile> => {
-  // ...
-};
-
-// ❌ Éviter
-const getUserProfile = async (id) => {
-  // ...
-};
-```
-
-### React Components
-```typescript
-// ✅ Bon - Functional Component avec TypeScript
-interface ButtonProps {
-  variant: 'primary' | 'secondary';
-  children: React.ReactNode;
-  onClick?: () => void;
-}
-
-const Button: React.FC<ButtonProps> = ({ variant, children, onClick }) => {
+const UserCard: React.FC<{ user: UserProfile }> = ({ user }) => {
   return (
-    <button 
-      className={`btn btn-${variant}`}
-      onClick={onClick}
-    >
-      {children}
-    </button>
+    <div className="p-4 rounded-lg bg-white shadow-sm">
+      <h3 className="font-semibold text-gray-900">{user.name}</h3>
+      <p className="text-sm text-gray-600">{user.email}</p>
+    </div>
   );
 };
 
-// ❌ Éviter - Props any
-const Button = ({ variant, children, onClick }: any) => {
-  // ...
+// ❌ Éviter
+const UserCard = ({ user }) => {
+  return <div><h3>{user.name}</h3><p>{user.email}</p></div>;
 };
 ```
 
-### Hooks Personnalisés
-```typescript
-// ✅ Bon - Hook avec gestion d'erreur
-export const useItems = (filters?: ItemFilters) => {
-  return useQuery({
-    queryKey: ['items', filters],
-    queryFn: () => fetchItems(filters),
-    staleTime: 5 * 60 * 1000,
-    onError: (error) => {
-      console.error('Erreur lors du chargement des objets:', error);
-    },
-  });
-};
+#### **Conventions de Nommage**
+- **Composants** : PascalCase (`UserCard`, `ItemList`)
+- **Hooks** : camelCase avec préfixe `use` (`useItems`, `useAuth`)
+- **Variables** : camelCase (`userName`, `itemCount`)
+- **Constantes** : UPPER_SNAKE_CASE (`API_BASE_URL`)
+- **Types/Interfaces** : PascalCase (`UserProfile`, `ItemData`)
+
+#### **Structure des Fichiers**
+```
+src/
+├── components/
+│   ├── ui/              # Composants UI réutilisables
+│   ├── business/        # Composants métier
+│   └── layout/          # Composants de layout
+├── pages/               # Pages de l'application
+├── hooks/               # Hooks personnalisés
+├── services/            # Services externes
+├── store/               # État global
+├── types/               # Types TypeScript
+└── utils/               # Utilitaires
 ```
 
-### Styling
+### 🧪 **Tests**
+
+#### **Tests Unitaires**
 ```typescript
-// ✅ Bon - Classes Tailwind cohérentes
-<div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-soft">
-  <h2 className="text-lg font-semibold text-gray-900">Titre</h2>
-  <Button variant="primary">Action</Button>
-</div>
+// UserCard.test.tsx
+import { render, screen } from '@testing-library/react';
+import { UserCard } from './UserCard';
 
-// ❌ Éviter - Styles inline
-<div style={{ display: 'flex', padding: '16px' }}>
-  // ...
-</div>
-```
+describe('UserCard', () => {
+  it('affiche le nom et email de l\'utilisateur', () => {
+    const user = {
+      id: '1',
+      name: 'John Doe',
+      email: 'john@example.com'
+    };
 
-## 🧪 Tests
-
-### Tests Unitaires
-```typescript
-// tests/components/Button.test.tsx
-import { render, screen, fireEvent } from '@testing-library/react';
-import { Button } from '../Button';
-
-describe('Button', () => {
-  it('renders with correct text', () => {
-    render(<Button variant="primary">Click me</Button>);
-    expect(screen.getByText('Click me')).toBeInTheDocument();
-  });
-
-  it('calls onClick when clicked', () => {
-    const handleClick = jest.fn();
-    render(<Button variant="primary" onClick={handleClick}>Click me</Button>);
+    render(<UserCard user={user} />);
     
-    fireEvent.click(screen.getByText('Click me'));
-    expect(handleClick).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('John Doe')).toBeInTheDocument();
+    expect(screen.getByText('john@example.com')).toBeInTheDocument();
   });
 });
 ```
 
-### Tests d'Intégration
+#### **Tests d'Intégration**
 ```typescript
-// tests/pages/ItemsPage.test.tsx
-import { render, screen, waitFor } from '@testing-library/react';
+// useItems.test.ts
+import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ItemsPage } from '../ItemsPage';
+import { useItems } from './useItems';
 
-const createTestQueryClient = () => new QueryClient({
-  defaultOptions: {
-    queries: { retry: false },
-    mutations: { retry: false },
-  },
-});
-
-describe('ItemsPage', () => {
-  it('displays items when loaded', async () => {
-    const queryClient = createTestQueryClient();
-    
-    render(
+describe('useItems', () => {
+  it('récupère la liste des objets', async () => {
+    const queryClient = new QueryClient();
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
       <QueryClientProvider client={queryClient}>
-        <ItemsPage />
+        {children}
       </QueryClientProvider>
     );
 
+    const { result } = renderHook(() => useItems(), { wrapper });
+
     await waitFor(() => {
-      expect(screen.getByText('Objets disponibles')).toBeInTheDocument();
+      expect(result.current.data).toBeDefined();
     });
   });
 });
 ```
 
-## 📚 Documentation
+### 📝 **Documentation**
 
-### Commentaires de Code
+#### **Commentaires de Code**
 ```typescript
 /**
- * Calcule la distance entre deux points géographiques
- * @param lat1 Latitude du premier point
- * @param lng1 Longitude du premier point
- * @param lat2 Latitude du second point
- * @param lng2 Longitude du second point
- * @returns Distance en kilomètres
+ * Calcule le niveau d'un utilisateur basé sur ses points
+ * @param points - Nombre de points de l'utilisateur
+ * @returns Niveau calculé (1-100+)
  */
-const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
-  // Formule de Haversine
+export function calculateUserLevel(points: number): number {
+  if (points < 100) return 1;
+  if (points < 250) return 2;
   // ...
-};
+}
 ```
 
-### README des Composants
+#### **README des Composants**
 ```typescript
 /**
- * ItemCard - Composant d'affichage d'un objet
+ * UserCard - Composant d'affichage d'un profil utilisateur
  * 
  * @example
- * <ItemCard 
- *   item={item} 
- *   onRequest={() => handleRequest(item.id)}
- *   showDistance={true}
+ * ```tsx
+ * <UserCard 
+ *   user={userProfile} 
+ *   showActions={true}
+ *   onEdit={() => console.log('Edit user')}
  * />
+ * ```
  */
-export const ItemCard: React.FC<ItemCardProps> = ({ item, onRequest, showDistance }) => {
-  // ...
-};
 ```
 
-## 🐛 Rapport de Bugs
+## 🔄 Processus de Review
 
-### Template de Bug Report
+### 📝 **Pull Request**
+
+#### **Template de PR**
 ```markdown
-## 🐛 Description du Bug
-Description claire et concise du problème.
+## Description
+Brève description des changements apportés.
 
-## 🔄 Étapes pour Reproduire
-1. Aller sur '...'
-2. Cliquer sur '...'
-3. Voir l'erreur
+## Type de changement
+- [ ] Bug fix
+- [ ] Nouvelle fonctionnalité
+- [ ] Breaking change
+- [ ] Documentation
 
-## 🎯 Comportement Attendu
-Description de ce qui devrait se passer.
+## Tests
+- [ ] Tests unitaires ajoutés/mis à jour
+- [ ] Tests d'intégration ajoutés/mis à jour
+- [ ] Tests manuels effectués
 
-## 📱 Environnement
-- OS: [ex: iOS 14, Windows 10]
-- Navigateur: [ex: Chrome 91, Safari 14]
-- Version: [ex: v0.1.0]
-
-## 📸 Captures d'Écran
-Si applicable, ajouter des captures d'écran.
-
-## 📋 Logs
-```
-Erreur dans la console:
-Error: ...
-```
+## Checklist
+- [ ] Code respecte les standards du projet
+- [ ] Documentation mise à jour
+- [ ] Pas de console.log oubliés
+- [ ] Variables d'environnement documentées
 ```
 
-## ✨ Nouvelles Fonctionnalités
+#### **Critères d'Acceptation**
+- ✅ Code testé et fonctionnel
+- ✅ Respect des conventions de style
+- ✅ Documentation mise à jour
+- ✅ Pas de régression introduite
+- ✅ Performance acceptable
 
-### Template de Feature Request
-```markdown
-## ✨ Description de la Fonctionnalité
-Description claire de la fonctionnalité souhaitée.
+### 👥 **Review Process**
 
-## 🎯 Problème Résolu
-Quel problème cette fonctionnalité résout-elle ?
+#### **Pour les Reviewers**
+1. **Vérifiez la logique** : Le code fait-il ce qu'il est censé faire ?
+2. **Testez manuellement** : Lancez l'application et testez la fonctionnalité
+3. **Vérifiez les tests** : Les tests couvrent-ils les cas d'usage ?
+4. **Commentaires constructifs** : Soyez spécifique et proposer des améliorations
 
-## 💡 Solution Proposée
-Description détaillée de la solution.
+#### **Pour les Auteurs**
+1. **Répondez aux commentaires** : Adressez chaque point soulevé
+2. **Tests supplémentaires** : Ajoutez des tests si demandé
+3. **Documentation** : Mettez à jour la documentation si nécessaire
+4. **Communication** : Expliquez vos choix de design
 
-## 🔄 Alternatives Considérées
-Autres solutions envisagées.
+## 🛠️ Outils de Développement
 
-## 📋 Critères d'Acceptation
-- [ ] Critère 1
-- [ ] Critère 2
-- [ ] Critère 3
-```
-
-## 🔍 Code Review
-
-### Checklist pour les Reviewers
-- [ ] Le code respecte les standards du projet
-- [ ] Les tests passent
-- [ ] La documentation est mise à jour
-- [ ] Les performances sont acceptables
-- [ ] La sécurité est respectée
-- [ ] L'accessibilité est prise en compte
-
-### Checklist pour les Auteurs
-- [ ] J'ai testé mon code localement
-- [ ] J'ai ajouté des tests si nécessaire
-- [ ] J'ai mis à jour la documentation
-- [ ] Mon code est lisible et commenté
-- [ ] J'ai vérifié les performances
-- [ ] J'ai testé sur mobile et desktop
-
-## 🏷️ Convention de Nommage
-
-### Branches
+### 📦 **Scripts Disponibles**
 ```bash
-# Features
-feature/notifications-push
-feature/user-dashboard
+# Développement
+npm run dev              # Serveur de développement
+npm run build           # Build de production
+npm run preview         # Preview du build
 
-# Bug fixes
-fix/login-error
-fix/mobile-layout
+# Qualité du code
+npm run lint            # ESLint
+npm run lint:fix        # Correction automatique
+npm run type-check      # Vérification TypeScript
 
-# Hotfixes
-hotfix/security-patch
-
-# Documentation
-docs/api-documentation
-docs/user-guide
+# Tests
+npm run test            # Tests unitaires
+npm run test:ui         # Interface de test
+npm run test:coverage   # Couverture de tests
 ```
 
-### Commits
+### 🔧 **Configuration IDE**
+
+#### **VS Code Extensions Recommandées**
+```json
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
+    "ms-vscode.vscode-typescript-next",
+    "ms-vscode.vscode-eslint",
+    "formulahendry.auto-rename-tag",
+    "christian-kohler.path-intellisense"
+  ]
+}
+```
+
+#### **Settings.json**
+```json
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "tailwindCSS.includeLanguages": {
+    "typescript": "typescript",
+    "typescriptreact": "typescriptreact"
+  }
+}
+```
+
+## 🐛 Debugging
+
+### 🔍 **Outils de Debug**
+
+#### **React DevTools**
+- Installez l'extension React DevTools
+- Inspectez les composants et leur état
+- Profiler les performances
+
+#### **Supabase Debug**
+```typescript
+// Activer les logs Supabase
+const supabase = createClient(url, key, {
+  auth: {
+    debug: true
+  }
+});
+```
+
+#### **TanStack Query DevTools**
+```typescript
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
+// En développement
+{process.env.NODE_ENV === 'development' && <ReactQueryDevtools />}
+```
+
+### 📊 **Performance**
+
+#### **Bundle Analyzer**
 ```bash
-# Format: type(scope): description
-feat(auth): ajouter authentification OAuth
-fix(ui): corriger layout mobile
-docs(api): mettre à jour documentation
-test(items): ajouter tests unitaires
-refactor(store): simplifier authStore
+npm run build
+npx vite-bundle-analyzer dist
 ```
 
-### Types de Commits
-- `feat`: Nouvelle fonctionnalité
-- `fix`: Correction de bug
-- `docs`: Documentation
-- `style`: Formatage, point-virgules
-- `refactor`: Refactoring
-- `test`: Tests
-- `chore`: Maintenance
+#### **Lighthouse**
+- Utilisez Lighthouse pour auditer les performances
+- Ciblez un score > 90 pour chaque métrique
 
 ## 🚀 Déploiement
 
-### Environnements
-- **Development**: `localhost:5173`
-- **Staging**: `staging.trocall.app`
-- **Production**: `trocall.app`
+### 🌐 **Environnements**
 
-### Processus
-1. **Feature** → **Staging** (automatique)
-2. **Staging** → **Production** (manuel, après review)
+#### **Development**
+- Branche : `develop`
+- URL : `localhost:5173`
+- Base de données : Supabase local ou staging
 
-## 📞 Support
+#### **Staging**
+- Branche : `staging`
+- URL : `staging.trocall.app`
+- Base de données : Supabase staging
 
-### Communication
-- **GitHub Issues**: Pour les bugs et features
-- **GitHub Discussions**: Pour les questions générales
-- **Discord**: Pour le chat en temps réel (lien à venir)
+#### **Production**
+- Branche : `main`
+- URL : `trocall.app`
+- Base de données : Supabase production
 
-### Ressources
-- [Documentation API](./API_DOCS.md)
-- [Architecture](./ARCHITECTURE.md)
-- [Roadmap](./ROADMAP.md)
+### 🔄 **CI/CD**
 
-## 📄 Licence
+#### **GitHub Actions**
+```yaml
+# .github/workflows/ci.yml
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run build
+```
 
-En contribuant à TrocAll, vous acceptez que vos contributions soient sous licence MIT. Voir [LICENSE](./LICENSE) pour plus de détails.
+## 📚 Ressources
 
-## 🙏 Reconnaissance
+### 📖 **Documentation**
+- [React Documentation](https://react.dev/)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
+- [Supabase Docs](https://supabase.com/docs)
+- [TanStack Query](https://tanstack.com/query/latest)
+- [Tailwind CSS](https://tailwindcss.com/docs)
 
-Les contributeurs sont listés dans [CONTRIBUTORS.md](./CONTRIBUTORS.md) et remerciés publiquement.
+### 🎓 **Apprentissage**
+- [React Patterns](https://reactpatterns.com/)
+- [TypeScript Best Practices](https://typescript-eslint.io/rules/)
+- [Supabase Best Practices](https://supabase.com/docs/guides/database/best-practices)
+
+### 💬 **Communauté**
+- [Discord TrocAll](../../discussions)
+- [GitHub Discussions](../../discussions)
+- [Issues](../../issues)
+
+## 🎉 Reconnaissance
+
+### 👏 **Contributeurs**
+Merci à tous les contributeurs qui rendent TrocAll meilleur !
+
+### 🏆 **Badges de Contribution**
+- 🥇 **Gold Contributor** : 50+ contributions
+- 🥈 **Silver Contributor** : 20+ contributions  
+- 🥉 **Bronze Contributor** : 5+ contributions
 
 ---
 
-Merci de contribuer à TrocAll ! Ensemble, nous construisons l'avenir de l'économie collaborative locale. 🌱
-
-**Questions ?** N'hésitez pas à ouvrir une issue ou à nous contacter !
+Merci de contribuer à TrocAll ! Ensemble, nous construisons une plateforme qui révolutionne la consommation locale et crée du lien social dans nos quartiers. 🌱

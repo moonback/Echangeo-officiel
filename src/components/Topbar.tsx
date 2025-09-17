@@ -154,7 +154,6 @@ const Topbar: React.FC = () => {
   const navigationLinks = useMemo(() => [
     { to: '/items', label: 'Objets' },
     { to: '/neighbours', label: 'Voisins' },
-    { to: '/gamification', label: 'Gamification' },
     { to: '/ai-features', label: 'IA' },
     { to: '/help', label: 'Aide' },
     ...(user ? [] : [

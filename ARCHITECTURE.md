@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble
 
-TrocAll est une application web moderne construite avec une architecture **JAMstack** (JavaScript, APIs, Markup) utilisant React pour le frontend et Supabase comme Backend-as-a-Service.
+TrocAll est une application web moderne construite avec une architecture **JAMstack** (JavaScript, APIs, Markup) utilisant React pour le frontend et Supabase comme Backend-as-a-Service. L'application suit les principes de **Single Page Application (SPA)** avec une architecture modulaire et scalable.
 
 ## 🎯 Principes Architecturaux
 
@@ -12,6 +12,7 @@ TrocAll est une application web moderne construite avec une architecture **JAMst
 - **Type Safety** avec TypeScript
 - **State Management** hybride (Zustand + TanStack Query)
 - **API-First** avec Supabase
+- **Mobile-First** design responsive
 
 ## 🏛️ Architecture Générale
 
@@ -23,7 +24,7 @@ graph TB
         B --> D[Components]
         C --> E[HomePage]
         C --> F[ItemsPage]
-        C --> G[ProfilePage]
+        C --> G[GamificationPage]
         D --> H[UI Components]
         D --> I[Business Components]
     end
@@ -40,12 +41,19 @@ graph TB
         T[Realtime] --> U[Live Updates]
     end
     
+    subgraph "External Services"
+        V[Mistral AI] --> W[Image Analysis]
+        X[Mapbox] --> Y[Geolocation]
+    end
+    
     A --> J
     A --> L
     L --> N
     L --> P
     L --> R
     L --> T
+    I --> V
+    I --> X
 ```
 
 ## 🎨 Frontend Architecture
@@ -59,11 +67,14 @@ src/
 │   │   ├── Button.tsx
 │   │   ├── Card.tsx
 │   │   ├── Input.tsx
-│   │   └── ...
+│   │   ├── Select.tsx
+│   │   └── TextArea.tsx
 │   ├── business/           # Composants métier
 │   │   ├── ItemCard.tsx
 │   │   ├── MapboxMap.tsx
-│   │   └── ...
+│   │   ├── ChatAIAssistant.tsx
+│   │   ├── GamificationPage.tsx
+│   │   └── NotificationSystem.tsx
 │   └── layout/             # Composants de layout
 │       ├── Shell.tsx
 │       ├── Topbar.tsx
@@ -72,146 +83,94 @@ src/
 
 ### Patterns Utilisés
 
-#### 1. **Container/Presenter Pattern**
+#### 1. **Composition Pattern**
 ```typescript
-// Container (logique métier)
-const ItemsPage = () => {
-  const { data: items, isLoading } = useItems();
-  const [filters, setFilters] = useState({});
-  
-  return <ItemsList items={items} loading={isLoading} />;
-};
-
-// Presenter (affichage)
-const ItemsList = ({ items, loading }) => {
-  return <div>{/* UI pure */}</div>;
+// Exemple avec Shell.tsx
+const Shell: React.FC<ShellProps> = ({ children }) => {
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Topbar />
+      <main className="flex-1">
+        <AnimatePresence mode="wait">
+          <motion.div key={location.pathname}>
+            {children}
+          </motion.div>
+        </AnimatePresence>
+      </main>
+      <BottomNavigation />
+    </div>
+  );
 };
 ```
 
 #### 2. **Custom Hooks Pattern**
 ```typescript
-// Logique réutilisable
-export const useItems = (filters) => {
+// Exemple avec useGamification.ts
+export function useGamificationStats(profileId?: string) {
+  const { user } = useAuthStore();
+  const targetId = profileId || user?.id;
+
   return useQuery({
-    queryKey: ['items', filters],
-    queryFn: () => fetchItems(filters),
+    queryKey: ['gamificationStats', targetId],
+    queryFn: async (): Promise<GamificationStats | null> => {
+      // Logique de récupération des données
+    },
+    enabled: !!targetId,
   });
-};
+}
 ```
 
-#### 3. **Compound Components**
+#### 3. **Provider Pattern**
 ```typescript
-<Card>
-  <Card.Header>Titre</Card.Header>
-  <Card.Body>Contenu</Card.Body>
-  <Card.Footer>Actions</Card.Footer>
-</Card>
-```
-
-## 🗄️ Backend Architecture (Supabase)
-
-### Base de Données
-
-```mermaid
-erDiagram
-    PROFILES ||--o{ ITEMS : owns
-    PROFILES ||--o{ REQUESTS : makes
-    PROFILES ||--o{ MESSAGES : sends
-    ITEMS ||--o{ ITEM_IMAGES : has
-    ITEMS ||--o{ REQUESTS : requested_for
-    ITEMS ||--o{ ITEM_RATINGS : rated
-    REQUESTS ||--o{ MESSAGES : related_to
-    REQUESTS ||--o{ USER_RATINGS : generates
-    
-    PROFILES {
-        uuid id PK
-        text email
-        text full_name
-        text avatar_url
-        text bio
-        text phone
-        text address
-        double latitude
-        double longitude
-        timestamptz created_at
-        timestamptz updated_at
-    }
-    
-    ITEMS {
-        uuid id PK
-        uuid owner_id FK
-        text title
-        text description
-        text category
-        text condition
-        boolean is_available
-        double latitude
-        double longitude
-        timestamptz created_at
-        timestamptz updated_at
-    }
-    
-    REQUESTS {
-        uuid id PK
-        uuid requester_id FK
-        uuid item_id FK
-        text message
-        text status
-        timestamptz requested_from
-        timestamptz requested_to
-        timestamptz created_at
-        timestamptz updated_at
-    }
-```
-
-### Vues et Fonctions
-
-#### Vues de Statistiques
-```sql
--- Réputation des utilisateurs
-CREATE VIEW profile_reputation_stats AS
-SELECT 
-  rated_user_id as profile_id,
-  COUNT(*) as ratings_count,
-  AVG(communication_score) as avg_communication,
-  AVG(punctuality_score) as avg_punctuality,
-  AVG(care_score) as avg_care,
-  AVG((communication_score + punctuality_score + care_score) / 3.0) as overall_score
-FROM user_ratings
-GROUP BY rated_user_id;
-```
-
-#### Système de Badges
-```sql
--- Badges automatiques basés sur l'activité
-CREATE VIEW profile_badges AS
-SELECT 
-  profile_id,
-  'super_lender' as badge_slug,
-  'Super Prêteur' as badge_label
-FROM profile_activity_counts 
-WHERE completed_lends >= 10 AND overall_score >= 4.5;
+// Configuration globale dans main.tsx
+<QueryClientProvider client={queryClient}>
+  <MotionConfig reducedMotion={prefersReducedMotion ? 'always' : 'never'}>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </MotionConfig>
+</QueryClientProvider>
 ```
 
 ## 🔄 State Management
 
 ### Architecture Hybride
 
+#### **Zustand** - État Global Client
 ```typescript
-// 1. État Global (Zustand) - Données persistantes
-const useAuthStore = create((set) => ({
-  user: null,
-  profile: null,
-  signIn: async (email, password) => { /* ... */ },
-  signOut: async () => { /* ... */ },
-}));
+// authStore.ts
+interface AuthState {
+  user: User | null;
+  profile: Profile | null;
+  loading: boolean;
+  signUp: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
+}
 
-// 2. État Serveur (TanStack Query) - Données temporaires
-const { data: items } = useQuery({
-  queryKey: ['items'],
-  queryFn: fetchItems,
-  staleTime: 5 * 60 * 1000, // 5 minutes
-});
+export const useAuthStore = create<AuthState>((set, get) => ({
+  // Implémentation...
+}));
+```
+
+#### **TanStack Query** - État Serveur
+```typescript
+// useItems.ts
+export function useItems() {
+  return useQuery({
+    queryKey: ['items'],
+    queryFn: async (): Promise<Item[]> => {
+      const { data, error } = await supabase
+        .from('items')
+        .select('*')
+        .eq('is_available', true);
+      
+      if (error) throw error;
+      return data || [];
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+}
 ```
 
 ### Flux de Données
@@ -228,110 +187,334 @@ sequenceDiagram
     C->>H: Appel hook
     H->>Q: Vérification cache
     alt Cache valide
-        Q-->>H: Retour données
+        Q-->>H: Données cachées
     else Cache expiré
         H->>S: Requête API
-        S-->>H: Données
+        S-->>H: Données fraîches
         H->>Q: Mise à jour cache
     end
     H-->>C: Données
     C-->>U: Mise à jour UI
 ```
 
-## 🔐 Sécurité
+## 🗄️ Backend Architecture (Supabase)
 
-### Authentification
-- **Supabase Auth** avec JWT
-- **Row Level Security** (RLS) désactivé en MVP
-- **Validation côté client** avec Zod
-- **Protection des routes** avec AuthGuard
+### Structure de Base de Données
 
-### Données Sensibles
-- **Variables d'environnement** pour les clés API
-- **Validation des entrées** utilisateur
-- **Sanitisation** des données avant stockage
+```mermaid
+erDiagram
+    profiles ||--o{ items : owns
+    profiles ||--o{ requests : makes
+    profiles ||--o{ messages : sends
+    profiles ||--o{ user_levels : has
+    profiles ||--o{ user_badges : earns
+    
+    items ||--o{ item_images : has
+    items ||--o{ requests : receives
+    items ||--o{ item_ratings : rated
+    
+    requests ||--o{ messages : contains
+    requests ||--o{ user_ratings : generates
+    
+    challenges ||--o{ user_challenges : assigned
+    badges ||--o{ user_badges : awarded
+    
+    profiles {
+        uuid id PK
+        string email
+        string full_name
+        string avatar_url
+        text bio
+        string phone
+        string address
+        float latitude
+        float longitude
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    items {
+        uuid id PK
+        uuid owner_id FK
+        string title
+        text description
+        string category
+        string condition
+        string offer_type
+        boolean is_available
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    requests {
+        uuid id PK
+        uuid requester_id FK
+        uuid item_id FK
+        text message
+        string status
+        timestamp created_at
+        timestamp updated_at
+    }
+```
+
+### Services Supabase Utilisés
+
+#### 1. **Authentication**
+- Gestion des utilisateurs (inscription, connexion, déconnexion)
+- Sessions persistantes
+- Intégration avec les profils utilisateurs
+
+#### 2. **Database**
+- PostgreSQL avec Row Level Security (RLS)
+- Vues pour les statistiques complexes
+- Fonctions stockées pour la logique métier
+
+#### 3. **Storage**
+- Upload d'images d'objets
+- Gestion des avatars utilisateurs
+- CDN intégré
+
+#### 4. **Realtime**
+- Notifications en temps réel
+- Mise à jour des messages de chat
+- Synchronisation des demandes
+
+## 🤖 Services Externes
+
+### Mistral AI Integration
+
+```typescript
+// aiService.ts
+export const analyzeImageWithAI = async (
+  imageFile: File,
+  context?: string
+): Promise<AIAnalysisResult> => {
+  const base64Image = await imageToBase64(imageFile);
+  
+  const response = await fetch(MISTRAL_API_URL, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${MISTRAL_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'mistral-large-latest',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: 'Analyze this image and provide item details' },
+            { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${base64Image}` } }
+          ]
+        }
+      ]
+    })
+  });
+  
+  return processAIResponse(response);
+};
+```
+
+### Mapbox Integration
+
+```typescript
+// MapboxMap.tsx
+const MapboxMap: React.FC<MapboxMapProps> = ({ 
+  items, 
+  userLocation, 
+  onItemClick 
+}) => {
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
+
+  useEffect(() => {
+    if (map.current) return; // Initialiser la carte une seule fois
+    
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current!,
+      style: 'mapbox://styles/mapbox/streets-v12',
+      center: userLocation || [2.3522, 48.8566], // Paris par défaut
+      zoom: 13
+    });
+    
+    // Ajouter les marqueurs des objets
+    items.forEach(item => {
+      if (item.latitude && item.longitude) {
+        new mapboxgl.Marker()
+          .setLngLat([item.longitude, item.latitude])
+          .addTo(map.current!);
+      }
+    });
+  }, [items, userLocation]);
+
+  return <div ref={mapContainer} className="w-full h-full rounded-lg" />;
+};
+```
+
+## 🎮 Système de Gamification
+
+### Architecture Modulaire
+
+```typescript
+// Structure du système de gamification
+interface GamificationSystem {
+  // Niveaux et points
+  userLevels: UserLevel[];
+  pointsHistory: UserPointsHistory[];
+  
+  // Défis et récompenses
+  challenges: Challenge[];
+  userChallenges: UserChallenge[];
+  
+  // Badges et réputation
+  badges: Badge[];
+  userBadges: UserBadge[];
+  
+  // Classements
+  leaderboard: LeaderboardEntry[];
+}
+```
+
+### Fonctions Stockées PostgreSQL
+
+```sql
+-- Calcul automatique des niveaux
+CREATE OR REPLACE FUNCTION public.calculate_user_level(points INTEGER)
+RETURNS INTEGER AS $$
+BEGIN
+  IF points < 100 THEN RETURN 1;
+  ELSIF points < 250 THEN RETURN 2;
+  -- ... logique de niveaux
+  ELSE RETURN 10 + FLOOR((points - 11000) / 5000);
+  END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Attribution automatique de badges
+CREATE OR REPLACE FUNCTION public.check_and_award_badges(p_profile_id UUID)
+RETURNS VOID AS $$
+BEGIN
+  -- Vérification des critères et attribution automatique
+END;
+$$ LANGUAGE plpgsql;
+```
+
+## 🔒 Sécurité
+
+### Row Level Security (RLS)
+
+```sql
+-- Exemple de politique RLS
+CREATE POLICY "Users can view their own profile" ON public.profiles
+  FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Users can update their own profile" ON public.profiles
+  FOR UPDATE USING (auth.uid() = id);
+```
+
+### Validation des Données
+
+```typescript
+// Validation avec Zod
+const createItemSchema = z.object({
+  title: z.string().min(1, 'Le titre est requis'),
+  description: z.string().optional(),
+  category: z.enum(['tools', 'electronics', 'books', 'sports', 'kitchen', 'garden', 'toys', 'other']),
+  condition: z.enum(['excellent', 'good', 'fair', 'poor']),
+  offer_type: z.enum(['loan', 'trade']),
+  estimated_value: z.number().positive().optional(),
+});
+```
 
 ## 📱 Responsive Design
 
-### Breakpoints
-```css
-/* Mobile First */
-sm: 640px   /* Tablettes */
-md: 768px   /* Laptops */
-lg: 1024px  /* Desktops */
-xl: 1280px  /* Large screens */
+### Breakpoints Tailwind
+
+```typescript
+// tailwind.config.js
+module.exports = {
+  theme: {
+    screens: {
+      sm: '640px',   // Mobile large
+      md: '768px',   // Tablet
+      lg: '1024px',  // Desktop
+      xl: '1280px',  // Desktop large
+    },
+  },
+};
 ```
 
-### Stratégie Mobile
-- **Bottom Navigation** sur mobile
-- **Floating Action Button** pour les actions principales
-- **Touch-friendly** interfaces
-- **Progressive Web App** ready
+### Mobile-First Components
+
+```typescript
+// Shell.tsx - Navigation adaptative
+const Shell: React.FC<ShellProps> = ({ children }) => {
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Topbar />
+      <main className={`flex-1 ${isMobile ? 'pb-16' : ''}`}>
+        {children}
+      </main>
+      {isMobile && <BottomNavigation />}
+    </div>
+  );
+};
+```
 
 ## 🚀 Performance
 
-### Optimisations Frontend
-- **Code Splitting** avec React.lazy()
-- **Image Optimization** avec Supabase Storage
-- **Bundle Analysis** avec Vite
-- **Tree Shaking** automatique
+### Optimisations Implementées
 
-### Optimisations Backend
-- **Indexes** sur les colonnes fréquemment requises
-- **Views** pour les requêtes complexes
-- **Pagination** pour les grandes listes
-- **Caching** avec TanStack Query
+1. **Code Splitting** avec Vite
+2. **Lazy Loading** des composants
+3. **Image Optimization** avec Supabase Storage
+4. **Query Caching** avec TanStack Query
+5. **Bundle Optimization** avec Vite
 
-## 🔄 Déploiement
+### Métriques de Performance
 
-### Pipeline CI/CD
-```yaml
-# .github/workflows/deploy.yml
-name: Deploy
-on:
-  push:
-    branches: [main]
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-      - run: npm ci
-      - run: npm run build
-      - run: npm run test
-      - uses: netlify/actions/cli@master
+- **First Contentful Paint** : < 1.5s
+- **Largest Contentful Paint** : < 2.5s
+- **Cumulative Layout Shift** : < 0.1
+- **Time to Interactive** : < 3.5s
+
+## 🔄 CI/CD et Déploiement
+
+### Pipeline de Déploiement
+
+```mermaid
+graph LR
+    A[Code Push] --> B[GitHub Actions]
+    B --> C[Tests Unitaires]
+    C --> D[Build Production]
+    D --> E[Deploy Netlify]
+    E --> F[Supabase Migrations]
+    F --> G[Production Ready]
 ```
 
 ### Environnements
+
 - **Development** : `localhost:5173`
 - **Staging** : `staging.trocall.app`
 - **Production** : `trocall.app`
 
-## 📊 Monitoring
+## 📊 Monitoring et Analytics
 
-### Métriques Frontend
-- **Core Web Vitals** (LCP, FID, CLS)
-- **Bundle Size** monitoring
-- **Error Tracking** avec console.error
+### Métriques Surveillées
 
-### Métriques Backend
-- **Supabase Dashboard** pour les requêtes
-- **Database Performance** monitoring
-- **Storage Usage** tracking
+1. **Performance** : Core Web Vitals
+2. **Erreurs** : JavaScript errors, API failures
+3. **Usage** : User interactions, feature adoption
+4. **Business** : Items created, successful exchanges
 
-## 🔮 Évolutivité
+### Outils Utilisés
 
-### Scalabilité Horizontale
-- **CDN** pour les assets statiques
-- **Database Sharding** si nécessaire
-- **Microservices** pour les fonctionnalités complexes
-
-### Patterns d'Extension
-- **Plugin Architecture** pour les nouvelles fonctionnalités
-- **Event-Driven** pour les notifications
-- **CQRS** pour les requêtes complexes
+- **Supabase Analytics** pour les métriques backend
+- **Vite Bundle Analyzer** pour l'optimisation du bundle
+- **React DevTools** pour le debugging
 
 ---
 
-Cette architecture permet une évolution progressive et maintenable de l'application TrocAll. 🚀
+Cette architecture garantit une application scalable, maintenable et performante, prête pour une croissance future et l'ajout de nouvelles fonctionnalités.

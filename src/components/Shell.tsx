@@ -2,7 +2,7 @@ import React from 'react';
 import Topbar from './Topbar';
 import BottomNavigation from './BottomNavigation';
 import { useMediaQuery } from '../hooks/useMediaQuery';
-import { Plus, MessageCircle, Settings, Trophy } from 'lucide-react';
+import { Plus, MessageCircle, Trophy } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -60,14 +60,7 @@ const Shell: React.FC<ShellProps> = ({ children }) => {
           >
             <MessageCircle size={20} />
           </button>
-          <button
-            onClick={() => navigate('/settings')}
-            className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-white/90 backdrop-blur border border-gray-200 shadow-soft text-gray-700 hover:bg-white transition-transform hover:scale-105 active:scale-95"
-            aria-label="Ouvrir les paramètres"
-            title="Paramètres"
-          >
-            <Settings size={20} />
-          </button>
+          
         </div>
       )}
       {isMobile && <BottomNavigation />}

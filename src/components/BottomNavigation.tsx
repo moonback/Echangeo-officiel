@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Search, MessageCircle, User, Trophy } from 'lucide-react';
+import { Home, Search, MessageCircle, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const BottomNavigation: React.FC = () => {
@@ -8,7 +8,6 @@ const BottomNavigation: React.FC = () => {
     { to: '/', icon: Home, label: 'Accueil' },
     { to: '/items', icon: Search, label: 'Rechercher' },
     { to: '/requests', icon: MessageCircle, label: 'Échanges' },
-    { to: '/gamification', icon: Trophy, label: 'Gamification' },
     { to: '/me', icon: User, label: 'Profil' },
   ];
 

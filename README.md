@@ -1,73 +1,73 @@
-# TrocAll 🛠️
+# TrocAll 🎯
 
-**Une plateforme communautaire de prêt et d'échange d'objets entre voisins, permettant de partager des ressources localement tout en renforçant les liens de quartier.**
+**Plateforme communautaire de partage et d'emprunt d'objets entre voisins**
 
-TrocAll facilite le prêt, l'emprunt et l'échange d'objets du quotidien (outils, livres, équipements sportifs, etc.) entre voisins, avec un système de réputation et de géolocalisation pour créer une économie collaborative de proximité.
+TrocAll révolutionne la consommation en permettant aux voisins de partager, emprunter et échanger des objets du quotidien. Économisez de l'argent, désencombrez votre espace et créez du lien social dans votre quartier.
 
 ## 🚀 Stack Technique
 
 ### Frontend
-- **React 18** avec TypeScript
-- **Vite** pour le build et le dev server
-- **Tailwind CSS** pour le styling
-- **Framer Motion** pour les animations
-- **React Router** pour la navigation
-- **React Hook Form** + **Zod** pour les formulaires
+- **React 18** avec TypeScript pour une interface moderne et type-safe
+- **Vite** comme bundler ultra-rapide
+- **Tailwind CSS** pour un design system cohérent et responsive
+- **Framer Motion** pour des animations fluides
+- **React Router** pour la navigation SPA
 - **TanStack Query** pour la gestion d'état serveur
 - **Zustand** pour l'état global client
+- **React Hook Form** + **Zod** pour la validation des formulaires
 - **Lucide React** pour les icônes
 
-### Backend & Base de données
-- **Supabase** (PostgreSQL + Auth + Storage + Realtime)
-- **PostgreSQL** avec extensions UUID
-- **Row Level Security** (RLS) désactivé en MVP
+### Backend & Services
+- **Supabase** comme Backend-as-a-Service (PostgreSQL + Auth + Storage + Realtime)
+- **Mistral AI** pour l'analyse d'images et suggestions de chat
+- **Mapbox** pour la géolocalisation et cartes interactives
 
-### Outils de développement
+### Outils de Développement
 - **ESLint** + **TypeScript** pour la qualité du code
 - **Vitest** + **Testing Library** pour les tests
-- **Mapbox GL** pour la géolocalisation
+- **PostCSS** + **Autoprefixer** pour le CSS
 
 ## ✨ Fonctionnalités Principales (MVP)
 
-### 🔐 Authentification & Profils
-- Inscription/Connexion sécurisée
-- Profils utilisateurs complets (nom, bio, localisation, avatar)
-- Géolocalisation automatique
-- Système de badges et de réputation
+### 🏠 **Gestion des Objets**
+- Publication d'objets avec photos, descriptions et géolocalisation
+- Catégorisation automatique par IA (outils, électronique, livres, sports, etc.)
+- Système de prêt et d'échange
+- Recherche géolocalisée et par catégories
 
-### 📦 Gestion d'Objets
-- Publication d'objets avec photos, descriptions, catégories
-- 8 catégories : Outils, Électronique, Livres, Sports, Cuisine, Jardin, Jouets, Autre
-- Système de condition (excellent, bon, correct, mauvais)
-- Géolocalisation des objets
-- Gestion de la disponibilité
+### 👥 **Système Communautaire**
+- Profils utilisateurs avec réputation
+- Système de voisinage géographique
+- Chat intégré pour les négociations
+- Notifications en temps réel
 
-### 🤝 Système d'Échanges
-- **Prêts** : Demande d'emprunt d'objets
-- **Troc** : Échange d'objets entre utilisateurs
-- Workflow complet : Demande → Validation → Échange → Retour
-- Messagerie intégrée pour la communication
-- Notifications de statut
+### 🎮 **Gamification Avancée**
+- Système de niveaux et points
+- Badges de réputation (Super Prêteur, Voisin Fiable, etc.)
+- Défis communautaires quotidiens/hebdomadaires
+- Classement des utilisateurs les plus actifs
+- Récompenses et événements communautaires
 
-### ⭐ Système de Réputation
-- Évaluations mutuelles après chaque transaction
-- 3 critères : Communication, Ponctualité, Soin de l'objet
-- Système de badges automatique (Super Prêteur, Voisin Fiable, etc.)
-- Affichage des scores de confiance sur les profils
+### 🤖 **Intelligence Artificielle**
+- Analyse automatique d'images pour catégoriser les objets
+- Suggestions de prix et descriptions
+- Assistant de chat avec suggestions contextuelles
+- Analyse de compatibilité entre utilisateurs
 
-### 🗺️ Géolocalisation
-- Carte interactive des objets disponibles
-- Calcul de distance avec les utilisateurs
-- Filtrage par proximité
+### 📱 **Interface Moderne**
+- Design responsive (mobile-first)
+- Navigation intuitive avec bottom navigation
+- Animations fluides et micro-interactions
+- Mode sombre (en développement)
 
 ## 📋 Prérequis
 
-- **Node.js** 18+ 
-- **npm** ou **yarn**
+- **Node.js** 18+ et npm/yarn
 - **Compte Supabase** (gratuit)
-- **Clé API Mapbox** (gratuite)
+- **Clé API Mistral** (optionnel pour l'IA)
+- **Clé API Mapbox** (optionnel pour les cartes)
 
-## 🛠️ Installation & Configuration
+## 🛠️ Installation et Configuration
 
 ### 1. Cloner le projet
 ```bash
@@ -85,11 +85,11 @@ yarn install
 ### 3. Configuration Supabase
 
 #### Créer un projet Supabase
-1. Aller sur [supabase.com](https://supabase.com)
-2. Créer un nouveau projet
-3. Récupérer l'URL et la clé anonyme
+1. Allez sur [supabase.com](https://supabase.com)
+2. Créez un nouveau projet
+3. Récupérez l'URL et la clé anonyme
 
-#### Exécuter les migrations
+#### Appliquer les migrations
 ```bash
 # Installer Supabase CLI
 npm install -g supabase
@@ -101,178 +101,148 @@ supabase link --project-ref <your-project-ref>
 supabase db push
 ```
 
-### 4. Configuration des variables d'environnement
-
-Créer un fichier `.env.local` :
+### 4. Variables d'environnement
+Créez un fichier `.env.local` :
 ```env
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-VITE_MAPBOX_TOKEN=your_mapbox_token
-VITE_MISTRAL_API_KEY=your_mistral_api_key
+# Supabase (obligatoire)
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+
+# Mistral AI (optionnel)
+VITE_MISTRAL_API_KEY=your-mistral-key
+
+# Mapbox (optionnel)
+VITE_MAPBOX_ACCESS_TOKEN=your-mapbox-token
 ```
 
-### 5. Configuration Mapbox (optionnel)
-1. Créer un compte sur [mapbox.com](https://mapbox.com)
-2. Générer un token d'accès public
-3. L'ajouter dans `.env.local`
-
-### 6. Configuration Mistral IA (optionnel)
-1. Créer un compte sur [mistral.ai](https://mistral.ai)
-2. Générer une clé API
-3. L'ajouter dans `.env.local` comme `VITE_MISTRAL_API_KEY`
-4. Fonctionnalité : Analyse automatique d'images pour pré-remplir les informations d'objets
-
-## 🚀 Lancement du Projet
-
-### Développement
+### 5. Lancer le projet
 ```bash
+# Développement
 npm run dev
-# ou
-yarn dev
-```
 
-L'application sera disponible sur `http://localhost:5173`
-
-### Build de production
-```bash
+# Build de production
 npm run build
-# ou
-yarn build
-```
 
-### Preview de production
-```bash
+# Preview de production
 npm run preview
-# ou
-yarn preview
 ```
 
-### Tests
-```bash
-npm run test
-# ou
-yarn test
-
-# Interface de test
-npm run test:ui
-# ou
-yarn test:ui
-```
-
-## 📁 Structure du Projet
+## 🏗️ Structure du Projet
 
 ```
 src/
 ├── components/           # Composants réutilisables
-│   ├── ui/              # Composants UI de base
-│   ├── AuthGuard.tsx    # Protection des routes
-│   ├── BottomNavigation.tsx
+│   ├── ui/              # Composants UI de base (Button, Card, Input...)
+│   ├── Shell.tsx        # Layout principal avec navigation
+│   ├── Topbar.tsx       # Barre de navigation desktop
+│   ├── BottomNavigation.tsx # Navigation mobile
 │   ├── ItemCard.tsx     # Carte d'objet
 │   ├── MapboxMap.tsx    # Carte interactive
-│   ├── Shell.tsx        # Layout principal
-│   └── Topbar.tsx       # Barre de navigation
+│   ├── ChatAIAssistant.tsx # Assistant IA pour le chat
+│   ├── GamificationPage.tsx # Système de gamification
+│   └── ...
+├── pages/               # Pages de l'application
+│   ├── HomePage.tsx     # Page d'accueil avec dashboard
+│   ├── ItemsPage.tsx    # Liste et recherche d'objets
+│   ├── CreateItemPage.tsx # Création d'objet avec IA
+│   ├── GamificationPage.tsx # Système de niveaux et badges
+│   ├── ChatPage.tsx     # Messagerie intégrée
+│   └── ...
 ├── hooks/               # Hooks personnalisés
 │   ├── useItems.ts      # Gestion des objets
-│   ├── useProfiles.ts   # Gestion des profils
-│   ├── useRequests.ts   # Gestion des demandes
-│   ├── useRatings.ts    # Système d'évaluation
-│   └── useMediaQuery.ts # Responsive design
-├── pages/               # Pages de l'application
-│   ├── HomePage.tsx     # Page d'accueil
-│   ├── ItemsPage.tsx    # Liste des objets
-│   ├── ItemDetailPage.tsx
-│   ├── CreateItemPage.tsx
-│   ├── RequestsPage.tsx # Gestion des échanges
-│   ├── ProfilePage.tsx  # Profil utilisateur
-│   ├── MyProfilePage.tsx
-│   ├── ChatPage.tsx     # Messagerie
+│   ├── useGamification.ts # Système de gamification
+│   ├── useChatAI.ts     # Assistant IA
+│   ├── useAuth.ts       # Authentification
 │   └── ...
 ├── services/            # Services externes
-│   └── supabase.ts      # Configuration Supabase
+│   ├── supabase.ts      # Configuration Supabase
+│   ├── aiService.ts     # Services IA (Mistral)
+│   ├── chatAI.ts        # Assistant de chat
+│   └── ...
 ├── store/               # État global
-│   └── authStore.ts     # Store d'authentification
+│   └── authStore.ts     # Store d'authentification (Zustand)
 ├── types/               # Types TypeScript
 │   ├── index.ts         # Types principaux
-│   └── database.ts      # Types Supabase
-├── utils/               # Utilitaires
-│   └── categories.ts    # Catégories d'objets
-└── test/                # Tests
-    ├── setup.ts
-    └── *.test.tsx
+│   └── database.ts      # Types générés Supabase
+└── utils/               # Utilitaires
+    ├── categories.ts    # Catégories d'objets
+    └── ...
 ```
 
-## 🔧 Variables d'Environnement
-
-| Variable | Description | Requis |
-|----------|-------------|--------|
-| `VITE_SUPABASE_URL` | URL de votre projet Supabase | ✅ |
-| `VITE_SUPABASE_ANON_KEY` | Clé anonyme Supabase | ✅ |
-| `VITE_MAPBOX_TOKEN` | Token d'accès Mapbox | ❌ |
-| `VITE_MISTRAL_API_KEY` | Clé API Mistral pour l'analyse IA | ❌ |
-
-## 🗄️ Base de Données
-
-### Tables principales
-- **profiles** : Profils utilisateurs
-- **items** : Objets à prêter/échanger
-- **item_images** : Images des objets
-- **requests** : Demandes d'emprunt
-- **messages** : Messagerie
-- **item_ratings** : Évaluations d'objets
-- **user_ratings** : Évaluations mutuelles
-
-### Vues
-- **profile_reputation_stats** : Statistiques de réputation
-- **profile_activity_counts** : Compteurs d'activité
-- **profile_badges** : Badges automatiques
-- **item_rating_stats** : Statistiques d'objets
-
-## 🧪 Tests
-
-Le projet utilise **Vitest** et **Testing Library** :
+## 🔧 Scripts Disponibles
 
 ```bash
-# Tests unitaires
-npm run test
+# Développement
+npm run dev              # Serveur de développement Vite
 
-# Tests avec interface graphique
-npm run test:ui
+# Build et déploiement
+npm run build           # Build de production
+npm run preview         # Preview du build
 
-# Tests en mode watch
-npm run test -- --watch
+# Qualité du code
+npm run lint            # ESLint
+npm run lint:fix        # Correction automatique
+
+# Tests
+npm run test            # Tests unitaires Vitest
+npm run test:ui         # Interface de test
 ```
 
-## 📦 Déploiement
+## 🌐 Déploiement
 
-### Netlify (recommandé)
-1. Connecter le repository GitHub
-2. Build command : `npm run build`
-3. Publish directory : `dist`
-4. Variables d'environnement : Ajouter les variables Supabase
+### Netlify (Recommandé)
+1. Connectez votre repository GitHub
+2. Configurez les variables d'environnement
+3. Déployez automatiquement
 
 ### Vercel
-1. Importer le projet
-2. Variables d'environnement : Configurer Supabase
-3. Build automatique
+```bash
+npm install -g vercel
+vercel --prod
+```
 
-## 🤝 Contribution
+### Build statique
+```bash
+npm run build
+# Les fichiers sont dans dist/
+```
 
-Voir [CONTRIBUTING.md](./CONTRIBUTING.md) pour les guidelines de contribution.
+## 🤝 Contribuer
+
+Voir [CONTRIBUTING.md](./CONTRIBUTING.md) pour les guidelines détaillées.
+
+### Workflow de base
+1. Fork le projet
+2. Créer une branche feature (`git checkout -b feature/amazing-feature`)
+3. Commit vos changements (`git commit -m 'Add amazing feature'`)
+4. Push vers la branche (`git push origin feature/amazing-feature`)
+5. Ouvrir une Pull Request
+
+## 📚 Documentation Additionnelle
+
+- [ARCHITECTURE.md](./ARCHITECTURE.md) - Architecture technique détaillée
+- [API_DOCS.md](./API_DOCS.md) - Documentation des APIs
+- [DB_SCHEMA.md](./DB_SCHEMA.md) - Schéma de base de données
+- [ROADMAP.md](./ROADMAP.md) - Feuille de route du projet
+- [CONTRIBUTING.md](./CONTRIBUTING.md) - Guide de contribution
+
+## 🐛 Problèmes Connus
+
+- **Gamification** : Les tables de gamification nécessitent l'application des migrations RLS
+- **IA** : L'analyse d'images nécessite une clé API Mistral
+- **Cartes** : La géolocalisation nécessite une clé API Mapbox
 
 ## 📄 Licence
 
-MIT License - Voir [LICENSE](./LICENSE) pour plus de détails.
+Ce projet est sous licence MIT. Voir [LICENSE](./LICENSE) pour plus de détails.
 
-## 🆘 Support
+## 🙏 Remerciements
 
-- **Documentation** : Voir les fichiers dans `/docs`
-- **Issues** : Utiliser GitHub Issues
-- **Discussions** : GitHub Discussions
-
-## 🗺️ Roadmap
-
-Voir [ROADMAP.md](./ROADMAP.md) pour les fonctionnalités à venir.
+- [Supabase](https://supabase.com) pour l'infrastructure backend
+- [Mistral AI](https://mistral.ai) pour les services d'IA
+- [Mapbox](https://mapbox.com) pour les services de cartographie
+- [Tailwind CSS](https://tailwindcss.com) pour le système de design
 
 ---
 
-**TrocAll** - *Partageons localement, vivons mieux ensemble* 🌱
+**TrocAll** - Révolutionnons la consommation locale ensemble ! 🌱
