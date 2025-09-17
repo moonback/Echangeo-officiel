@@ -88,7 +88,10 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
       className="group"
     >
       <Card className="p-6 hover:shadow-lg transition-all duration-200 cursor-pointer">
-        <Link to={`/communities/${community.id}`} className="block">
+        <div 
+          className="block"
+          onClick={() => window.location.href = `/communities/${community.id}`}
+        >
           {/* Header */}
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
@@ -189,15 +192,12 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
                   )}
                 </Button>
               )}
-              <Link 
-                to={`/communities/${community.id}`}
-                className="text-sm font-medium text-brand-600 hover:text-brand-700"
-              >
+              <span className="text-sm font-medium text-brand-600 hover:text-brand-700">
                 Voir →
-              </Link>
+              </span>
             </div>
           </div>
-        </Link>
+        </div>
       </Card>
     </motion.div>
   );

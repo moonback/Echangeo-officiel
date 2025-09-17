@@ -295,11 +295,14 @@ export function useJoinCommunity() {
     }) => {
       const { data, error } = await supabase
         .from('community_members')
-        .insert({
+        .upsert({
           community_id: communityId,
           user_id: userId,
           role,
-          is_active: true
+          is_active: true,
+          joined_at: new Date().toISOString()
+        }, {
+          onConflict: 'community_id,user_id'
         })
         .select()
         .single();
