@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, Upload, X, Sparkles } from 'lucide-react';
+import { ArrowLeft, Upload, X, Sparkles, AlertCircle, CheckCircle } from 'lucide-react';
 import { useCreateItem } from '../hooks/useItems';
 import { categories } from '../utils/categories';
 import { offerTypes } from '../utils/offerTypes';
@@ -75,22 +75,25 @@ const CreateItemPage: React.FC = () => {
     { id: 1, label: 'Photos & IA' },
     { id: 2, label: 'Informations' },
     { id: 3, label: 'Détails' },
-    { id: 4, label: 'Disponibilité' },
+    { id: 4, label: 'Récapitulatif' },
   ];
 
   const goPrev = () => setStep((s) => Math.max(1, s - 1));
   const goNext = async () => {
     let fieldsToValidate: (keyof CreateItemForm)[] = [];
-    // Étape 1 : Photos (pas de validation obligatoire, mais au moins une image recommandée)
+    // Étape 1 : Photos (recommandé mais pas obligatoire)
     if (step === 1) {
+      // Permettre de continuer sans photos, mais afficher un avertissement
       if (selectedImages.length === 0) {
-        setImagesError('Ajoutez au moins une photo pour continuer (recommandé pour l\'analyse IA)');
-        return;
+        setImagesError('Aucune photo ajoutée - L\'analyse IA ne sera pas disponible');
+      } else {
+        setImagesError(null);
       }
-      setImagesError(null);
     }
     // Étape 2 : Informations de base
     if (step === 2) fieldsToValidate = ['title', 'category', 'condition', 'offer_type'];
+    // Étape 3 : Détails (pas de validation obligatoire)
+    // Étape 4 : Disponibilité (pas de validation obligatoire)
     
     const isValid = fieldsToValidate.length ? await trigger(fieldsToValidate as (keyof CreateItemForm)[]) : true;
     if (isValid) setStep((s) => Math.min(TOTAL_STEPS, s + 1));
@@ -169,9 +172,14 @@ const CreateItemPage: React.FC = () => {
   }, [watch('brand'), watch('model'), watch('category')]);
 
 
-  // Gérer les résultats de l'analyse IA
+  // Gérer les résultats de l'analyse IA (ne pas appliquer automatiquement)
   const handleAIAnalysisResult = (analysis: AIAnalysisResult) => {
-    // Appliquer automatiquement les suggestions de l'IA
+    // Ne rien faire automatiquement - laisser l'utilisateur choisir
+    console.log('Analyse IA terminée:', analysis);
+  };
+
+  // Appliquer manuellement les suggestions de l'IA
+  const applyAIResults = (analysis: AIAnalysisResult) => {
     setValue('title', analysis.title, { shouldValidate: true, shouldDirty: true });
     setValue('description', analysis.description, { shouldValidate: true, shouldDirty: true });
     setValue('category', analysis.category, { shouldValidate: true, shouldDirty: true });
@@ -198,11 +206,18 @@ const CreateItemPage: React.FC = () => {
 
   const onSubmit = async (data: CreateItemForm) => {
     try {
+      // Permettre la création sans photos (mais recommander d'en ajouter)
       if (selectedImages.length === 0) {
-        setStep(1);
-        setImagesError('Veuillez ajouter au moins une photo.');
+        const confirm = window.confirm(
+          'Aucune photo ajoutée. Votre annonce sera moins attractive sans photos. Voulez-vous continuer ?'
+        );
+        if (!confirm) {
+          setStep(1);
+          setImagesError('Ajoutez au moins une photo pour une meilleure visibilité');
         return;
+        }
       }
+      
       await createItem.mutateAsync({
         ...data,
         images: selectedImages,
@@ -230,7 +245,7 @@ const CreateItemPage: React.FC = () => {
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-2xl font-bold text-gray-900">
-          Ajouter un objet
+          Ajouter un objet <span className="text-sm text-gray-500 font-normal">(Étape {step}/{TOTAL_STEPS})</span>
         </h1>
       </motion.div>
 
@@ -279,6 +294,7 @@ const CreateItemPage: React.FC = () => {
                   setImagesError(null);
                 }}
                 onAIAnalysisResult={handleAIAnalysisResult}
+                onApplyAIResults={applyAIResults}
                 maxImages={8}
                 error={imagesError}
               />
@@ -301,6 +317,61 @@ const CreateItemPage: React.FC = () => {
                   <span className="text-sm text-purple-800 font-medium">
                     Informations pré-remplies par l'IA - Vous pouvez les modifier
                   </span>
+                </div>
+              </motion.div>
+            )}
+            
+            {/* Message informatif si pas de photos */}
+            {selectedImages.length === 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4"
+              >
+                <div className="flex items-center justify-between p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-amber-600" />
+                    <span className="text-sm text-amber-800">
+                      Aucune photo ajoutée - Remplissez manuellement les informations
+                    </span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setStep(1)}
+                    className="text-amber-700 hover:bg-amber-100 border border-amber-300"
+                  >
+                    Ajouter des photos
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+            
+            {/* Résumé des photos ajoutées */}
+            {selectedImages.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4"
+              >
+                <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span className="text-sm text-green-800">
+                      {selectedImages.length} photo{selectedImages.length > 1 ? 's' : ''} ajoutée{selectedImages.length > 1 ? 's' : ''}
+                      {aiAnalysisApplied ? ' - Analysées par IA' : ''}
+                    </span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setStep(1)}
+                    className="text-green-700 hover:bg-green-100 border border-green-300"
+                  >
+                    Modifier les photos
+                  </Button>
                 </div>
               </motion.div>
             )}
@@ -497,84 +568,84 @@ const CreateItemPage: React.FC = () => {
                 </div>
               )}
             </div>
-          </>
-        )}
-
-        {/* Step 4: Disponibilité */}
-        {step === 4 && (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
-                <label htmlFor="available_from" className="block text-sm font-medium text-gray-700 mb-1">
-                  Disponible à partir du
-                </label>
-                <Input {...register('available_from')} type="date" id="available_from" />
+            
+            {/* Section Disponibilité et Localisation */}
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Disponibilité et Localisation</h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+                  <label htmlFor="available_from" className="block text-sm font-medium text-gray-700 mb-1">
+                    Disponible à partir du
+                  </label>
+                  <Input {...register('available_from')} type="date" id="available_from" />
+                </div>
+                <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+                  <label htmlFor="available_to" className="block text-sm font-medium text-gray-700 mb-1">
+                    Disponible jusqu'au
+                  </label>
+                  <Input {...register('available_to')} type="date" id="available_to" />
+                </div>
               </div>
-              <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
-                <label htmlFor="available_to" className="block text-sm font-medium text-gray-700 mb-1">
-                  Disponible jusqu'au
-                </label>
-                <Input {...register('available_to')} type="date" id="available_to" />
-              </div>
-            </div>
 
-            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
-              <label htmlFor="location_hint" className="block text-sm font-medium text-gray-700 mb-1">
-                Indication de localisation (ex: étage, bâtiment, etc.)
-              </label>
-              <Input {...register('location_hint')} id="location_hint" />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
-                <label htmlFor="latitude" className="block text-sm font-medium text-gray-700 mb-1">
-                  Latitude
+              <div className="p-4 rounded-xl border border-gray-200 bg-white glass mb-4">
+                <label htmlFor="location_hint" className="block text-sm font-medium text-gray-700 mb-1">
+                  Indication de localisation (ex: étage, bâtiment, etc.)
                 </label>
-                <Input {...register('latitude')} type="number" step="any" id="latitude" />
+                <Input {...register('location_hint')} id="location_hint" />
               </div>
-              <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
-                <label htmlFor="longitude" className="block text-sm font-medium text-gray-700 mb-1">
-                  Longitude
-                </label>
-                <Input {...register('longitude')} type="number" step="any" id="longitude" />
-              </div>
-              <div className="flex items-end p-4 rounded-xl border border-gray-200 bg-white glass">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="w-full border border-gray-300"
-                  onClick={() => {
-                    if (!navigator.geolocation) {
-                      console.warn('Geolocation non supportée');
-                      return;
-                    }
-                    setIsLocating(true);
-                    navigator.geolocation.getCurrentPosition((pos) => {
-                      const lat = pos.coords.latitude;
-                      const lng = pos.coords.longitude;
-                      setValue('latitude', lat as unknown as number, { shouldValidate: true, shouldDirty: true });
-                      setValue('longitude', lng as unknown as number, { shouldValidate: true, shouldDirty: true });
 
-                      fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`, {
-                        headers: { 'Accept-Language': 'fr' },
-                      })
-                        .then((r) => r.json())
-                        .then((json) => {
-                          const display = json?.display_name as string | undefined;
-                          if (display) {
-                            setValue('location_hint', display, { shouldValidate: true, shouldDirty: true });
-                          }
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+                  <label htmlFor="latitude" className="block text-sm font-medium text-gray-700 mb-1">
+                    Latitude
+                  </label>
+                  <Input {...register('latitude')} type="number" step="any" id="latitude" />
+                </div>
+                <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+                  <label htmlFor="longitude" className="block text-sm font-medium text-gray-700 mb-1">
+                    Longitude
+                  </label>
+                  <Input {...register('longitude')} type="number" step="any" id="longitude" />
+                </div>
+                <div className="flex items-end p-4 rounded-xl border border-gray-200 bg-white glass">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full border border-gray-300"
+                    onClick={() => {
+                      if (!navigator.geolocation) {
+                        console.warn('Geolocation non supportée');
+                        return;
+                      }
+                      setIsLocating(true);
+                      navigator.geolocation.getCurrentPosition((pos) => {
+                        const lat = pos.coords.latitude;
+                        const lng = pos.coords.longitude;
+                        setValue('latitude', lat as unknown as number, { shouldValidate: true, shouldDirty: true });
+                        setValue('longitude', lng as unknown as number, { shouldValidate: true, shouldDirty: true });
+
+                        fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`, {
+                          headers: { 'Accept-Language': 'fr' },
                         })
-                        .catch((e) => console.warn('Reverse geocoding failed', e))
-                        .finally(() => setIsLocating(false));
-                    }, (err) => {
-                      console.warn('Geolocation error', err);
-                      setIsLocating(false);
-                    }, { enableHighAccuracy: true, timeout: 10000 });
-                  }}
-                >
-                  {isLocating ? 'Localisation…' : 'Utiliser ma position'}
-                </Button>
+                          .then((r) => r.json())
+                          .then((json) => {
+                            const display = json?.display_name as string | undefined;
+                            if (display) {
+                              setValue('location_hint', display, { shouldValidate: true, shouldDirty: true });
+                            }
+                          })
+                          .catch((e) => console.warn('Reverse geocoding failed', e))
+                          .finally(() => setIsLocating(false));
+                      }, (err) => {
+                        console.warn('Geolocation error', err);
+                        setIsLocating(false);
+                      }, { enableHighAccuracy: true, timeout: 10000 });
+                    }}
+                  >
+                    {isLocating ? 'Localisation…' : 'Utiliser ma position'}
+                  </Button>
+                </div>
               </div>
             </div>
           </>
@@ -584,6 +655,83 @@ const CreateItemPage: React.FC = () => {
 
 
 
+        {/* Step 4: Récapitulatif et validation finale */}
+        {step === 4 && (
+          <>
+            <Card className="p-6 glass-strong">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+                Récapitulatif de votre annonce
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Aperçu des photos */}
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Photos ({selectedImages.length})</h4>
+                  {selectedImages.length > 0 ? (
+                    <div className="grid grid-cols-3 gap-2">
+                      {imagePreviews.slice(0, 6).map((preview, index) => (
+                        <img
+                          key={index}
+                    src={preview}
+                    alt={`Aperçu ${index + 1}`}
+                          className="aspect-square object-cover rounded-lg border border-gray-200"
+                        />
+                      ))}
+                      {selectedImages.length > 6 && (
+                        <div className="aspect-square bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center text-sm text-gray-600">
+                          +{selectedImages.length - 6}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">Aucune photo ajoutée</p>
+                  )}
+                </div>
+                
+                {/* Informations principales */}
+                <div className="space-y-3">
+                  <div>
+                    <h4 className="font-medium text-gray-900">Titre</h4>
+                    <p className="text-sm text-gray-700">{watch('title') || 'Non renseigné'}</p>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900">Catégorie</h4>
+                    <p className="text-sm text-gray-700">
+                      {watch('category') ? categories.find(c => c.value === watch('category'))?.label : 'Non renseignée'}
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900">État</h4>
+                    <p className="text-sm text-gray-700 capitalize">
+                      {watch('condition') ? conditions.find(c => c.value === watch('condition'))?.label : 'Non renseigné'}
+                    </p>
+                  </div>
+                  {watch('estimated_value') && (
+                    <div>
+                      <h4 className="font-medium text-gray-900">Valeur estimée</h4>
+                      <p className="text-sm text-gray-700">
+                        {Number(watch('estimated_value')).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {aiAnalysisApplied && (
+                <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-purple-600" />
+                    <span className="text-sm text-purple-800 font-medium">
+                      Cette annonce a été enrichie par l'analyse IA
+                    </span>
+                  </div>
+                </div>
+              )}
+          </Card>
+          </>
+        )}
+
         {/* Navigation */}
         <div className="flex flex-col gap-3 sm:flex-row sm:space-x-4">
           {step > 1 ? (
@@ -592,9 +740,11 @@ const CreateItemPage: React.FC = () => {
             <Button type="button" variant="ghost" onClick={() => navigate(-1)} className="flex-1 border border-gray-300">Annuler</Button>
           )}
           {step < TOTAL_STEPS ? (
-            <Button type="button" onClick={goNext} className="flex-1">Suivant</Button>
+            <Button type="button" onClick={goNext} className="flex-1">
+              Suivant ({step}/{TOTAL_STEPS})
+            </Button>
           ) : (
-            <Button type="submit" disabled={createItem.isPending || selectedImages.length === 0} className="flex-1 disabled:opacity-50">
+            <Button type="submit" disabled={createItem.isPending} className="flex-1 disabled:opacity-50">
               {createItem.isPending ? 'Création...' : "Créer l'objet"}
             </Button>
           )}

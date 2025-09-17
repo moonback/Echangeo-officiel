@@ -21,6 +21,7 @@ interface AIImageUploadProps {
   imagePreviews: string[];
   onImagesChange: (images: File[], previews: string[]) => void;
   onAIAnalysisResult?: (analysis: AIAnalysisResult) => void;
+  onApplyAIResults?: (analysis: AIAnalysisResult) => void;
   maxImages?: number;
   className?: string;
   error?: string | null;
@@ -31,6 +32,7 @@ const AIImageUpload: React.FC<AIImageUploadProps> = ({
   imagePreviews,
   onImagesChange,
   onAIAnalysisResult,
+  onApplyAIResults,
   maxImages = 8,
   className = '',
   error,
@@ -176,10 +178,10 @@ const AIImageUpload: React.FC<AIImageUploadProps> = ({
   }, [images, analyzeImage, onAIAnalysisResult, clearError, resetAI]);
 
   const applyAIResults = useCallback((analysis: AIAnalysisResult) => {
-    if (onAIAnalysisResult) {
-      onAIAnalysisResult(analysis);
+    if (onApplyAIResults) {
+      onApplyAIResults(analysis);
     }
-  }, [onAIAnalysisResult]);
+  }, [onApplyAIResults]);
 
   return (
     <div className={`space-y-4 ${className}`}>
@@ -355,26 +357,33 @@ const AIImageUpload: React.FC<AIImageUploadProps> = ({
             </div>
             <div className="flex-1">
               <h4 className="text-sm font-semibold text-gray-900 mb-2">
-                Conseils pour une meilleure analyse IA
+                Analyse IA avec Mistral
               </h4>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li className="flex items-start gap-2">
-                  <span className="w-1 h-1 rounded-full bg-purple-500 mt-2 flex-shrink-0" />
-                  Prenez une photo nette avec un bon éclairage
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="w-1 h-1 rounded-full bg-purple-500 mt-2 flex-shrink-0" />
-                  Centrez l'objet dans le cadre
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="w-1 h-1 rounded-full bg-purple-500 mt-2 flex-shrink-0" />
-                  Évitez les arrière-plans encombrés
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="w-1 h-1 rounded-full bg-purple-500 mt-2 flex-shrink-0" />
-                  Montrez les marques/étiquettes si visibles
-                </li>
-              </ul>
+              {!import.meta.env.VITE_MISTRAL_API_KEY ? (
+                <div className="text-sm text-gray-600 space-y-1">
+                  <p>🔑 Pour activer l'analyse IA, ajoutez votre clé API Mistral dans .env.local</p>
+                  <p className="text-xs">Créez un compte sur mistral.ai pour obtenir une clé API gratuite</p>
+                </div>
+              ) : (
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li className="flex items-start gap-2">
+                    <span className="w-1 h-1 rounded-full bg-purple-500 mt-2 flex-shrink-0" />
+                    Prenez une photo nette avec un bon éclairage
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-1 h-1 rounded-full bg-purple-500 mt-2 flex-shrink-0" />
+                    Centrez l'objet dans le cadre
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-1 h-1 rounded-full bg-purple-500 mt-2 flex-shrink-0" />
+                    Évitez les arrière-plans encombrés
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-1 h-1 rounded-full bg-purple-500 mt-2 flex-shrink-0" />
+                    Montrez les marques/étiquettes si visibles
+                  </li>
+                </ul>
+              )}
             </div>
           </div>
         </Card>
