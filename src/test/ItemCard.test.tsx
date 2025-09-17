@@ -66,11 +66,11 @@ describe('ItemCard', () => {
     expect(image).toHaveAttribute('src', 'https://example.com/image.jpg');
   });
 
-  it('renders "Non disponible" when item is not available', () => {
+  it('renders status badge when item is not available', () => {
     const unavailableItem = { ...mockItem, is_available: false };
     render(<ItemCardWrapper item={unavailableItem} />);
     
-    expect(screen.getByText('Non disponible')).toBeInTheDocument();
+    expect(screen.getByText('Indisponible')).toBeInTheDocument();
   });
 
   it('shows anonymous when owner name is not available', () => {
