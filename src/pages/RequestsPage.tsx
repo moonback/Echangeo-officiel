@@ -185,7 +185,86 @@ const RequestsPage: React.FC = () => {
                         <Button variant="danger" size="sm" onClick={() => handleStatusUpdate(request.id, 'rejected')} leftIcon={<X size={16} />}>Refuser</Button>
                       </div>
                     )}
+                    {request.status === 'completed' && (
+                      <div className="flex items-center gap-2">
+                        {!hasUserRatedMap[request.id] && (
+                          <button
+                            onClick={() => setOpenUserRatingFor(openUserRatingFor === request.id ? null : request.id)}
+                            className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                          >
+                            Évaluer l'emprunteur
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
+                  {openUserRatingFor === request.id && (
+                    <form
+                      className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-3 glass"
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        const ratedUserId = request.requester_id as string | undefined;
+                        if (!ratedUserId) return;
+                        await upsertUserRating.mutateAsync({
+                          request_id: request.id,
+                          rated_user_id: ratedUserId,
+                          communication_score: commScore,
+                          punctuality_score: punctScore,
+                          care_score: careScore,
+                          comment: userRatingComment,
+                        });
+                        setOpenUserRatingFor(null);
+                        setUserRatingComment('');
+                      }}
+                    >
+                      <div>
+                        <label className="block text-sm text-gray-700 mb-1">Communication</label>
+                        <div className="flex items-center gap-2">
+                          {[1,2,3,4,5].map((s) => (
+                            <button key={`rc-${s}`} type="button" onClick={() => setCommScore(s)}
+                              className={`w-7 h-7 rounded-full border ${commScore >= s ? 'bg-blue-500 border-blue-600' : 'border-gray-300'} hover:bg-blue-300`} />
+                          ))}
+                          <span className="text-xs text-gray-600 ml-2">{commScore}/5</span>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm text-gray-700 mb-1">Ponctualité</label>
+                        <div className="flex items-center gap-2">
+                          {[1,2,3,4,5].map((s) => (
+                            <button key={`rp-${s}`} type="button" onClick={() => setPunctScore(s)}
+                              className={`w-7 h-7 rounded-full border ${punctScore >= s ? 'bg-blue-500 border-blue-600' : 'border-gray-300'} hover:bg-blue-300`} />
+                          ))}
+                          <span className="text-xs text-gray-600 ml-2">{punctScore}/5</span>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm text-gray-700 mb-1">Soin de l'objet</label>
+                        <div className="flex items-center gap-2">
+                          {[1,2,3,4,5].map((s) => (
+                            <button key={`rs-${s}`} type="button" onClick={() => setCareScore(s)}
+                              className={`w-7 h-7 rounded-full border ${careScore >= s ? 'bg-blue-500 border-blue-600' : 'border-gray-300'} hover:bg-blue-300`} />
+                          ))}
+                          <span className="text-xs text-gray-600 ml-2">{careScore}/5</span>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm text-gray-700 mb-1">Commentaire (optionnel)</label>
+                        <textarea
+                          value={userRatingComment}
+                          onChange={(e) => setUserRatingComment(e.target.value)}
+                          rows={2}
+                          className="input"
+                          placeholder="Partagez votre expérience..."
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <button type="submit" className="btn btn-primary btn-sm" disabled={upsertUserRating.isPending}>
+                          {upsertUserRating.isPending ? 'Envoi...' : 'Publier'}
+                        </button>
+                        <button type="button" className="btn btn-outline btn-sm" onClick={() => setOpenUserRatingFor(null)}>Annuler</button>
+                      </div>
+                    </form>
+                  )}
                 </div>
               ))}
             </div>
