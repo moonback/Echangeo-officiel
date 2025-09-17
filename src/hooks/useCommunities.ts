@@ -47,7 +47,11 @@ export function useCommunity(communityId: string) {
         .from('communities')
         .select(`
           *,
-          stats:community_stats(*)
+          stats:community_stats(*),
+          members:community_members(
+            *,
+            user:profiles(*)
+          )
         `)
         .eq('id', communityId)
         .eq('is_active', true)

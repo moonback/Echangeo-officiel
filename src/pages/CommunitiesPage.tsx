@@ -1,17 +1,14 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Search, MapPin, Plus, Users, Calendar, TrendingUp } from 'lucide-react';
+import { Search, Plus, Users, TrendingUp } from 'lucide-react';
 import { useCommunities } from '../hooks/useCommunities';
-import { useAuthStore } from '../store/authStore';
 import CommunityCard from '../components/CommunityCard';
-import DebugCommunities from '../components/DebugCommunities';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import EmptyState from '../components/EmptyState';
 
 const CommunitiesPage: React.FC = () => {
-  const { user } = useAuthStore();
   const { data: communities, isLoading } = useCommunities();
   const [searchQuery, setSearchQuery] = React.useState('');
   const [sortBy, setSortBy] = React.useState<'members' | 'activity' | 'name'>('members');
@@ -33,9 +30,9 @@ const CommunitiesPage: React.FC = () => {
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'members':
-          return b.total_members - a.total_members;
+          return (b.stats?.total_members || 0) - (a.stats?.total_members || 0);
         case 'activity':
-          return new Date(b.last_activity || 0).getTime() - new Date(a.last_activity || 0).getTime();
+          return new Date(b.stats?.last_activity || 0).getTime() - new Date(a.stats?.last_activity || 0).getTime();
         case 'name':
           return a.name.localeCompare(b.name);
         default:
@@ -64,9 +61,6 @@ const CommunitiesPage: React.FC = () => {
 
   return (
     <div className="p-4 max-w-7xl mx-auto">
-      {/* Debug temporaire */}
-      <DebugCommunities />
-      
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -110,23 +104,23 @@ const CommunitiesPage: React.FC = () => {
                 <div className="text-3xl font-bold text-brand-600 mb-2">
                   {communities?.length || 0}
                 </div>
-                <div className="text-sm text-gray-600">Communautés actives</div>
+                <div className="text-sm text-gray-600">Quartiers actifs</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-green-600 mb-2">
-                  {communities?.reduce((sum, c) => sum + c.total_members, 0) || 0}
+                  {communities?.reduce((sum, c) => sum + (c.stats?.total_members || 0), 0) || 0}
                 </div>
                 <div className="text-sm text-gray-600">Membres total</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-blue-600 mb-2">
-                  {communities?.reduce((sum, c) => sum + c.total_exchanges, 0) || 0}
+                  {communities?.reduce((sum, c) => sum + (c.stats?.total_exchanges || 0), 0) || 0}
                 </div>
                 <div className="text-sm text-gray-600">Échanges réalisés</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-purple-600 mb-2">
-                  {communities?.reduce((sum, c) => sum + c.total_events, 0) || 0}
+                  {communities?.reduce((sum, c) => sum + (c.stats?.total_events || 0), 0) || 0}
                 </div>
                 <div className="text-sm text-gray-600">Événements organisés</div>
               </div>
@@ -149,7 +143,7 @@ const CommunitiesPage: React.FC = () => {
                 <input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Rechercher une communauté..."
+                  placeholder="Rechercher un quartier..."
                   className="w-full pl-12 pr-4 py-3 rounded-2xl border border-gray-300/60 bg-white/60 backdrop-blur-sm focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all duration-200"
                 />
               </div>
@@ -159,7 +153,7 @@ const CommunitiesPage: React.FC = () => {
                 <TrendingUp className="text-brand-600" size={16} />
                 <select
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
+                  onChange={(e) => setSortBy(e.target.value as 'members' | 'activity' | 'name')}
                   className="flex-1 bg-white/60 backdrop-blur-sm border border-gray-300/60 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all duration-200"
                 >
                   <option value="members">Par nombre de membres</option>
@@ -172,7 +166,7 @@ const CommunitiesPage: React.FC = () => {
               <div className="flex items-center justify-end">
                 <div className="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border border-gray-200/50">
                   <span className="text-sm font-medium text-gray-700">
-                    {filteredCommunities.length} communauté{filteredCommunities.length > 1 ? 's' : ''}
+                    {filteredCommunities.length} quartier{filteredCommunities.length > 1 ? 's' : ''}
                   </span>
                 </div>
               </div>
