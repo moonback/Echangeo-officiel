@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useProfile, useItemsByOwner, useBorrowHistory, useLendHistory } from '../hooks/useProfiles';
 import { supabase } from '../services/supabase';
-import { Star, MapPin, Package, MessageCircle } from 'lucide-react';
+import { Star, MapPin, Package, MessageCircle, Link as LinkIcon } from 'lucide-react';
 import Card from '../components/ui/Card';
 import EmptyState from '../components/EmptyState';
 import Button from '../components/ui/Button';
@@ -18,6 +18,10 @@ const ProfilePage: React.FC = () => {
 
   const [itemsLimit, setItemsLimit] = React.useState(6);
   const [ratingStats, setRatingStats] = React.useState<{ average?: number; count?: number }>({});
+  const [itemStatsMap, setItemStatsMap] = React.useState<Record<string, { average?: number; count?: number }>>({});
+  const [sortMode, setSortMode] = React.useState<'recent' | 'popular'>('recent');
+  const [reviews, setReviews] = React.useState<Array<{ id: string; item_id: string; item_title: string; rater_name: string; score: number; comment?: string; created_at: string }>>([]);
+  const [copied, setCopied] = React.useState(false);
 
   React.useEffect(() => {
     const loadRatingStats = async () => {
@@ -43,6 +47,50 @@ const ProfilePage: React.FC = () => {
       setRatingStats({ average, count: totalReviews });
     };
     loadRatingStats();
+  }, [id]);
+
+  // Per-item stats for sorting
+  React.useEffect(() => {
+    const loadItemStatsForSort = async () => {
+      if (!items || items.length === 0) return;
+      const ids = items.map((it) => it.id);
+      const { data, error } = await supabase
+        .from('item_rating_stats')
+        .select('item_id, average_rating, ratings_count')
+        .in('item_id', ids);
+      if (error || !data) return;
+      const map: Record<string, { average?: number; count?: number }> = {};
+      for (const row of data as any[]) {
+        map[row.item_id] = { average: row.average_rating ?? undefined, count: row.ratings_count ?? 0 };
+      }
+      setItemStatsMap(map);
+    };
+    loadItemStatsForSort();
+  }, [items]);
+
+  // Latest detailed reviews across this user's items
+  React.useEffect(() => {
+    const loadReviews = async () => {
+      if (!id) return;
+      const { data, error } = await supabase
+        .from('item_ratings')
+        .select('id, item_id, score, comment, created_at, rater:profiles(full_name, email), item:items!inner(id, title, owner_id)')
+        .eq('items.owner_id', id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+      if (error || !data) return;
+      const rows = (data as any[]).map((r) => ({
+        id: r.id as string,
+        item_id: r.item?.id as string,
+        item_title: r.item?.title as string,
+        rater_name: (r.rater?.full_name as string) || (r.rater?.email as string) || 'Anonyme',
+        score: Number(r.score),
+        comment: r.comment as string | undefined,
+        created_at: r.created_at as string,
+      }));
+      setReviews(rows);
+    };
+    loadReviews();
   }, [id]);
 
   return (
@@ -85,11 +133,20 @@ const ProfilePage: React.FC = () => {
                         ) : null}
                       </div>
                     </div>
-                    {id && (
-                      <Link to={`/chat/${id}`}>
-                        <Button variant="secondary" size="sm" leftIcon={<MessageCircle size={16} />}>Discuter</Button>
-                      </Link>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {id && (
+                        <Link to={`/chat/${id}`}>
+                          <Button variant="secondary" size="sm" leftIcon={<MessageCircle size={16} />}>Discuter</Button>
+                        </Link>
+                      )}
+                      <Button variant="ghost" size="sm" className="border border-gray-300" leftIcon={<LinkIcon size={16} />} onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(window.location.href);
+                          setCopied(true);
+                          setTimeout(() => setCopied(false), 1500);
+                        } catch {}
+                      }}>{copied ? 'Copié' : 'Copier le lien'}</Button>
+                    </div>
                   </div>
                 ) : (
                   <div className="text-gray-500 text-sm">Profil introuvable.</div>
@@ -99,10 +156,33 @@ const ProfilePage: React.FC = () => {
           </div>
           <div className="md:col-span-2">
             <Card>
-              <div className="p-4 border-b border-gray-100 font-medium">Objets publiés</div>
+              <div className="p-4 border-b border-gray-100 font-medium flex items-center justify-between">
+                <span>Objets publiés</span>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-gray-600">Trier:</span>
+                  <select value={sortMode} onChange={(e) => setSortMode(e.target.value as any)} className="px-2 py-1 border border-gray-300 rounded-lg text-sm">
+                    <option value="recent">Plus récents</option>
+                    <option value="popular">Plus populaires</option>
+                  </select>
+                </div>
+              </div>
               {items && items.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4">
-                  {items.slice(0, itemsLimit).map((it) => (
+                  {items
+                    .slice()
+                    .sort((a, b) => {
+                      if (sortMode === 'recent') {
+                        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+                      }
+                      const ra = itemStatsMap[a.id]?.count ?? 0;
+                      const rb = itemStatsMap[b.id]?.count ?? 0;
+                      if (rb !== ra) return rb - ra;
+                      const aa = itemStatsMap[a.id]?.average ?? 0;
+                      const ab = itemStatsMap[b.id]?.average ?? 0;
+                      return ab - aa;
+                    })
+                    .slice(0, itemsLimit)
+                    .map((it) => (
                     <Card key={it.id} className="p-4">
                       <div className="flex items-start justify-between">
                         <div className="min-w-0 pr-3">
@@ -123,6 +203,42 @@ const ProfilePage: React.FC = () => {
                 </div>
               ) : (
                 <div className="p-6"><EmptyState title="Aucun objet" description="Cet utilisateur n'a pas encore publié d'objet." /></div>
+              )}
+            </Card>
+
+            <Card className="mt-4">
+              <div className="p-4 border-b border-gray-100 font-medium flex items-center justify-between">
+                <span>Derniers avis</span>
+                {ratingStats.count ? (
+                  <span className="text-sm text-gray-600">{ratingStats.count} avis au total</span>
+                ) : null}
+              </div>
+              {reviews && reviews.length > 0 ? (
+                <ul className="divide-y divide-gray-100">
+                  {reviews.map((rev) => (
+                    <li key={rev.id} className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="min-w-0 pr-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-gray-900 font-medium">{rev.rater_name}</span>
+                            <span className="text-xs text-gray-500">{new Date(rev.created_at).toLocaleDateString('fr-FR')}</span>
+                          </div>
+                          <div className="flex items-center text-yellow-600 text-sm mt-1">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star key={i} className={`w-4 h-4 ${i < rev.score ? 'fill-yellow-500 text-yellow-500' : 'text-gray-300'}`} />
+                            ))}
+                          </div>
+                          {rev.comment && (
+                            <p className="text-gray-700 text-sm mt-2 whitespace-pre-line">{rev.comment}</p>
+                          )}
+                          <div className="mt-2 text-xs text-gray-600">Sur: <Link to={`/items/${rev.item_id}`} className="text-blue-600 hover:text-blue-700">{rev.item_title}</Link></div>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="p-6"><EmptyState title="Aucun avis" description="Aucun avis publié pour l'instant." /></div>
               )}
             </Card>
 
