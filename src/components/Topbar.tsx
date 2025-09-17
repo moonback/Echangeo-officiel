@@ -155,6 +155,7 @@ const Topbar: React.FC = () => {
     { to: '/items', label: 'Objets' },
     { to: '/neighbours', label: 'Voisins' },
     { to: '/ai-features', label: 'IA' },
+    { to: '/communities', label: 'Quartiers' },
     { to: '/help', label: 'Aide' },
     ...(user ? [] : [
       { to: '/pro', label: 'Pro' },
@@ -236,12 +237,13 @@ const Topbar: React.FC = () => {
             >
               <MessageCircle size={18} />
             </Link>
+            <link rel="stylesheet" href="/communities" />
             
             <Link 
-              to="/gamification" 
+              to="/communities" 
               className="p-2.5 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500" 
-              aria-label="Voir la gamification"
-              title="Gamification"
+              aria-label="Voir les quartiers"
+              title="Quartiers"
             >
               <Trophy size={18} />
             </Link>
@@ -361,6 +363,7 @@ const Topbar: React.FC = () => {
                   const Icon = (
                     to === '/items' ? Search :
                     to === '/neighbours' ? Users :
+                    to === '/communities' ? Trophy :
                     to === '/gamification' ? Trophy :
                     to === '/ai-features' ? Sparkles :
                     to === '/help' ? HelpCircle :
