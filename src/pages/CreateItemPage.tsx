@@ -219,61 +219,7 @@ const CreateItemPage: React.FC = () => {
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-6"
       >
-        <Card className="p-4">
-          {/* Images */}
-          <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Photos (optionnel, max 8)
-          </label>
-          
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
-            {imagePreviews.map((preview, index) => (
-              <div key={index} className="relative aspect-square">
-                <img
-                  src={preview}
-                  alt={`Aperçu ${index + 1}`}
-                  className="w-full h-full object-cover rounded-lg border border-gray-200"
-                />
-                <div className="absolute top-2 left-2 flex gap-2">
-                  {index === 0 ? (
-                    <span className="px-2 py-0.5 text-xs rounded bg-blue-600 text-white">Principale</span>
-                  ) : (
-                    <button type="button" onClick={() => setPrimaryImage(index)} className="px-2 py-0.5 text-xs rounded bg-white/90 border border-gray-300 hover:bg-white">Définir principale</button>
-                  )}
-                </div>
-                <div className="absolute bottom-2 left-2 right-2 flex justify-between">
-                  <button type="button" onClick={() => moveImage(index, -1)} className="px-2 py-1 text-xs rounded bg-white/90 border border-gray-300 hover:bg-white">◀</button>
-                  <button type="button" onClick={() => moveImage(index, 1)} className="px-2 py-1 text-xs rounded bg-white/90 border border-gray-300 hover:bg-white">▶</button>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => removeImage(index)}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            ))}
-            
-            {selectedImages.length < 8 && (
-              <label onDragOver={(e) => e.preventDefault()} onDrop={onDropImages} className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
-                <div className="text-center">
-                  <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <span className="text-sm text-gray-600">Glisser-déposer ou cliquer</span>
-                </div>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
-              </label>
-            )}
-          </div>
-          {imagesError && <p className="text-xs text-red-600">{imagesError}</p>}
-          </div>
-        </Card>
+        
 
         <div>
           <Input label="Titre *" placeholder="Ex: Perceuse électrique Bosch" {...register('title')} error={errors.title?.message} />
@@ -464,6 +410,66 @@ const CreateItemPage: React.FC = () => {
             <p className="text-red-500 text-xs mt-1">{errors.condition.message}</p>
           )}
         </div>
+
+        {/* Photos (optionnel, max 8) - en bas du formulaire */}
+        <Card className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <label className="block text-sm font-medium text-gray-900">
+              Photos (optionnel, max 8)
+            </label>
+            <span className="text-xs text-gray-500">{selectedImages.length}/8</span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
+            {imagePreviews.map((preview, index) => (
+              <div key={index} className="relative aspect-square group">
+                <img
+                  src={preview}
+                  alt={`Aperçu ${index + 1}`}
+                  className="w-full h-full object-cover rounded-lg border border-gray-200"
+                />
+                <div className="absolute top-2 left-2 flex gap-2">
+                  {index === 0 ? (
+                    <span className="px-2 py-0.5 text-xs rounded bg-blue-600 text-white shadow">Principale</span>
+                  ) : (
+                    <button type="button" onClick={() => setPrimaryImage(index)} className="px-2 py-0.5 text-xs rounded bg-white/95 border border-gray-300 hover:bg-white shadow-sm">Définir principale</button>
+                  )}
+                </div>
+                <div className="absolute bottom-2 left-2 right-2 flex justify-between opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button type="button" onClick={() => moveImage(index, -1)} className="px-2 py-1 text-xs rounded bg-white/95 border border-gray-300 hover:bg-white shadow-sm">◀</button>
+                  <button type="button" onClick={() => moveImage(index, 1)} className="px-2 py-1 text-xs rounded bg-white/95 border border-gray-300 hover:bg-white shadow-sm">▶</button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeImage(index)}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow"
+                  aria-label="Supprimer l'image"
+                  title="Supprimer"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            ))}
+
+            {selectedImages.length < 8 && (
+              <label onDragOver={(e) => e.preventDefault()} onDrop={onDropImages} className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
+                <div className="text-center">
+                  <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                  <span className="text-sm text-gray-600">Glisser-déposer ou cliquer</span>
+                  <div className="text-xs text-gray-400">PNG, JPG, GIF</div>
+                </div>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+              </label>
+            )}
+          </div>
+          {imagesError && <p className="text-xs text-red-600">{imagesError}</p>}
+        </Card>
 
         {/* Submit Button */}
         <div className="flex flex-col gap-3 sm:flex-row sm:space-x-4">
