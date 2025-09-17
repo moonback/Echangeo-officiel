@@ -39,14 +39,24 @@ export function useProfile(id?: string) {
   return useQuery({
     queryKey: ['profile', id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Base profile
+      const { data: base, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select(`*`)
         .eq('id', id)
         .single();
-
       if (error) throw error;
-      return data as Profile;
+
+      // Parallel counts (items owned, completed borrow requests made by the user)
+      const [itemsCountRes, completedBorrowsRes] = await Promise.all([
+        supabase.from('items').select('*', { count: 'exact', head: true }).eq('owner_id', id),
+        supabase.from('requests').select('*', { count: 'exact', head: true }).eq('requester_id', id).eq('status', 'completed'),
+      ]);
+
+      const profile: any = { ...base };
+      profile.items_count = itemsCountRes.count ?? 0;
+      profile.completed_borrows = completedBorrowsRes.count ?? 0;
+      return profile as Profile;
     },
     enabled: !!id,
   });
@@ -66,6 +76,38 @@ export function useItemsByOwner(ownerId?: string) {
       return data as Item[];
     },
     enabled: !!ownerId,
+  });
+}
+
+export function useBorrowHistory(userId?: string) {
+  return useQuery({
+    queryKey: ['borrow-history', userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('requests')
+        .select(`*, item:items(*), owner:items(owner:profiles(*))`)
+        .eq('requester_id', userId)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!userId,
+  });
+}
+
+export function useLendHistory(userId?: string) {
+  return useQuery({
+    queryKey: ['lend-history', userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('requests')
+        .select(`*, item:items!inner(*), requester:profiles(*)`)
+        .eq('items.owner_id', userId)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!userId,
   });
 }
 
