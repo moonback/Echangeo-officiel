@@ -11,6 +11,7 @@ import Input from '../components/ui/Input';
 import TextArea from '../components/ui/TextArea';
 import Card from '../components/ui/Card';
 import EmptyState from '../components/EmptyState';
+import { supabase } from '../services/supabase';
 
 const profileSchema = z.object({
   full_name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
@@ -25,8 +26,10 @@ const MyProfilePage: React.FC = () => {
   const { profile, updateProfile } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const { data: transactions } = useTransactions(profile?.id);
   const [activeTab, setActiveTab] = useState<'profil' | 'transactions' | 'parametres'>('profil');
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const {
     register,
@@ -54,6 +57,55 @@ const MyProfilePage: React.FC = () => {
     setLoading(false);
   };
 
+  const handleAvatarSelect = () => {
+    if (fileInputRef.current) fileInputRef.current.click();
+  };
+
+  const sanitizeFileName = (name: string) => {
+    return name
+      .normalize('NFKD')
+      .replace(/[^\w.\-\s]/g, '')
+      .replace(/\s+/g, '-')
+      .toLowerCase();
+  };
+
+  const uploadAvatar = async (file: File) => {
+    if (!profile?.id) return;
+    const MAX_SIZE = 5 * 1024 * 1024;
+    if (!file.type.startsWith('image/')) throw new Error('Format de fichier invalide');
+    if (file.size > MAX_SIZE) throw new Error('Image trop volumineuse (5 Mo max)');
+
+    const sanitized = sanitizeFileName(file.name);
+    const key = `${profile.id}/${Date.now()}-${sanitized}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(key, file);
+    if (uploadError) throw uploadError;
+
+    const { data } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(key);
+    const publicUrl = data.publicUrl;
+
+    await updateProfile({ avatar_url: publicUrl });
+  };
+
+  const onAvatarChange: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarUploading(true);
+    try {
+      await uploadAvatar(file);
+    } catch (err) {
+      console.error(err);
+      alert(err instanceof Error ? err.message : 'Échec de l\'upload');
+    }
+    setAvatarUploading(false);
+    // reset the input so selecting the same file again triggers change
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   const handleCancel = () => {
     reset({
       full_name: profile?.full_name || '',
@@ -72,8 +124,22 @@ const MyProfilePage: React.FC = () => {
           <div className="absolute -right-10 -top-10 w-40 h-40 bg-brand-100/50 rounded-full blur-3xl" />
           <div className="p-6 md:p-8 flex items-start md:items-center justify-between gap-6 flex-col md:flex-row">
             <div className="flex items-center">
-              <div className="w-20 h-20 rounded-2xl bg-brand-100 flex items-center justify-center mr-4 border border-brand-200">
-                <User className="w-10 h-10 text-brand-700" />
+              <div className="relative w-20 h-20 rounded-2xl bg-brand-100 flex items-center justify-center mr-4 border border-brand-200 overflow-hidden">
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-10 h-10 text-brand-700" />
+                )}
+                <button
+                  type="button"
+                  onClick={handleAvatarSelect}
+                  className="absolute bottom-1 right-1 text-xs px-2 py-1 rounded-md bg-white/90 border border-gray-300 hover:bg-white"
+                  disabled={avatarUploading}
+                  aria-label="Changer la photo"
+                >
+                  {avatarUploading ? '...' : 'Changer'}
+                </button>
+                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={onAvatarChange} />
               </div>
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{profile?.full_name || 'Nom non renseigné'}</h1>

@@ -118,11 +118,11 @@ export function useTransactions(userId?: string) {
       const [asBorrower, asLender] = await Promise.all([
         supabase
           .from('requests')
-          .select(`*, item:items(*), other:items(owner:profiles(*))`)
+          .select(`*, item:items(*, owner:profiles(*))`)
           .eq('requester_id', userId),
         supabase
           .from('requests')
-          .select(`*, item:items!inner(*), other:requester:profiles(*)`)
+          .select(`*, item:items!inner(*), requester:profiles!requests_requester_id_fkey(*)`)
           .eq('items.owner_id', userId),
       ]);
 
