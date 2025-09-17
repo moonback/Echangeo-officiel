@@ -85,87 +85,115 @@ const EditItemPage: React.FC = () => {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Titre</label>
-          <Input {...register('title')} />
+          <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+            <Input {...register('title')} />
+          </div>
           {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>}
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-          <TextArea {...register('description')} rows={3} />
+          <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+            <TextArea {...register('description')} rows={3} />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
-            <Select {...register('category')}>
-              {categories.map((c) => (
-                <option key={c.value} value={c.value}>{c.label}</option>
-              ))}
-            </Select>
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+              <Select {...register('category')}>
+                {categories.map((c) => (
+                  <option key={c.value} value={c.value}>{c.label}</option>
+                ))}
+              </Select>
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">État</label>
-            <Select {...register('condition')}>
-              <option value="excellent">Excellent</option>
-              <option value="good">Bon</option>
-              <option value="fair">Correct</option>
-              <option value="poor">Usé</option>
-            </Select>
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+              <Select {...register('condition')}>
+                <option value="excellent">Excellent</option>
+                <option value="good">Bon</option>
+                <option value="fair">Correct</option>
+                <option value="poor">Usé</option>
+              </Select>
+            </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Marque</label>
-            <Input {...register('brand')} />
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+              <Input {...register('brand')} />
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Modèle</label>
-            <Input {...register('model')} />
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+              <Input {...register('model')} />
+            </div>
           </div>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Valeur estimée (€)</label>
-          <Input type="number" step="0.01" min="0" {...register('estimated_value')} />
+          <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+            <Input type="number" step="0.01" min="0" {...register('estimated_value')} />
+          </div>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Tags (séparés par des virgules)</label>
-          <Input {...register('tags')} />
+          <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+            <Input {...register('tags')} />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Disponible à partir du</label>
-            <Input type="date" {...register('available_from')} />
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+              <Input type="date" {...register('available_from')} />
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Disponible jusqu'au</label>
-            <Input type="date" {...register('available_to')} />
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+              <Input type="date" {...register('available_to')} />
+            </div>
           </div>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Indication de localisation</label>
-          <Input {...register('location_hint')} />
+          <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+            <Input {...register('location_hint')} />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Latitude</label>
-            <Input type="number" step="any" {...register('latitude')} />
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+              <Input type="number" step="any" {...register('latitude')} />
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Longitude</label>
-            <Input type="number" step="any" {...register('longitude')} />
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+              <Input type="number" step="any" {...register('longitude')} />
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Disponibilité</label>
-            <Select {...register('is_available')}>
-              <option value="true">Disponible</option>
-              <option value="false">Non disponible</option>
-            </Select>
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+              <Select {...register('is_available')}>
+                <option value="true">Disponible</option>
+                <option value="false">Non disponible</option>
+              </Select>
+            </div>
           </div>
         </div>
 
