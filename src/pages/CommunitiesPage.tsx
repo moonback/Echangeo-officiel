@@ -99,30 +99,30 @@ const CommunitiesPage: React.FC = () => {
           className="mb-8"
         >
           <Card className="p-6 glass-card">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-brand-600 mb-2">
+            <div className="flex flex-row items-center justify-between gap-6">
+              <div className="flex flex-col items-center flex-1">
+                <span className="text-3xl font-bold text-brand-600">
                   {communities?.length || 0}
-                </div>
-                <div className="text-sm text-gray-600">Quartiers actifs</div>
+                </span>
+                <span className="text-sm text-gray-600 mt-1">Quartiers actifs</span>
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-600 mb-2">
+              <div className="flex flex-col items-center flex-1">
+                <span className="text-3xl font-bold text-green-600">
                   {communities?.reduce((sum, c) => sum + (c.stats?.total_members || 0), 0) || 0}
-                </div>
-                <div className="text-sm text-gray-600">Membres total</div>
+                </span>
+                <span className="text-sm text-gray-600 mt-1">Membres total</span>
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600 mb-2">
+              <div className="flex flex-col items-center flex-1">
+                <span className="text-3xl font-bold text-blue-600">
                   {communities?.reduce((sum, c) => sum + (c.stats?.total_exchanges || 0), 0) || 0}
-                </div>
-                <div className="text-sm text-gray-600">Échanges réalisés</div>
+                </span>
+                <span className="text-sm text-gray-600 mt-1">Échanges réalisés</span>
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-purple-600 mb-2">
+              <div className="flex flex-col items-center flex-1">
+                <span className="text-3xl font-bold text-purple-600">
                   {communities?.reduce((sum, c) => sum + (c.stats?.total_events || 0), 0) || 0}
-                </div>
-                <div className="text-sm text-gray-600">Événements organisés</div>
+                </span>
+                <span className="text-sm text-gray-600 mt-1">Événements organisés</span>
               </div>
             </div>
           </Card>
