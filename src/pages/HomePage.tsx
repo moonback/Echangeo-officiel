@@ -96,6 +96,9 @@ const HomePage: React.FC = () => {
               center={{ lat: userLoc?.lat ?? 48.8566, lng: userLoc?.lng ?? 2.3522 }}
               zoom={12}
               height={360}
+              autoFit
+              showUserLocation={!!userLoc}
+              userLocation={userLoc || undefined}
               markers={(items || [])
                 .filter((it) => typeof it.latitude === 'number' && typeof it.longitude === 'number')
                 .map((it) => ({

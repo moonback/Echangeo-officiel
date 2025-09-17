@@ -18,6 +18,9 @@ interface MapboxMapProps {
   height?: number | string;
   markers?: MapboxMarker[];
   onMarkerClick?: (id: string) => void;
+  autoFit?: boolean;
+  userLocation?: { lat: number; lng: number };
+  showUserLocation?: boolean;
 }
 
 const MapboxMap: React.FC<MapboxMapProps> = ({
@@ -27,9 +30,14 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
   height = 360,
   markers = [],
   onMarkerClick,
+  autoFit = false,
+  userLocation,
+  showUserLocation = false,
 }) => {
   const mapContainerRef = React.useRef<HTMLDivElement | null>(null);
   const mapRef = React.useRef<mapboxgl.Map | null>(null);
+  const hoverPopupRef = React.useRef<mapboxgl.Popup | null>(null);
+  const userMarkerRef = React.useRef<mapboxgl.Marker | null>(null);
 
   React.useEffect(() => {
     if (!accessToken) return; // Do not init without token
@@ -179,6 +187,33 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
           }
         });
 
+        // Hover tooltip (title)
+        map.on('mouseenter', 'unclustered-point', (e) => {
+          map.getCanvas().style.cursor = 'pointer';
+          const features = map.queryRenderedFeatures(e.point, { layers: ['unclustered-point'] });
+          const feature = features[0];
+          if (!feature) return;
+          const title = feature.properties && (feature.properties as any).title;
+          const coords = (feature.geometry as any).coordinates as [number, number];
+          if (!title) return;
+          if (hoverPopupRef.current) {
+            hoverPopupRef.current.remove();
+            hoverPopupRef.current = null;
+          }
+          const hoverPopup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false, offset: 8 })
+            .setLngLat(coords)
+            .setHTML(`<div style="font-size:12px;font-weight:600;color:#111827;padding:4px 6px;background:#ffffff;border:1px solid #e5e7eb;border-radius:6px;box-shadow:0 4px 10px rgba(0,0,0,0.08);">${String(title)}</div>`)
+            .addTo(map);
+          hoverPopupRef.current = hoverPopup;
+        });
+        map.on('mouseleave', 'unclustered-point', () => {
+          map.getCanvas().style.cursor = '';
+          if (hoverPopupRef.current) {
+            hoverPopupRef.current.remove();
+            hoverPopupRef.current = null;
+          }
+        });
+
         map.on('mouseenter', 'clusters', () => (map.getCanvas().style.cursor = 'pointer'));
         map.on('mouseleave', 'clusters', () => (map.getCanvas().style.cursor = ''));
         map.on('mouseenter', 'unclustered-point', () => (map.getCanvas().style.cursor = 'pointer'));
@@ -208,7 +243,7 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
       .map((m) => ({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: [m.longitude, m.latitude] },
-        properties: { id: m.id, title: m.title || '' },
+        properties: { id: m.id, title: m.title || '', imageUrl: m.imageUrl || '', category: m.category || '' },
       }));
 
     const data: GeoJSON.FeatureCollection = {
@@ -217,7 +252,56 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
     };
 
     source.setData(data as any);
+
+    // Auto-fit to markers (and optionally user location)
+    if (autoFit && features.length > 0) {
+      const bounds = new mapboxgl.LngLatBounds();
+      for (const f of features as any[]) {
+        bounds.extend(f.geometry.coordinates as [number, number]);
+      }
+      if (showUserLocation && userLocation) {
+        bounds.extend([userLocation.lng, userLocation.lat]);
+      }
+      map.fitBounds(bounds, { padding: 40, maxZoom: 14, duration: 600 });
+    }
   }, [markers]);
+
+  // User location marker (pulsing)
+  React.useEffect(() => {
+    if (!mapRef.current) return;
+    const map = mapRef.current;
+    if (!showUserLocation || !userLocation) {
+      if (userMarkerRef.current) {
+        userMarkerRef.current.remove();
+        userMarkerRef.current = null;
+      }
+      return;
+    }
+    const el = document.createElement('div');
+    el.style.width = '16px';
+    el.style.height = '16px';
+    el.style.borderRadius = '9999px';
+    el.style.background = '#2563eb';
+    el.style.boxShadow = '0 0 0 0 rgba(37,99,235,0.7)';
+    el.style.animation = 'pulseMapUser 2s infinite';
+
+    // Inject keyframes once
+    const styleId = 'map-user-pulse-style';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.innerHTML = `@keyframes pulseMapUser { 0% { box-shadow: 0 0 0 0 rgba(37,99,235,0.7);} 70% { box-shadow: 0 0 0 16px rgba(37,99,235,0);} 100% { box-shadow: 0 0 0 0 rgba(37,99,235,0);} }`;
+      document.head.appendChild(style);
+    }
+
+    if (userMarkerRef.current) {
+      userMarkerRef.current.setLngLat([userLocation.lng, userLocation.lat]);
+    } else {
+      userMarkerRef.current = new mapboxgl.Marker({ element: el, anchor: 'center' })
+        .setLngLat([userLocation.lng, userLocation.lat])
+        .addTo(map);
+    }
+  }, [showUserLocation, userLocation?.lat, userLocation?.lng]);
 
   if (!accessToken) {
     return (
