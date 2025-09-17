@@ -4,11 +4,23 @@
 
 @layer base {
   html { @apply text-gray-800 antialiased; font-feature-settings: 'ss01' on, 'cv01' on; }
-  body { @apply text-base; }
+  body { @apply text-base; font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Ubuntu, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+    background: radial-gradient(1200px 700px at 10% -10%, rgba(29,134,255,0.10), transparent),
+                radial-gradient(900px 600px at 90% -10%, rgba(8,74,160,0.10), transparent),
+                linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  }
   h1 { @apply text-2xl font-bold; }
   h2 { @apply text-xl font-semibold; }
   h3 { @apply text-lg font-semibold; }
   :focus-visible { @apply outline-none ring-2 ring-brand-500; }
+
+  @media (prefers-color-scheme: dark) {
+    html { @apply text-gray-100; }
+    body { background:
+      radial-gradient(1200px 700px at 10% -10%, rgba(29,134,255,0.10), transparent),
+      radial-gradient(900px 600px at 90% -10%, rgba(8,74,160,0.20), transparent),
+      linear-gradient(180deg, #0b1220 0%, #0f172a 100%); }
+  }
 }
 
 @layer components {
@@ -20,4 +32,22 @@
   .badge { @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium; }
   .badge-green { @apply badge bg-green-100 text-green-700; }
   .badge-red { @apply badge bg-red-100 text-red-700; }
+
+  /* Glass card */
+  .glass { @apply border border-white/20 bg-white/60 backdrop-blur; box-shadow: 0 10px 40px -16px rgba(2,6,23,0.2); }
+  @media (prefers-color-scheme: dark) {
+    .glass { @apply border-white/10 bg-white/10; box-shadow: 0 10px 40px -18px rgba(0,0,0,0.7); }
+  }
+
+  /* Soft icon hover */
+  .icon-tap { transition: transform .15s ease, color .15s ease, background-color .15s ease; }
+  .icon-tap:active { transform: scale(0.96); }
+
+  /* Verified badge animation */
+  @keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    60% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .pop-in { animation: popIn .35s ease-out both; }
 }

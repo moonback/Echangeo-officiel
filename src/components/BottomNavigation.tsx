@@ -12,7 +12,7 @@ const BottomNavigation: React.FC = () => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-gray-200 z-50">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-gray-200 z-50">
       <div className="grid grid-cols-4">
         {navItems.map(({ to, icon: Icon, label }) => (
           <NavLink
@@ -27,8 +27,10 @@ const BottomNavigation: React.FC = () => {
           >
             {({ isActive }) => (
               <>
-                <Icon size={24} />
-                <span className="text-xs mt-1 font-medium">{label}</span>
+                <span className={`icon-tap inline-flex items-center justify-center ${isActive ? 'text-blue-600' : 'text-gray-500'}`}>
+                  <Icon size={24} />
+                </span>
+                <span className="text-[11px] mt-1 font-medium">{label}</span>
                 {isActive && (
                   <motion.div
                     layoutId="bottomNavActiveIndicator"

@@ -121,19 +121,28 @@ const MyProfilePage: React.FC = () => {
       {/* Header modern */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
         <div className="relative overflow-hidden rounded-2xl border border-brand-100 bg-gradient-to-br from-white to-brand-50">
+          {/* Banner */}
+          <div className="h-28 md:h-32 bg-gradient-to-r from-brand-100 via-brand-50 to-white" />
+          {/* Halo decorations */}
           <div className="absolute -right-10 -top-10 w-40 h-40 bg-brand-100/50 rounded-full blur-3xl" />
-          <div className="p-6 md:p-8 flex items-start md:items-center justify-between gap-6 flex-col md:flex-row">
+          <div className="p-6 md:p-8 -mt-12 flex items-start md:items-center justify-between gap-6 flex-col md:flex-row">
             <div className="flex items-center">
-              <div className="relative w-20 h-20 rounded-2xl bg-brand-100 flex items-center justify-center mr-4 border border-brand-200 overflow-hidden">
+              {/* Circular avatar with halo */}
+              <div className="relative w-24 h-24 rounded-full bg-white flex items-center justify-center mr-4 border-2 border-white shadow-soft overflow-hidden">
+                <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-brand-400/30 to-brand-600/30 blur-md" />
+                <div className="relative w-22 h-22 rounded-full overflow-hidden">
                 {profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                    <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
-                  <User className="w-10 h-10 text-brand-700" />
+                    <div className="w-full h-full bg-brand-100 flex items-center justify-center">
+                      <User className="w-10 h-10 text-brand-700" />
+                    </div>
                 )}
+                </div>
                 <button
                   type="button"
                   onClick={handleAvatarSelect}
-                  className="absolute bottom-1 right-1 text-xs px-2 py-1 rounded-md bg-white/90 border border-gray-300 hover:bg-white"
+                  className="absolute -bottom-2 right-0 translate-y-1/2 text-xs px-2 py-1 rounded-full bg-white/95 border border-gray-200 hover:bg-white shadow"
                   disabled={avatarUploading}
                   aria-label="Changer la photo"
                 >
@@ -142,11 +151,30 @@ const MyProfilePage: React.FC = () => {
                 <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={onAvatarChange} />
               </div>
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{profile?.full_name || 'Nom non renseigné'}</h1>
+                <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900" style={{ fontFamily: 'Playfair Display, serif' }}>{profile?.full_name || 'Nom non renseigné'}</h1>
                 <div className="mt-1 flex items-center gap-3 text-sm text-gray-600">
                   <span className="inline-flex items-center gap-1"><Mail className="w-4 h-4" /> {profile?.email || '—'}</span>
                   {profile?.phone && <span className="inline-flex items-center gap-1"><Phone className="w-4 h-4" /> {profile.phone}</span>}
                   {profile?.address && <span className="inline-flex items-center gap-1"><MapPin className="w-4 h-4" /> {profile.address}</span>}
+                </div>
+                {/* Profile completeness (placeholder simple calc) */}
+                <div className="mt-3">
+                  {(() => {
+                    const fields = [profile?.full_name, profile?.bio, profile?.phone, profile?.address];
+                    const ratio = Math.round((fields.filter(Boolean).length / fields.length) * 100);
+                    const pct = isNaN(ratio) ? 0 : ratio;
+                    return (
+                      <div className="w-full max-w-xs">
+                        <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+                          <span>Profil complété</span>
+                          <span>{pct}%</span>
+                        </div>
+                        <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-brand-400 to-brand-600" style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
@@ -194,52 +222,79 @@ const MyProfilePage: React.FC = () => {
       {/* Tab content: Profil */}
       {activeTab === 'profil' && (
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-          <Card className="p-6">
-            {!isEditing ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">Nom complet</label>
-                  <p className="text-gray-900">{profile?.full_name || 'Non renseigné'}</p>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Carte Infos personnelles */}
+            <Card className="p-6 lg:col-span-2 glass">
+              {!isEditing ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">Nom complet</label>
+                    <p className="text-gray-900">{profile?.full_name || 'Non renseigné'}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-1">Téléphone</label>
+                    <p className="text-gray-900">{profile?.phone || 'Non renseigné'}</p>
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-500 mb-1">Bio</label>
+                    <p className="text-gray-900">{profile?.bio || 'Aucune bio renseignée'}</p>
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-500 mb-1">Adresse</label>
+                    <p className="text-gray-900">{profile?.address || 'Non renseignée'}</p>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">Téléphone</label>
-                  <p className="text-gray-900">{profile?.phone || 'Non renseigné'}</p>
+              ) : (
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Input {...register('full_name')} id="full_name" label="Nom complet *" />
+                      {errors.full_name && (
+                        <p className="text-red-500 text-xs mt-1">{errors.full_name.message}</p>
+                      )}
+                    </div>
+                    <div>
+                      <Input {...register('phone')} type="tel" id="phone" label="Téléphone" placeholder="06 12 34 56 78" />
+                    </div>
+                    <div className="md:col-span-2">
+                      <TextArea {...register('bio')} id="bio" rows={3} label="Bio" placeholder="Parlez-vous en quelques mots..." />
+                    </div>
+                    <div className="md:col-span-2">
+                      <Input {...register('address')} id="address" label="Adresse" placeholder="123 rue de la Paix, 75001 Paris" />
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                    <Button type="submit" disabled={loading} className="disabled:opacity-50" leftIcon={<Save size={16} />}>{loading ? 'Enregistrement...' : 'Enregistrer'}</Button>
+                    <Button type="button" variant="ghost" className="border border-gray-300" onClick={handleCancel} leftIcon={<X size={16} />}>Annuler</Button>
+                  </div>
+                </form>
+              )}
+            </Card>
+
+            {/* Carte Confiance & Statistiques */}
+            <Card className="p-6 glass">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-gray-900">Confiance & Statistiques</h3>
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-green-100 text-green-700 pop-in">
+                  <CheckCircle className="w-3 h-3" /> Vérifié
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div className="p-3 rounded-xl bg-white/70 border border-gray-100">
+                  <p className="text-xs text-gray-500">Objets</p>
+                  <p className="text-lg font-semibold text-gray-900">{(profile as any)?.items_count ?? 0}</p>
                 </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-500 mb-1">Bio</label>
-                  <p className="text-gray-900">{profile?.bio || 'Aucune bio renseignée'}</p>
+                <div className="p-3 rounded-xl bg-white/70 border border-gray-100">
+                  <p className="text-xs text-gray-500">Emprunts</p>
+                  <p className="text-lg font-semibold text-gray-900">{(profile as any)?.completed_borrows ?? 0}</p>
                 </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-500 mb-1">Adresse</label>
-                  <p className="text-gray-900">{profile?.address || 'Non renseignée'}</p>
+                <div className="p-3 rounded-xl bg-white/70 border border-gray-100">
+                  <p className="text-xs text-gray-500">Note</p>
+                  <p className="text-lg font-semibold text-gray-900">{(profile as any)?.average_rating ? `${(profile as any).average_rating.toFixed(1)}` : '—'}</p>
                 </div>
               </div>
-            ) : (
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Input {...register('full_name')} id="full_name" label="Nom complet *" />
-                    {errors.full_name && (
-                      <p className="text-red-500 text-xs mt-1">{errors.full_name.message}</p>
-                    )}
-                  </div>
-                  <div>
-                    <Input {...register('phone')} type="tel" id="phone" label="Téléphone" placeholder="06 12 34 56 78" />
-                  </div>
-                  <div className="md:col-span-2">
-                    <TextArea {...register('bio')} id="bio" rows={3} label="Bio" placeholder="Parlez-vous en quelques mots..." />
-                  </div>
-                  <div className="md:col-span-2">
-                    <Input {...register('address')} id="address" label="Adresse" placeholder="123 rue de la Paix, 75001 Paris" />
-                  </div>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                  <Button type="submit" disabled={loading} className="disabled:opacity-50" leftIcon={<Save size={16} />}>{loading ? 'Enregistrement...' : 'Enregistrer'}</Button>
-                  <Button type="button" variant="ghost" className="border border-gray-300" onClick={handleCancel} leftIcon={<X size={16} />}>Annuler</Button>
-                </div>
-              </form>
-            )}
-          </Card>
+            </Card>
+          </div>
         </motion.div>
       )}
 
