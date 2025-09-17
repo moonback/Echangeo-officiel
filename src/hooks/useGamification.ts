@@ -100,12 +100,24 @@ export function useGamificationStats(profileId?: string) {
 
       if (error) {
         if (error.code === 'PGRST116') return null; // Pas de données
+        if (error.code === 'PGRST301' || error.message?.includes('406')) {
+          // Tables n'existent pas ou permissions manquantes
+          console.warn('Tables de gamification non disponibles:', error.message);
+          return null;
+        }
         throw error;
       }
 
       return data;
     },
     enabled: !!targetId,
+    retry: (failureCount, error: any) => {
+      // Ne pas retry si les tables n'existent pas
+      if (error?.code === 'PGRST301' || error?.message?.includes('406')) {
+        return false;
+      }
+      return failureCount < 3;
+    },
   });
 }
 
@@ -127,12 +139,24 @@ export function useUserLevel(profileId?: string) {
 
       if (error) {
         if (error.code === 'PGRST116') return null; // Pas de données
+        if (error.code === 'PGRST301' || error.message?.includes('406')) {
+          // Tables n'existent pas ou permissions manquantes
+          console.warn('Tables de gamification non disponibles:', error.message);
+          return null;
+        }
         throw error;
       }
 
       return data;
     },
     enabled: !!targetId,
+    retry: (failureCount, error: any) => {
+      // Ne pas retry si les tables n'existent pas
+      if (error?.code === 'PGRST301' || error?.message?.includes('406')) {
+        return false;
+      }
+      return failureCount < 3;
+    },
   });
 }
 

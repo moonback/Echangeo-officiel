@@ -29,15 +29,19 @@ import {
   useCheckBadges,
   getLevelColor
 } from '../hooks/useGamification';
+import { diagnoseGamification } from '../utils/testGamification';
 
 const GamificationPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'challenges' | 'leaderboard' | 'badges' | 'rewards' | 'events' | 'stats'>('overview');
   
-  const { data: stats } = useGamificationStats();
-  const { data: userLevel } = useUserLevel();
-  const { data: userBadges } = useUserBadges();
+  const { data: stats, error: statsError } = useGamificationStats();
+  const { data: userLevel, error: levelError } = useUserLevel();
+  const { data: userBadges, error: badgesError } = useUserBadges();
   const { data: leaderboard } = useLeaderboard(20);
   const { data: userChallenges } = useUserChallenges();
+
+  // Vérifier si les tables de gamification sont disponibles
+  const isGamificationAvailable = !statsError && !levelError && !badgesError;
   const claimRewardMutation = useClaimChallengeReward();
   const checkBadgesMutation = useCheckBadges();
 
@@ -54,6 +58,14 @@ const GamificationPage: React.FC = () => {
       await checkBadgesMutation.mutateAsync();
     } catch (error) {
       console.error('Erreur lors de la vérification des badges:', error);
+    }
+  };
+
+  const handleDiagnose = async () => {
+    try {
+      await diagnoseGamification();
+    } catch (error) {
+      console.error('Erreur lors du diagnostic:', error);
     }
   };
 
@@ -157,6 +169,39 @@ const GamificationPage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
+          {/* Message d'information si les tables ne sont pas disponibles */}
+          {!isGamificationAvailable && (
+            <Card className="p-6 mb-6 border-amber-200 bg-amber-50">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+                  <Zap className="w-4 h-4 text-amber-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-amber-800 mb-2">
+                    Système de gamification en cours de déploiement
+                  </h3>
+                  <p className="text-amber-700 text-sm mb-3">
+                    Les fonctionnalités de gamification sont temporairement indisponibles. 
+                    Les migrations de base de données sont en cours d'application.
+                  </p>
+                  <div className="text-xs text-amber-600 mb-3">
+                    <p>• Niveaux et points</p>
+                    <p>• Badges et récompenses</p>
+                    <p>• Défis et classements</p>
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={handleDiagnose}
+                    className="border-amber-300 text-amber-700 hover:bg-amber-100 bg-transparent"
+                  >
+                    <Zap className="w-4 h-4 mr-1" />
+                    Diagnostiquer
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          )}
+
           {activeTab === 'overview' && (
             <div className="space-y-8">
               {/* Statistiques rapides */}
