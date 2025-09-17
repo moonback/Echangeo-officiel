@@ -8,10 +8,21 @@ import { getCategoryIcon, getCategoryLabel } from '../utils/categories';
 interface ItemCardProps {
   item: Item;
   className?: string;
+  userLocation?: { lat: number; lng: number };
 }
 
-const ItemCard: React.FC<ItemCardProps> = ({ item, className = '' }) => {
+const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation }) => {
   const CategoryIcon = getCategoryIcon(item.category);
+  const distanceKm = React.useMemo(() => {
+    if (!userLocation || item.latitude === undefined || item.longitude === undefined) return null;
+    const toRad = (v: number) => (v * Math.PI) / 180;
+    const R = 6371; // km
+    const dLat = toRad(item.latitude - userLocation.lat);
+    const dLon = toRad(item.longitude - userLocation.lng);
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(userLocation.lat)) * Math.cos(toRad(item.latitude)) * Math.sin(dLon / 2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }, [userLocation, item.latitude, item.longitude]);
   
   return (
     <motion.div
@@ -62,7 +73,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, className = '' }) => {
             </div>
             <div className="flex items-center">
               <MapPin className="w-4 h-4 mr-1" />
-              <span>À proximité</span>
+              <span>{distanceKm != null ? `${distanceKm.toFixed(1)} km` : 'À proximité'}</span>
             </div>
           </div>
         </div>

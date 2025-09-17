@@ -164,7 +164,7 @@ const CreateItemPage: React.FC = () => {
             type="text"
             id="title"
             placeholder="Ex: Perceuse électrique Bosch"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="input"
           />
           {errors.title && (
             <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>
@@ -335,7 +335,7 @@ const CreateItemPage: React.FC = () => {
             id="description"
             rows={4}
             placeholder="Décrivez votre objet, son état, ses accessoires..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="input"
           />
         </div>
 
@@ -347,7 +347,7 @@ const CreateItemPage: React.FC = () => {
           <select
             {...register('category')}
             id="category"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="input"
           >
             <option value="">Choisissez une catégorie</option>
             {categories.map((category) => (
@@ -369,7 +369,7 @@ const CreateItemPage: React.FC = () => {
           <select
             {...register('condition')}
             id="condition"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="input"
           >
             <option value="">Choisissez l'état</option>
             {conditions.map((condition) => (
@@ -388,14 +388,14 @@ const CreateItemPage: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+            className="btn btn-outline flex-1"
           >
             Annuler
           </button>
           <button
             type="submit"
             disabled={createItem.isPending}
-            className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+            className="btn btn-primary flex-1 disabled:opacity-50"
           >
             {createItem.isPending ? 'Création...' : 'Créer l\'objet'}
           </button>

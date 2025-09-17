@@ -55,7 +55,7 @@ const ItemsPage: React.FC = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Rechercher un objet..."
-            className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="input pl-10"
           />
         </div>
 
@@ -97,9 +97,9 @@ const ItemsPage: React.FC = () => {
                 <button
                   key={category.value}
                   onClick={() => setSelectedCategory(category.value)}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
                     selectedCategory === category.value 
-                      ? 'bg-blue-100 text-blue-700' 
+                      ? 'bg-brand-50 text-brand-700' 
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -112,7 +112,7 @@ const ItemsPage: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
             <div>
               <label className="block text-sm text-gray-700 mb-1">État</label>
-              <select value={condition || ''} onChange={(e) => setCondition(e.target.value || undefined)} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+              <select value={condition || ''} onChange={(e) => setCondition(e.target.value || undefined)} className="input">
                 <option value="">Tous</option>
                 <option value="excellent">Excellent</option>
                 <option value="good">Bon</option>
@@ -122,25 +122,25 @@ const ItemsPage: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm text-gray-700 mb-1">Marque</label>
-              <input value={brand} onChange={(e) => setBrand(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="ex: Bosch" />
+              <input value={brand} onChange={(e) => setBrand(e.target.value)} className="input" placeholder="ex: Bosch" />
             </div>
             <div>
               <label className="block text-sm text-gray-700 mb-1">Tags</label>
-              <input value={tags} onChange={(e) => setTags(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="ex: perceuse, 18v" />
+              <input value={tags} onChange={(e) => setTags(e.target.value)} className="input" placeholder="ex: perceuse, 18v" />
             </div>
             <div>
               <label className="block text-sm text-gray-700 mb-1">Valeur min (€)</label>
-              <input type="number" step="0.01" value={minValue} onChange={(e) => setMinValue(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+              <input type="number" step="0.01" value={minValue} onChange={(e) => setMinValue(e.target.value)} className="input" />
             </div>
             <div>
               <label className="block text-sm text-gray-700 mb-1">Valeur max (€)</label>
-              <input type="number" step="0.01" value={maxValue} onChange={(e) => setMaxValue(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+              <input type="number" step="0.01" value={maxValue} onChange={(e) => setMaxValue(e.target.value)} className="input" />
             </div>
             <div>
               <label className="block text-sm text-gray-700 mb-1">Disponible entre</label>
               <div className="grid grid-cols-2 gap-2">
-                <input type="date" value={availableFrom} onChange={(e) => setAvailableFrom(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-lg" />
-                <input type="date" value={availableTo} onChange={(e) => setAvailableTo(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-lg" />
+                <input type="date" value={availableFrom} onChange={(e) => setAvailableFrom(e.target.value)} className="input" />
+                <input type="date" value={availableTo} onChange={(e) => setAvailableTo(e.target.value)} className="input" />
               </div>
             </div>
             <div className="flex items-center space-x-3">

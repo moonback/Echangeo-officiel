@@ -9,7 +9,14 @@ import { ItemCardSkeleton } from '../components/SkeletonLoader';
 
 const HomePage: React.FC = () => {
   const { data: items, isLoading: itemsLoading } = useItems();
-  const { data: requests, isLoading: requestsLoading } = useRequests();
+  const [userLoc, setUserLoc] = React.useState<{ lat: number; lng: number } | null>(null);
+  React.useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition((pos) => {
+      setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+    });
+  }, []);
+  const { data: requests } = useRequests();
 
   const recentItems = items?.slice(0, 4) || [];
   const pendingRequests = requests?.filter(r => r.status === 'pending') || [];
@@ -81,7 +88,7 @@ const HomePage: React.FC = () => {
         transition={{ delay: 0.2 }}
         className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8"
       >
-        {stats.map((stat, index) => (
+        {stats.map((stat) => (
           <div key={stat.label} className="bg-white rounded-xl p-4 border border-gray-200">
             <div className="flex items-center">
               <div className={`p-2 rounded-lg ${stat.color} text-white`}>
@@ -119,7 +126,7 @@ const HomePage: React.FC = () => {
             <ItemCardSkeleton count={4} />
           ) : recentItems.length > 0 ? (
             recentItems.map((item) => (
-              <ItemCard key={item.id} item={item} />
+              <ItemCard key={item.id} item={item} userLocation={userLoc || undefined} />
             ))
           ) : (
             <div className="col-span-full bg-white rounded-xl p-8 text-center border border-gray-200">

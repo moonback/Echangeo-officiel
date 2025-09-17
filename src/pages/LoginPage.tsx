@@ -114,7 +114,7 @@ const LoginPage: React.FC = () => {
               {...register('email')}
               type="email"
               id="email"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="input"
               placeholder="votre@email.com"
             />
             {errors.email && (
@@ -131,7 +131,7 @@ const LoginPage: React.FC = () => {
                 {...register('password')}
                 type={showPassword ? 'text' : 'password'}
                 id="password"
-                className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="input pr-10"
                 placeholder="••••••••"
               />
               <button
@@ -156,7 +156,7 @@ const LoginPage: React.FC = () => {
                 {...register('confirmPassword' as keyof (LoginForm | SignupForm))}
                 type="password"
                 id="confirmPassword"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="input"
                 placeholder="••••••••"
               />
               {errors.confirmPassword && (
@@ -170,7 +170,7 @@ const LoginPage: React.FC = () => {
             whileTap={{ scale: 0.98 }}
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+            className="btn btn-primary w-full disabled:opacity-50"
           >
             {loading ? 'Chargement...' : (isSignup ? 'Créer un compte' : 'Se connecter')}
           </motion.button>
