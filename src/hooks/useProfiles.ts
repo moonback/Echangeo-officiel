@@ -24,13 +24,42 @@ export function useNeighbours() {
       const { data: userData } = await supabase.auth.getUser();
       const currentUserId = userData.user?.id;
 
-      const { data, error } = await supabase
+      // Récupérer les profils avec le nombre d'objets
+      const { data: profiles, error } = await supabase
         .from('profiles')
         .select('*')
         .neq('id', currentUserId ?? '');
 
       if (error) throw error;
-      return data as Profile[];
+
+      // Enrichir avec le nombre d'objets pour chaque profil
+      if (profiles && profiles.length > 0) {
+        const profileIds = profiles.map(p => p.id);
+        
+        // Compter les objets par propriétaire
+        const { data: itemCounts } = await supabase
+          .from('items')
+          .select('owner_id, id')
+          .in('owner_id', profileIds)
+          .eq('is_available', true); // Seulement les objets disponibles
+
+        // Créer un map des compteurs
+        const countsMap = new Map<string, number>();
+        if (itemCounts) {
+          for (const item of itemCounts) {
+            const ownerId = (item as any).owner_id;
+            countsMap.set(ownerId, (countsMap.get(ownerId) || 0) + 1);
+          }
+        }
+
+        // Enrichir les profils avec les compteurs
+        return profiles.map(profile => ({
+          ...profile,
+          items_count: countsMap.get(profile.id) || 0,
+        })) as (Profile & { items_count: number })[];
+      }
+
+      return profiles as Profile[];
     },
   });
 }
