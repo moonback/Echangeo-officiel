@@ -14,6 +14,14 @@ const createItemSchema = z.object({
   description: z.string().optional(),
   category: z.enum(['tools', 'electronics', 'books', 'sports', 'kitchen', 'garden', 'toys', 'other'] as const),
   condition: z.enum(['excellent', 'good', 'fair', 'poor']),
+  brand: z.string().max(100).optional(),
+  model: z.string().max(100).optional(),
+  estimated_value: z
+    .preprocess((v) => (v === '' || v === undefined ? undefined : Number(v)), z.number().positive().max(100000).optional()),
+  tags: z.string().optional(), // comma-separated in UI, stored array in DB
+  available_from: z.string().optional(),
+  available_to: z.string().optional(),
+  location_hint: z.string().max(200).optional(),
 });
 
 type CreateItemForm = z.infer<typeof createItemSchema>;
@@ -156,6 +164,100 @@ const CreateItemPage: React.FC = () => {
           {errors.title && (
             <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>
           )}
+        </div>
+
+        {/* Brand / Model */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-1">
+              Marque
+            </label>
+            <input
+              {...register('brand')}
+              type="text"
+              id="brand"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label htmlFor="model" className="block text-sm font-medium text-gray-700 mb-1">
+              Modèle
+            </label>
+            <input
+              {...register('model')}
+              type="text"
+              id="model"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+
+        {/* Estimated value */}
+        <div>
+          <label htmlFor="estimated_value" className="block text-sm font-medium text-gray-700 mb-1">
+            Valeur estimée (€)
+          </label>
+          <input
+            {...register('estimated_value')}
+            type="number"
+            step="0.01"
+            min="0"
+            id="estimated_value"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+
+        {/* Tags (comma-separated) */}
+        <div>
+          <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-1">
+            Tags (séparés par des virgules)
+          </label>
+          <input
+            {...register('tags')}
+            type="text"
+            id="tags"
+            placeholder="ex: perceuse, bosch, 18v"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+
+        {/* Availability window */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="available_from" className="block text-sm font-medium text-gray-700 mb-1">
+              Disponible à partir du
+            </label>
+            <input
+              {...register('available_from')}
+              type="date"
+              id="available_from"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label htmlFor="available_to" className="block text-sm font-medium text-gray-700 mb-1">
+              Disponible jusqu'au
+            </label>
+            <input
+              {...register('available_to')}
+              type="date"
+              id="available_to"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+
+        {/* Location hint */}
+        <div>
+          <label htmlFor="location_hint" className="block text-sm font-medium text-gray-700 mb-1">
+            Indication de localisation (ex: étage, bâtiment, etc.)
+          </label>
+          <input
+            {...register('location_hint')}
+            type="text"
+            id="location_hint"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
         </div>
 
         {/* Description */}

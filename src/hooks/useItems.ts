@@ -62,6 +62,13 @@ export function useCreateItem() {
       description?: string;
       category: ItemCategory;
       condition: string;
+      brand?: string;
+      model?: string;
+      estimated_value?: number;
+      tags?: string; // comma-separated from the form
+      available_from?: string;
+      available_to?: string;
+      location_hint?: string;
       images: File[];
     }) => {
       const user = await supabase.auth.getUser();
@@ -76,6 +83,13 @@ export function useCreateItem() {
           category: data.category,
           condition: data.condition,
           owner_id: user.data.user.id,
+          brand: data.brand || null,
+          model: data.model || null,
+          estimated_value: typeof data.estimated_value === 'number' ? data.estimated_value : null,
+          tags: data.tags ? data.tags.split(',').map((t) => t.trim()).filter(Boolean) : [],
+          available_from: data.available_from || null,
+          available_to: data.available_to || null,
+          location_hint: data.location_hint || null,
         })
         .select()
         .single();

@@ -19,6 +19,13 @@ export interface Item {
   description?: string;
   category: ItemCategory;
   condition: ItemCondition;
+  brand?: string;
+  model?: string;
+  estimated_value?: number;
+  tags?: string[];
+  available_from?: string; // ISO date
+  available_to?: string;   // ISO date
+  location_hint?: string;
   is_available: boolean;
   created_at: string;
   updated_at: string;
