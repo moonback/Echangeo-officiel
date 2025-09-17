@@ -26,6 +26,7 @@ const LoginPage: React.FC = () => {
   const [isSignup, setIsSignup] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const { signIn, signUp } = useAuthStore();
 
   const {
@@ -43,6 +44,8 @@ const LoginPage: React.FC = () => {
       if (isSignup) {
         const signupData = data as SignupForm;
         await signUp(signupData.email, signupData.password, signupData.fullName);
+        setInfoMessage("Compte créé. Vérifiez votre e-mail et cliquez sur le lien d'activation pour activer votre compte.");
+        setIsSignup(false);
       } else {
         const loginData = data as LoginForm;
         await signIn(loginData.email, loginData.password);
@@ -80,6 +83,11 @@ const LoginPage: React.FC = () => {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {infoMessage && (
+            <div className="rounded-md bg-green-50 border border-green-200 text-green-800 px-4 py-3 text-sm">
+              {infoMessage}
+            </div>
+          )}
           {isSignup && (
             <div>
               <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
