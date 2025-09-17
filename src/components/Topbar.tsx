@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Package, Plus, Search, MessageCircle, User, LogOut, Menu, X, Users, HelpCircle, Star, Settings, Sparkles } from 'lucide-react';
+import { Package, Plus, Search, MessageCircle, User, LogOut, Menu, X, Users, HelpCircle, Star, Settings, Sparkles, Trophy } from 'lucide-react';
 import { Link, useNavigate, useLocation, NavLink } from 'react-router-dom';
 import Button from './ui/Button';
 import { useAuthStore } from '../store/authStore';
@@ -154,6 +154,7 @@ const Topbar: React.FC = () => {
   const navigationLinks = useMemo(() => [
     { to: '/items', label: 'Objets' },
     { to: '/neighbours', label: 'Voisins' },
+    { to: '/gamification', label: 'Gamification' },
     { to: '/ai-features', label: 'IA' },
     { to: '/help', label: 'Aide' },
     ...(user ? [] : [
@@ -163,10 +164,10 @@ const Topbar: React.FC = () => {
   ], [user]);
 
   const mobileNavigationLinks = useMemo(() => [
-    ...navigationLinks.slice(0, 4), // Objets, Voisins, IA, Aide
+    ...navigationLinks.slice(0, 5), // Objets, Voisins, Gamification, IA, Aide
     { to: '/requests', label: 'Échanges' },
     { to: '/me', label: 'Mon profil' },
-    ...navigationLinks.slice(4) // Pro et Créer un compte si pas connecté
+    ...navigationLinks.slice(5) // Pro et Créer un compte si pas connecté
   ], [navigationLinks]);
 
   return (
@@ -235,6 +236,15 @@ const Topbar: React.FC = () => {
               aria-label="Voir les échanges"
             >
               <MessageCircle size={18} />
+            </Link>
+            
+            <Link 
+              to="/gamification" 
+              className="p-2.5 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500" 
+              aria-label="Voir la gamification"
+              title="Gamification"
+            >
+              <Trophy size={18} />
             </Link>
             
             {/* Système de notifications */}
@@ -352,6 +362,7 @@ const Topbar: React.FC = () => {
                   const Icon = (
                     to === '/items' ? Search :
                     to === '/neighbours' ? Users :
+                    to === '/gamification' ? Trophy :
                     to === '/ai-features' ? Sparkles :
                     to === '/help' ? HelpCircle :
                     to === '/requests' ? MessageCircle :
