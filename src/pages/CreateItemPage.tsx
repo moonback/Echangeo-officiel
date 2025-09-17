@@ -264,7 +264,7 @@ const CreateItemPage: React.FC = () => {
         className="space-y-6"
       >
         {/* Stepper */}
-        <div className="p-4 rounded-xl border border-gray-200 bg-white">
+        <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
           <div className="flex items-center justify-between">
             {steps.map((s, idx) => (
               <div key={s.id} className="flex-1 flex items-center">
@@ -474,7 +474,7 @@ const CreateItemPage: React.FC = () => {
 
         {/* Step 4: Photos */}
         {step === 4 && (
-          <Card className="p-4">
+          <Card className="p-4 glass">
             <div className="flex items-center justify-between mb-3">
               <label className="block text-sm font-medium text-gray-900">
                 Photos (au moins 1, max 8)
