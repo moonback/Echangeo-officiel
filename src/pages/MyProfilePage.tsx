@@ -6,6 +6,11 @@ import { z } from 'zod';
 import { User, Edit3, Save, X, CheckCircle, Clock, XCircle, ArrowRight } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useTransactions } from '../hooks/useProfiles';
+import Button from '../components/ui/Button';
+import Input from '../components/ui/Input';
+import TextArea from '../components/ui/TextArea';
+import Card from '../components/ui/Card';
+import EmptyState from '../components/EmptyState';
 
 const profileSchema = z.object({
   full_name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
@@ -78,7 +83,7 @@ const MyProfilePage: React.FC = () => {
           )}
         </div>
 
-        <div className="bg-white rounded-xl p-6 border border-gray-200">
+        <Card className="p-6">
           {/* Avatar */}
           <div className="flex items-center mb-6">
             <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mr-4">
@@ -127,88 +132,36 @@ const MyProfilePage: React.FC = () => {
             /* Edit Mode */
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
-                <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Nom complet *
-                </label>
-                <input
-                  {...register('full_name')}
-                  type="text"
-                  id="full_name"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                <Input {...register('full_name')} id="full_name" label="Nom complet *" />
                 {errors.full_name && (
                   <p className="text-red-500 text-xs mt-1">{errors.full_name.message}</p>
                 )}
               </div>
 
               <div>
-                <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1">
-                  Bio
-                </label>
-                <textarea
-                  {...register('bio')}
-                  id="bio"
-                  rows={3}
-                  placeholder="Parlez-vous en quelques mots..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                <TextArea {...register('bio')} id="bio" rows={3} label="Bio" placeholder="Parlez-vous en quelques mots..." />
               </div>
 
               <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                  Téléphone
-                </label>
-                <input
-                  {...register('phone')}
-                  type="tel"
-                  id="phone"
-                  placeholder="06 12 34 56 78"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                <Input {...register('phone')} type="tel" id="phone" label="Téléphone" placeholder="06 12 34 56 78" />
               </div>
 
               <div>
-                <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
-                  Adresse
-                </label>
-                <input
-                  {...register('address')}
-                  type="text"
-                  id="address"
-                  placeholder="123 rue de la Paix, 75001 Paris"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                <Input {...register('address')} id="address" label="Adresse" placeholder="123 rue de la Paix, 75001 Paris" />
               </div>
 
               <div className="flex space-x-3 pt-4">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-                >
-                  <Save size={16} />
-                  <span>{loading ? 'Enregistrement...' : 'Enregistrer'}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCancel}
-                  className="flex items-center space-x-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <X size={16} />
-                  <span>Annuler</span>
-                </button>
+                <Button type="submit" disabled={loading} className="flex-1 disabled:opacity-50" leftIcon={<Save size={16} />}>{loading ? 'Enregistrement...' : 'Enregistrer'}</Button>
+                <Button type="button" variant="ghost" className="border border-gray-300" onClick={handleCancel} leftIcon={<X size={16} />}>Annuler</Button>
               </div>
             </form>
           )}
-        </div>
+        </Card>
       </motion.div>
 
       {/* Historique des transactions */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-xl p-6 border border-gray-200"
-      >
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-900">Historique de mes transactions</h2>
         </div>
@@ -237,9 +190,12 @@ const MyProfilePage: React.FC = () => {
             </li>
           ))}
           {(!transactions || transactions.length === 0) && (
-            <li className="py-6 text-center text-gray-500">Aucune transaction pour le moment.</li>
+            <li className="py-6">
+              <EmptyState title="Aucune transaction" description="Vous n'avez pas encore d'historique." />
+            </li>
           )}
         </ul>
+        </Card>
       </motion.div>
     </div>
   );

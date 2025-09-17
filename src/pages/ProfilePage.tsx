@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useProfile, useItemsByOwner, useBorrowHistory, useLendHistory } from '../hooks/useProfiles';
 import { Star } from 'lucide-react';
+import Card from '../components/ui/Card';
+import EmptyState from '../components/EmptyState';
 
 const ProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -22,7 +24,7 @@ const ProfilePage: React.FC = () => {
         </h1>
         <div className="grid md:grid-cols-3 gap-4">
           <div className="md:col-span-1">
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <Card className="p-4">
               {isLoading ? (
                 <div className="text-gray-500 text-sm">Chargement…</div>
               ) : profile ? (
@@ -42,10 +44,10 @@ const ProfilePage: React.FC = () => {
               ) : (
                 <div className="text-gray-500 text-sm">Profil introuvable.</div>
               )}
-            </div>
+            </Card>
           </div>
           <div className="md:col-span-2">
-            <div className="bg-white rounded-xl border border-gray-200">
+            <Card>
               <div className="p-4 border-b border-gray-100 font-medium">Objets publiés</div>
               <ul className="divide-y divide-gray-100">
                 {items?.map((it) => (
@@ -59,13 +61,15 @@ const ProfilePage: React.FC = () => {
                     <Link to={`/items/${it.id}`} className="px-3 py-1.5 rounded-lg bg-blue-600 text-white">Voir</Link>
                   </li>
                 ))}
-                {items?.length === 0 && (
-                  <li className="p-6 text-center text-gray-500">Aucun objet pour le moment.</li>
+                {items && items.length === 0 && (
+                  <li className="p-6">
+                    <EmptyState title="Aucun objet" description="Cet utilisateur n'a pas encore publié d'objet." />
+                  </li>
                 )}
               </ul>
-            </div>
+            </Card>
 
-            <div className="bg-white rounded-xl border border-gray-200 mt-4">
+            <Card className="mt-4">
               <div className="p-4 border-b border-gray-100 font-medium">Historique d’emprunts</div>
               <ul className="divide-y divide-gray-100">
                 {borrows?.map((r) => (
@@ -86,12 +90,14 @@ const ProfilePage: React.FC = () => {
                   </li>
                 ))}
                 {(!borrows || borrows.length === 0) && (
-                  <li className="p-6 text-center text-gray-500">Aucun emprunt pour le moment.</li>
+                  <li className="p-6">
+                    <EmptyState title="Aucun emprunt" description="Aucun emprunt enregistré pour l'instant." />
+                  </li>
                 )}
               </ul>
-            </div>
+            </Card>
 
-            <div className="bg-white rounded-xl border border-gray-200 mt-4">
+            <Card className="mt-4">
               <div className="p-4 border-b border-gray-100 font-medium">Historique de prêts</div>
               <ul className="divide-y divide-gray-100">
                 {lends?.map((r) => (
@@ -106,10 +112,12 @@ const ProfilePage: React.FC = () => {
                   </li>
                 ))}
                 {(!lends || lends.length === 0) && (
-                  <li className="p-6 text-center text-gray-500">Aucun prêt pour le moment.</li>
+                  <li className="p-6">
+                    <EmptyState title="Aucun prêt" description="Aucun prêt enregistré pour l'instant." />
+                  </li>
                 )}
               </ul>
-            </div>
+            </Card>
           </div>
         </div>
       </motion.div>
