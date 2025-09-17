@@ -32,6 +32,9 @@ const Topbar: React.FC = () => {
           {!user && (
             <Link to="/pro" className="px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors">Pro</Link>
           )}
+          {!user && (
+            <Link to="/login" className="px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors">Créer un compte</Link>
+          )}
         </nav>
 
         <div className="hidden md:flex items-center flex-1 max-w-xl">
@@ -97,6 +100,9 @@ const Topbar: React.FC = () => {
             <Link to="/help" className="px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-800" onClick={() => setMobileOpen(false)}>Aide</Link>
             {!user && (
               <Link to="/pro" className="px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-800" onClick={() => setMobileOpen(false)}>Pro</Link>
+            )}
+            {!user && (
+              <Link to="/login" className="px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-800" onClick={() => setMobileOpen(false)}>Créer un compte</Link>
             )}
             <button
               onClick={async () => {

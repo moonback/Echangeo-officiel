@@ -15,6 +15,7 @@ const LandingPage: React.FC = () => {
         </Link>
         <div className="flex items-center gap-3">
           <Link to="/pro" className="text-sm font-medium text-gray-700 hover:text-gray-900">Pro</Link>
+          <Link to="/login"><Button variant="ghost" size="sm">Créer un compte</Button></Link>
           <Link to="/login"><Button size="sm">Se connecter</Button></Link>
         </div>
       </header>
