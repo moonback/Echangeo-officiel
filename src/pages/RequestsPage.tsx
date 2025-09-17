@@ -12,7 +12,7 @@ const RequestsPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="p-4 max-w-4xl mx-auto">
+      <div className="p-4 max-w-7xl mx-auto">
         <div className="animate-pulse space-y-4">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="bg-white rounded-xl p-4 border border-gray-200">
@@ -57,7 +57,7 @@ const RequestsPage: React.FC = () => {
   };
 
   return (
-    <div className="p-4 max-w-4xl mx-auto">
+    <div className="p-4 max-w-7xl mx-auto">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

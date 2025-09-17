@@ -26,7 +26,7 @@ const ItemDetailPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="p-4 max-w-4xl mx-auto">
+      <div className="p-4 max-w-7xl mx-auto">
         <div className="animate-pulse">
           <div className="aspect-video bg-gray-200 rounded-xl mb-6" />
           <div className="h-8 bg-gray-200 rounded mb-4" />
@@ -39,7 +39,7 @@ const ItemDetailPage: React.FC = () => {
 
   if (!item) {
     return (
-      <div className="p-4 max-w-4xl mx-auto text-center">
+      <div className="p-4 max-w-7xl mx-auto text-center">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">Objet non trouvé</h1>
         <Link 
           to="/items" 
@@ -69,7 +69,7 @@ const ItemDetailPage: React.FC = () => {
   };
 
   return (
-    <div className="p-4 max-w-4xl mx-auto">
+    <div className="p-4 max-w-7xl mx-auto">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
