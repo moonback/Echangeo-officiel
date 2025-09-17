@@ -18,6 +18,7 @@ const BottomNavigation: React.FC = () => {
           <NavLink
             key={to}
             to={to}
+            aria-label={label}
             className={({ isActive }) =>
               `flex flex-col items-center py-2 px-1 relative ${
                 isActive ? 'text-blue-600' : 'text-gray-500'
