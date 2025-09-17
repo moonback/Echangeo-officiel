@@ -7,6 +7,7 @@ import { useAuthStore } from '../store/authStore';
 import { supabase } from '../services/supabase';
 import NotificationSystem from './NotificationSystem';
 import { useNotifications } from '../hooks/useNotifications';
+import { useAdminAuth } from '../hooks/useAdmin';
 
 // Hook personnalisé pour gérer la recherche
 const useSearch = () => {
@@ -119,6 +120,9 @@ const Topbar: React.FC = () => {
   
   // Notifications
   const { notifications, markAsRead, dismiss } = useNotifications();
+  
+  // Admin auth
+  const { isAdmin } = useAdminAuth();
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -237,7 +241,6 @@ const Topbar: React.FC = () => {
             >
               <MessageCircle size={18} />
             </Link>
-            <link rel="stylesheet" href="/communities" />
             
             <Link 
               to="/gamification" 
@@ -247,6 +250,24 @@ const Topbar: React.FC = () => {
             >
               <Trophy size={18} />
             </Link>
+            
+            {/* Admin Panel Link - Only visible for admins */}
+            {isAdmin && (
+              <Link 
+                to="/admin" 
+                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-red-50 to-orange-50 hover:from-red-100 hover:to-orange-100 text-red-700 border border-red-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+                title="Panneau d'administration"
+                aria-label="Accéder au panneau d'administration"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <span className="text-sm font-medium">Admin</span>
+                <span className="text-xs px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 font-bold">
+                  ADMIN
+                </span>
+              </Link>
+            )}
             
             {/* Système de notifications */}
             <NotificationSystem
@@ -415,6 +436,23 @@ const Topbar: React.FC = () => {
                     <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full border border-emerald-200/60 bg-emerald-50 text-emerald-700">Nouveau</span>
                   </button>
                   <FavoritesButton onClick={() => { closeMobile(); navigate('/items?favorites=1'); }} />
+                  
+                  {/* Admin Panel Link - Only visible for admins */}
+                  {isAdmin && (
+                    <button
+                      onClick={() => { closeMobile(); navigate('/admin'); }}
+                      className="w-full flex items-center gap-3 px-3 py-3 rounded-xl bg-gradient-to-r from-red-50 to-orange-50 hover:from-red-100 hover:to-orange-100 text-gray-800 border border-red-200/70 transition-all duration-200 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                    >
+                      <svg className="w-[18px] h-[18px] text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                      <span className="text-sm font-medium">Administration</span>
+                      <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full border border-red-200/60 bg-red-100 text-red-700 font-medium">
+                        ADMIN
+                      </span>
+                    </button>
+                  )}
+                  
                   <button
                     onClick={() => { closeMobile(); navigate('/settings'); }}
                     className="w-full flex items-center gap-3 px-3 py-3 rounded-xl bg-white/70 hover:bg-white/90 text-gray-800 border border-gray-200/70 transition-colors backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-brand-500"

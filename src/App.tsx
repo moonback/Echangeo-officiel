@@ -22,6 +22,13 @@ import GamificationPage from './pages/GamificationPage';
 import { useAuthStore } from './store/authStore';
 import LandingPage from './pages/LandingPage';
 import ProPage from './pages/ProPage';
+import AdminGuard from './components/admin/AdminGuard';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import AdminUsersPage from './pages/admin/AdminUsersPage';
+import AdminItemsPage from './pages/admin/AdminItemsPage';
+import AdminCommunitiesPage from './pages/admin/AdminCommunitiesPage';
+import AdminReportsPage from './pages/admin/AdminReportsPage';
+import AdminLogsPage from './pages/admin/AdminLogsPage';
 
 function App() {
   const { user, loading } = useAuthStore();
@@ -50,27 +57,64 @@ function App() {
   }
 
   return (
-    <Shell>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/items" element={<ItemsPage />} />
-        <Route path="/items/:id" element={<ItemDetailPage />} />
-        <Route path="/items/:id/edit" element={<EditItemPage />} />
-        <Route path="/create" element={<CreateItemPage />} />
-        <Route path="/requests" element={<RequestsPage />} />
-        <Route path="/chat/:id" element={<ChatPage />} />
-        <Route path="/neighbours" element={<NeighboursPage />} />
-        <Route path="/communities" element={<CommunitiesPage />} />
-        <Route path="/communities/:id" element={<CommunityDetailPage />} />
-        <Route path="/profile/:id" element={<ProfilePage />} />
-        <Route path="/me" element={<MyProfilePage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/help" element={<HelpPage />} />
-        <Route path="/ai-features" element={<AIFeaturesPage />} />
-        <Route path="/gamification" element={<GamificationPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Shell>
+    <Routes>
+      {/* Admin Routes - Outside Shell to use their own layout */}
+      <Route path="/admin" element={
+        <AdminGuard>
+          <AdminDashboardPage />
+        </AdminGuard>
+      } />
+      <Route path="/admin/users" element={
+        <AdminGuard requiredPermission="canManageUsers">
+          <AdminUsersPage />
+        </AdminGuard>
+      } />
+      <Route path="/admin/items" element={
+        <AdminGuard requiredPermission="canManageItems">
+          <AdminItemsPage />
+        </AdminGuard>
+      } />
+      <Route path="/admin/communities" element={
+        <AdminGuard requiredPermission="canManageCommunities">
+          <AdminCommunitiesPage />
+        </AdminGuard>
+      } />
+      <Route path="/admin/reports" element={
+        <AdminGuard requiredPermission="canViewReports">
+          <AdminReportsPage />
+        </AdminGuard>
+      } />
+      <Route path="/admin/logs" element={
+        <AdminGuard requiredPermission="canViewSystemLogs">
+          <AdminLogsPage />
+        </AdminGuard>
+      } />
+      
+      {/* Regular App Routes - Inside Shell */}
+      <Route path="/*" element={
+        <Shell>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/items" element={<ItemsPage />} />
+            <Route path="/items/:id" element={<ItemDetailPage />} />
+            <Route path="/items/:id/edit" element={<EditItemPage />} />
+            <Route path="/create" element={<CreateItemPage />} />
+            <Route path="/requests" element={<RequestsPage />} />
+            <Route path="/chat/:id" element={<ChatPage />} />
+            <Route path="/neighbours" element={<NeighboursPage />} />
+            <Route path="/communities" element={<CommunitiesPage />} />
+            <Route path="/communities/:id" element={<CommunityDetailPage />} />
+            <Route path="/profile/:id" element={<ProfilePage />} />
+            <Route path="/me" element={<MyProfilePage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/help" element={<HelpPage />} />
+            <Route path="/ai-features" element={<AIFeaturesPage />} />
+            <Route path="/gamification" element={<GamificationPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Shell>
+      } />
+    </Routes>
   );
 }
 
