@@ -49,38 +49,89 @@ const HomePage: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto p-4 space-y-12">
       {/* Hero */}
-      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        <Card className="overflow-hidden glass">
-        <div className="relative p-6 md:p-10 bg-gradient-to-br from-brand-50 to-white">
-          <div className="max-w-3xl">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">Partagez. Empruntez. Réduisez. 🌱</h1>
-            <p className="text-gray-600">TrocAll facilite le prêt et le troc d’objets entre voisins. Économisez de l’argent, gagnez de la place et créez du lien.</p>
-            <div className="mt-6 flex gap-3">
-              <Link to="/create"><Button leftIcon={<Plus className="w-4 h-4" />}>Ajouter un objet</Button></Link>
-              <Link to="/items"><Button variant="ghost" leftIcon={<Search className="w-4 h-4" />}>Parcourir</Button></Link>
+      <motion.section 
+        initial={{ opacity: 0, y: 30 }} 
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
+        <Card className="overflow-hidden glass-strong">
+          <div className="relative p-8 md:p-12 bg-gradient-to-br from-brand-50/80 via-white/60 to-purple-50/40">
+            {/* Background Decorations */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-brand-200/20 to-purple-200/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-blue-200/20 to-brand-200/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
+            
+            <div className="relative max-w-4xl">
+              <motion.h1 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.6 }}
+                className="text-3xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight"
+              >
+                Partagez. Empruntez. <span className="gradient-text">Réduisez.</span> 🌱
+              </motion.h1>
+              
+              <motion.p 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.6 }}
+                className="text-lg text-gray-600 mb-8 leading-relaxed max-w-2xl"
+              >
+                TrocAll facilite le prêt et le troc d'objets entre voisins. Économisez de l'argent, gagnez de la place et créez du lien social dans votre quartier.
+              </motion.p>
+              
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6, duration: 0.6 }}
+                className="flex flex-col sm:flex-row gap-4"
+              >
+                <Link to="/create">
+                  <Button leftIcon={<Plus className="w-5 h-5" />} size="lg" className="min-w-[180px]">
+                    Ajouter un objet
+                  </Button>
+                </Link>
+                <Link to="/items">
+                  <Button variant="ghost" leftIcon={<Search className="w-5 h-5" />} size="lg" className="min-w-[180px]">
+                    Parcourir
+                  </Button>
+                </Link>
+              </motion.div>
             </div>
           </div>
-          <div className="absolute -right-8 -bottom-8 w-48 h-48 md:w-64 md:h-64 bg-brand-100 rounded-full blur-3xl opacity-40 pointer-events-none" />
-        </div>
         </Card>
       </motion.section>
 
      
 
       {/* Stats */}
-      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {stats.map((stat) => (
-          <div key={stat.label} className="card p-4">
-            <div className="flex items-center">
-              <div className={`p-2 rounded-lg ${stat.color} text-white`}>
-                <stat.icon size={18} />
+      <motion.section 
+        initial={{ opacity: 0, y: 20 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        transition={{ delay: 0.2 }}
+        className="grid grid-cols-1 sm:grid-cols-3 gap-6"
+      >
+        {stats.map((stat, index) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 + index * 0.1 }}
+            className="group"
+          >
+            <Card className="p-6 glass-card hover-lift">
+              <div className="flex items-center">
+                <div className={`p-3 rounded-2xl ${stat.color} text-white shadow-lg group-hover:scale-110 transition-transform duration-200`}>
+                  <stat.icon size={24} />
+                </div>
+                <div className="ml-4">
+                  <p className="text-3xl font-bold text-gray-900 group-hover:text-brand-600 transition-colors duration-200">
+                    {stat.value}
+                  </p>
+                  <p className="text-sm font-medium text-gray-600">{stat.label}</p>
+                </div>
               </div>
-              <div className="ml-3">
-                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                <p className="text-sm text-gray-600">{stat.label}</p>
-              </div>
-            </div>
-          </div>
+            </Card>
+          </motion.div>
         ))}
       </motion.section>
 

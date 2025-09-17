@@ -69,67 +69,116 @@ const NeighboursPage: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
       >
-        <h1 className="text-2xl font-bold text-gray-900 mb-3">
-          Mes voisins
-        </h1>
-        {/* Toolbar */}
-        <div className="mb-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Rechercher un voisin (nom, email, adresse)"
-              className="w-full pl-9 pr-3 h-10 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-            />
-          </div>
-          <div className="flex items-center sm:justify-center">
-            <span className="text-sm text-gray-600">{neighbors?.length || 0} résultat(s)</span>
-          </div>
-          <div className="flex items-center sm:justify-end gap-3">
-            <label className="text-sm text-gray-700 inline-flex items-center gap-1">
-              <input type="checkbox" checked={hasCoordsOnly} onChange={(e) => setHasCoordsOnly(e.target.checked)} />
-              Avec coordonnées
-            </label>
-            <SortAsc className="text-gray-500" size={18} />
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="h-10 rounded-xl border border-gray-300 px-3"
-            >
-              <option value="distance">Par distance</option>
-              <option value="name">Par nom</option>
-            </select>
-          </div>
-        </div>
+        {/* Enhanced Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.5 }}
+          className="mb-8"
+        >
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 gradient-text">
+            Mes voisins
+          </h1>
+          <p className="text-gray-600 text-lg">Découvrez et connectez-vous avec votre communauté locale</p>
+        </motion.div>
 
-        {/* Mini-carte */}
-        <Card className="p-0 mb-4 glass">
-          <div className="p-4 flex items-center justify-between">
-            <h2 className="text-sm font-medium text-gray-900">Autour de moi</h2>
-            <span className="text-xs text-gray-600">{neighbors?.filter((p: any) => typeof p.latitude === 'number' && typeof p.longitude === 'number').length || 0} voisins</span>
-          </div>
-          <MapboxMap
-            center={{ lat: userLoc?.lat ?? 48.8566, lng: userLoc?.lng ?? 2.3522 }}
-            zoom={12}
-            height={260}
-            autoFit
-            showUserLocation={!!userLoc}
-            userLocation={userLoc || undefined}
-            markers={(neighbors || [])
-              .filter((p: any) => typeof p.latitude === 'number' && typeof p.longitude === 'number')
-              .map((p: any) => ({
-                id: p.id,
-                latitude: p.latitude as number,
-                longitude: p.longitude as number,
-                title: p.full_name || p.email || 'Voisin',
-              }))}
-            onMarkerClick={(id) => {
-              window.location.href = `/profile/${id}`;
-            }}
-          />
-        </Card>
+        {/* Enhanced Toolbar */}
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          className="mb-6"
+        >
+          <Card className="p-4 glass-card">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Rechercher un voisin (nom, email, adresse)"
+                  className="w-full pl-12 pr-4 py-3 rounded-2xl border border-gray-300/60 bg-white/60 backdrop-blur-sm focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 focus:-translate-y-0.5 focus:shadow-lg transition-all duration-200"
+                />
+              </div>
+              <div className="flex items-center justify-center">
+                <div className="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border border-gray-200/50">
+                  <span className="text-sm font-medium text-gray-700">
+                    {neighbors?.length || 0} voisin{(neighbors?.length || 0) > 1 ? 's' : ''}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-end gap-3">
+                <label className="text-sm text-gray-700 inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm px-3 py-2 rounded-full border border-gray-200/50 hover:bg-white/80 transition-colors cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={hasCoordsOnly} 
+                    onChange={(e) => setHasCoordsOnly(e.target.checked)}
+                    className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                  />
+                  <MapPin className="w-4 h-4 text-brand-600" />
+                  Avec position
+                </label>
+                
+                <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm px-3 py-2 rounded-full border border-gray-200/50">
+                  <SortAsc className="text-brand-600" size={16} />
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as any)}
+                    className="bg-transparent border-none text-sm font-medium text-gray-700 focus:ring-0 focus:outline-none"
+                  >
+                    <option value="distance">Par distance</option>
+                    <option value="name">Par nom</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </motion.div>
+
+        {/* Enhanced Map */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
+          <Card className="p-0 mb-6 glass-card overflow-hidden">
+            <div className="p-6 bg-gradient-to-r from-brand-50/50 to-purple-50/50 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 mb-1">Carte de la communauté</h2>
+                <p className="text-sm text-gray-600">Explorez votre quartier et découvrez vos voisins</p>
+              </div>
+              <div className="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border border-brand-200/50">
+                <span className="text-sm font-semibold text-brand-700">
+                  {neighbors?.filter((p: any) => typeof p.latitude === 'number' && typeof p.longitude === 'number').length || 0} localisés
+                </span>
+              </div>
+            </div>
+            <div className="relative">
+              <MapboxMap
+                center={{ lat: userLoc?.lat ?? 48.8566, lng: userLoc?.lng ?? 2.3522 }}
+                zoom={12}
+                height={300}
+                autoFit
+                showUserLocation={!!userLoc}
+                userLocation={userLoc || undefined}
+                markers={(neighbors || [])
+                  .filter((p: any) => typeof p.latitude === 'number' && typeof p.longitude === 'number')
+                  .map((p: any) => ({
+                    id: p.id,
+                    latitude: p.latitude as number,
+                    longitude: p.longitude as number,
+                    title: p.full_name || p.email || 'Voisin',
+                  }))}
+                onMarkerClick={(id) => {
+                  window.location.href = `/profile/${id}`;
+                }}
+              />
+            </div>
+          </Card>
+        </motion.div>
 
         <div className="bg-white rounded-xl border border-gray-200 glass">
           {isLoading ? (

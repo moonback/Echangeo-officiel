@@ -103,16 +103,18 @@ const Topbar: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 h-14 flex items-center gap-3">
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-gray-200/50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center gap-4">
           {/* Logo */}
           <Link 
             to="/" 
-            className="flex items-center gap-2 mr-2 hover:opacity-80 transition-opacity"
+            className="flex items-center gap-3 mr-4 group"
             aria-label="Retour à l'accueil"
           >
-            <Package className="w-5 h-5 text-brand-600" />
-            <span className="font-semibold text-gray-900">TrocAll</span>
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-500/25 group-hover:scale-105 transition-transform duration-200">
+              <Package className="w-5 h-5 text-white" />
+            </div>
+            <span className="font-bold text-xl text-gray-900 group-hover:text-brand-600 transition-colors duration-200">TrocAll</span>
           </Link>
 
           {/* Navigation desktop */}

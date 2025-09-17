@@ -179,43 +179,86 @@ const MyProfilePage: React.FC = () => {
   return (
     <div className="p-4 max-w-7xl mx-auto">
       {/* Header modern */}
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-        <div className="relative overflow-hidden rounded-2xl border border-brand-100 bg-gradient-to-br from-white to-brand-50">
-          {/* Banner */}
-          <div className="h-28 md:h-32 bg-gradient-to-r from-brand-100 via-brand-50 to-white" />
-          {/* Halo decorations */}
-          <div className="absolute -right-10 -top-10 w-40 h-40 bg-brand-100/50 rounded-full blur-3xl" />
-          <div className="p-6 md:p-8 -mt-12 flex items-start md:items-center justify-between gap-6 flex-col md:flex-row">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }} 
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="mb-8"
+      >
+        <Card className="relative overflow-hidden p-0 glass-strong">
+          {/* Animated Banner */}
+          <div className="h-32 md:h-40 bg-gradient-to-br from-brand-400/20 via-purple-400/20 to-blue-400/20 relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-brand-600/10 via-transparent to-purple-600/10" />
+            <div className="absolute top-4 right-4 w-24 h-24 bg-brand-200/30 rounded-full blur-2xl animate-pulse" />
+            <div className="absolute bottom-4 left-4 w-16 h-16 bg-purple-200/30 rounded-full blur-xl animate-pulse" style={{ animationDelay: '1s' }} />
+          </div>
+          
+          {/* Profile Content */}
+          <div className="p-6 md:p-8 -mt-16 flex items-start md:items-center justify-between gap-6 flex-col md:flex-row">
             <div className="flex items-center">
-              {/* Circular avatar with halo */}
-              <div className="relative w-24 h-24 rounded-full bg-white flex items-center justify-center mr-4 border-2 border-white shadow-soft overflow-hidden">
-                <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-brand-400/30 to-brand-600/30 blur-md" />
-                <div className="relative w-22 h-22 rounded-full overflow-hidden">
-                {profile?.avatar_url ? (
-                    <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-                ) : (
-                    <div className="w-full h-full bg-brand-100 flex items-center justify-center">
-                      <User className="w-10 h-10 text-brand-700" />
+              {/* Enhanced Avatar with Glow */}
+              <motion.div 
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+                className="relative w-28 h-28 rounded-full mr-6 group"
+              >
+                {/* Animated Glow Ring */}
+                <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-brand-400 via-purple-400 to-brand-600 opacity-20 blur-lg animate-pulse" />
+                <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-brand-500 to-purple-500 opacity-30 blur-md animate-pulse" style={{ animationDelay: '0.5s' }} />
+                
+                {/* Avatar Container */}
+                <div className="relative w-28 h-28 rounded-full bg-white border-4 border-white shadow-2xl overflow-hidden">
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-brand-100 to-brand-200 flex items-center justify-center">
+                      <User className="w-12 h-12 text-brand-600" />
                     </div>
-                )}
+                  )}
                 </div>
+                
+                {/* Enhanced Change Button */}
                 <button
                   type="button"
                   onClick={handleAvatarSelect}
-                  className="absolute -bottom-2 right-0 translate-y-1/2 text-xs px-2 py-1 rounded-full bg-white/95 border border-gray-200 hover:bg-white shadow"
+                  className="absolute -bottom-1 right-1 w-8 h-8 rounded-full bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200 flex items-center justify-center"
                   disabled={avatarUploading}
                   aria-label="Changer la photo"
                 >
-                  {avatarUploading ? '...' : 'Changer'}
+                  {avatarUploading ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <Edit3 className="w-4 h-4" />
+                  )}
                 </button>
                 <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={onAvatarChange} />
-              </div>
-              <div>
-                <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900" style={{ fontFamily: 'Playfair Display, serif' }}>{profile?.full_name || 'Nom non renseigné'}</h1>
-                <div className="mt-1 flex items-center gap-3 text-sm text-gray-600">
-                  <span className="inline-flex items-center gap-1"><Mail className="w-4 h-4" /> {profile?.email || '—'}</span>
-                  {profile?.phone && <span className="inline-flex items-center gap-1"><Phone className="w-4 h-4" /> {profile.phone}</span>}
-                  {profile?.address && <span className="inline-flex items-center gap-1"><MapPin className="w-4 h-4" /> {profile.address}</span>}
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+              >
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 gradient-text">
+                  {profile?.full_name || 'Nom non renseigné'}
+                </h1>
+                <div className="flex items-center gap-4 text-sm text-gray-600 mb-3 flex-wrap">
+                  <span className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm px-3 py-1.5 rounded-full border border-gray-200/50">
+                    <Mail className="w-4 h-4 text-brand-600" /> 
+                    {profile?.email || '—'}
+                  </span>
+                  {profile?.phone && (
+                    <span className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm px-3 py-1.5 rounded-full border border-gray-200/50">
+                      <Phone className="w-4 h-4 text-brand-600" /> 
+                      {profile.phone}
+                    </span>
+                  )}
+                  {profile?.address && (
+                    <span className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm px-3 py-1.5 rounded-full border border-gray-200/50">
+                      <MapPin className="w-4 h-4 text-brand-600" /> 
+                      {profile.address}
+                    </span>
+                  )}
                 </div>
                 {/* Profile completeness (placeholder simple calc) */}
                 <div className="mt-3">
@@ -260,24 +303,36 @@ const MyProfilePage: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* Tabs */}
-      <div className="mb-4">
-        <div className="flex gap-2 p-1 rounded-xl bg-white border border-gray-200 w-fit">
+      {/* Enhanced Tabs */}
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.4 }}
+        className="mb-6"
+      >
+        <div className="flex gap-1 p-1.5 rounded-2xl bg-white/80 backdrop-blur-sm border border-gray-200/50 shadow-lg w-fit">
           {[
-            { id: 'profil', label: 'Profil' },
-            { id: 'transactions', label: 'Transactions' },
-            { id: 'parametres', label: 'Paramètres' },
+            { id: 'profil', label: 'Profil', icon: User },
+            { id: 'transactions', label: 'Transactions', icon: Calendar },
+            { id: 'parametres', label: 'Paramètres', icon: Shield },
           ].map((tab: any) => (
-            <button
+            <motion.button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 text-sm rounded-lg transition-colors ${activeTab === tab.id ? 'bg-brand-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className={`px-6 py-3 text-sm font-medium rounded-xl transition-all duration-200 flex items-center gap-2 ${
+                activeTab === tab.id 
+                  ? 'bg-gradient-to-r from-brand-600 to-brand-700 text-white shadow-lg shadow-brand-500/25' 
+                  : 'text-gray-700 hover:bg-gray-50/80 hover:text-brand-600'
+              }`}
             >
+              <tab.icon className="w-4 h-4" />
               {tab.label}
-            </button>
+            </motion.button>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {/* Tab content: Profil */}
       {activeTab === 'profil' && (

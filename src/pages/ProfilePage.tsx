@@ -186,29 +186,60 @@ const ProfilePage: React.FC = () => {
   }, [id, reviewsPage]);
 
   return (
-    <div className="p-4 max-w-5xl mx-auto">
+    <div className="p-4 max-w-6xl mx-auto">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
       >
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">
-          {profile?.full_name || profile?.email || 'Profil utilisateur'}
-        </h1>
-        <div className="grid md:grid-cols-3 gap-4">
+        {/* Enhanced Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.5 }}
+          className="mb-8"
+        >
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 gradient-text">
+            {profile?.full_name || profile?.email || 'Profil utilisateur'}
+          </h1>
+          <p className="text-gray-600 text-lg">Découvrez le profil et les objets de ce membre de la communauté</p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-3 gap-6">
           <div className="md:col-span-3">
-            <Card className="p-0 overflow-hidden">
-              <div className="bg-gradient-to-br from-brand-50 to-white p-6 md:p-8">
+            <Card className="p-0 overflow-hidden glass-strong">
+              <div className="relative bg-gradient-to-br from-brand-50/80 via-white/60 to-purple-50/40 p-6 md:p-8">
+                {/* Background Decorations */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-brand-200/20 to-purple-200/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-blue-200/20 to-brand-200/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
+                
                 {isLoading ? (
                   <div className="text-gray-500 text-sm">Chargement…</div>
                 ) : profile ? (
-                  <div className="flex items-start md:items-center gap-4 md:gap-6 flex-col md:flex-row">
-                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
-                      {profile.avatar_url ? (
-                        <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-gray-400 text-xl">{(profile.full_name || profile.email || '?').slice(0,1).toUpperCase()}</span>
-                      )}
-                    </div>
+                  <div className="relative flex items-start md:items-center gap-6 md:gap-8 flex-col md:flex-row">
+                    {/* Enhanced Avatar */}
+                    <motion.div
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.2, duration: 0.5 }}
+                      className="relative"
+                    >
+                      {/* Glow Effect */}
+                      <div className="absolute -inset-3 rounded-full bg-gradient-to-r from-brand-400/30 via-purple-400/30 to-brand-600/30 blur-lg animate-pulse" />
+                      <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-brand-500/40 to-purple-500/40 blur-md animate-pulse" style={{ animationDelay: '0.5s' }} />
+                      
+                      <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full bg-white border-4 border-white shadow-2xl overflow-hidden">
+                        {profile.avatar_url ? (
+                          <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-brand-100 to-brand-200 flex items-center justify-center">
+                            <span className="text-brand-600 text-2xl font-bold">
+                              {(profile.full_name || profile.email || '?').slice(0,1).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
                     <div className="flex-1 min-w-0">
                       <h2 className="text-xl md:text-2xl font-semibold text-gray-900 truncate">{profile.full_name || profile.email}</h2>
                       {(profile.address || distanceKm != null) && (
