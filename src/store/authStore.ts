@@ -36,12 +36,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   signIn: async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) throw error;
+
+    // Vérifier si l'utilisateur est banni après la connexion
+    if (data.user) {
+      const { data: banStatus } = await supabase.rpc('is_user_banned', {
+        target_user_id: data.user.id
+      });
+
+      if (banStatus) {
+        // Déconnecter l'utilisateur s'il est banni
+        await supabase.auth.signOut();
+        throw new Error('Votre compte a été suspendu. Contactez le support pour plus d\'informations.');
+      }
+    }
   },
 
   signOut: async () => {
