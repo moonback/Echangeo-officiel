@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useItem, useUpdateItem } from '../hooks/useItems';
 import { useUpsertItemRating } from '../hooks/useRatings';
-import { useCreateRequest } from '../hooks/useRequests';
+import { useCreateRequest, useRequests } from '../hooks/useRequests';
 import { getCategoryIcon, getCategoryLabel } from '../utils/categories';
 import { useAuthStore } from '../store/authStore';
 
@@ -22,6 +22,7 @@ const ItemDetailPage: React.FC = () => {
   const { data: item, isLoading } = useItem(id!);
   const updateItem = useUpdateItem();
   const upsertRating = useUpsertItemRating();
+  const { data: allRequests } = useRequests();
   const createRequest = useCreateRequest();
   const [requestMessage, setRequestMessage] = useState('');
   const [showRequestForm, setShowRequestForm] = useState(false);
@@ -29,6 +30,9 @@ const ItemDetailPage: React.FC = () => {
   const [showRatingForm, setShowRatingForm] = useState(false);
   const [ratingScore, setRatingScore] = useState<number>(5);
   const [ratingComment, setRatingComment] = useState<string>('');
+  const hasCompletedBorrow = !!allRequests?.some(
+    (r) => r.requester_id === user?.id && r.item_id === item.id && r.status === 'completed'
+  );
 
   if (isLoading) {
     return (
@@ -376,8 +380,8 @@ const ItemDetailPage: React.FC = () => {
             </div>
           )}
 
-          {/* Rating Form (non-propriétaire) */}
-          {!isOwner && (
+          {/* Rating Form (emprunteurs uniquement, demande terminée) */}
+          {!isOwner && hasCompletedBorrow && (
             <div className="bg-white border border-gray-200 rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold text-gray-900">Laisser un avis</h3>
