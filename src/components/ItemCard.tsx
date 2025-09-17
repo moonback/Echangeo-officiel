@@ -1,13 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { MapPin, User, Star, Heart } from 'lucide-react';
+import { MapPin, User, Star, Heart, Trash2 } from 'lucide-react';
 import type { Item } from '../types';
 import { getCategoryIcon, getCategoryLabel } from '../utils/categories';
 import { getOfferTypeIcon, getOfferTypeLabel } from '../utils/offerTypes';
 import Card from './ui/Card';
 import Badge from './ui/Badge';
 import { useFavorites, useIsItemFavorited } from '../hooks/useFavorites';
+import { useDeleteItem } from '../hooks/useItems';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 
@@ -35,6 +36,10 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation 
   const { user } = useAuthStore();
   const { toggle } = useFavorites();
   const { data: isFavorited = false, isLoading } = useIsItemFavorited(item.id);
+  const deleteItem = useDeleteItem();
+  
+  // Vérifier si l'utilisateur est le propriétaire de l'objet
+  const isOwner = user?.id === item.owner_id;
 
   const onToggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -43,6 +48,26 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation 
     try {
       await toggle(item.id);
     } catch {}
+  };
+
+  const onDeleteItem = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!user || !isOwner) return;
+    
+    const confirmed = window.confirm(
+      `Êtes-vous sûr de vouloir supprimer "${item.title}" ? Cette action est irréversible.`
+    );
+    
+    if (!confirmed) return;
+    
+    try {
+      await deleteItem.mutateAsync(item.id);
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+      alert('Erreur lors de la suppression de l\'objet. Veuillez réessayer.');
+    }
   };
 
   return (
@@ -94,15 +119,21 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation 
               </Badge>
             </div>
             
-            {/* Availability Status */}
-            {!item.is_available && (
-              <div className="absolute top-3 right-3">
-                <Badge variant="danger" className="shadow-lg">Indisponible</Badge>
-              </div>
-            )}
-
-            {/* Favorite Button */}
-            <div className="absolute top-3 right-3">
+            {/* Action Buttons */}
+            <div className="absolute top-3 right-3 flex gap-2">
+              {/* Delete Button (seulement pour le propriétaire) */}
+              {isOwner && (
+                <button
+                  onClick={onDeleteItem}
+                  aria-label="Supprimer l'objet"
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-full border backdrop-blur-sm shadow-soft transition-all bg-red-500 text-white border-red-400 hover:bg-red-600 opacity-0 group-hover:opacity-100"
+                  title="Supprimer"
+                >
+                  <Trash2 size={16} />
+                </button>
+              )}
+              
+              {/* Favorite Button */}
               <button
                 onClick={onToggleFavorite}
                 aria-label={isFavorited ? 'Retirer des favoris' : 'Ajouter aux favoris'}
@@ -117,6 +148,13 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation 
                 <Heart size={18} className={isFavorited ? 'fill-current' : ''} />
               </button>
             </div>
+
+            {/* Availability Status */}
+            {!item.is_available && (
+              <div className="absolute bottom-3 left-3">
+                <Badge variant="danger" className="shadow-lg">Indisponible</Badge>
+              </div>
+            )}
             
             {/* Rating Overlay */}
             {typeof item.average_rating === 'number' && item.ratings_count ? (
