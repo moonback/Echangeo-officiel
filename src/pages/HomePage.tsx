@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Plus, Search, MessageCircle, TrendingUp } from 'lucide-react';
+import { Plus, Search, MessageCircle, TrendingUp, Shield, MapPin, Clock, Star, HelpCircle, CheckCircle, Lock } from 'lucide-react';
 import { useItems } from '../hooks/useItems';
 import { useRequests } from '../hooks/useRequests';
 import ItemCard from '../components/ItemCard';
@@ -43,56 +43,76 @@ const HomePage: React.FC = () => {
   ];
 
   return (
-    <div className="p-4 max-w-7xl mx-auto">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
-      >
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          Bonjour ! 👋
-        </h1>
-        <p className="text-gray-600">
-          Découvrez ce que vos voisins ont à partager
-        </p>
-      </motion.div>
+    <div className="max-w-7xl mx-auto p-4 space-y-12">
+      {/* Hero */}
+      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="card overflow-hidden">
+        <div className="relative p-6 md:p-10 bg-gradient-to-br from-brand-50 to-white">
+          <div className="max-w-3xl">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">Partagez. Empruntez. Réduisez. 🌱</h1>
+            <p className="text-gray-600">TrocAll facilite le prêt et le troc d’objets entre voisins. Économisez de l’argent, gagnez de la place et créez du lien.</p>
+            <div className="mt-6 flex gap-3">
+              <Link to="/create" className="btn btn-primary">
+                <Plus className="w-4 h-4 mr-2" /> Ajouter un objet
+              </Link>
+              <Link to="/items" className="btn btn-outline">
+                <Search className="w-4 h-4 mr-2" /> Parcourir
+              </Link>
+            </div>
+          </div>
+          <div className="absolute -right-8 -bottom-8 w-48 h-48 md:w-64 md:h-64 bg-brand-100 rounded-full blur-3xl opacity-40 pointer-events-none" />
+        </div>
+      </motion.section>
 
-      {/* Quick Actions */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="grid grid-cols-2 gap-4 mb-8"
-      >
-        <Link
-          to="/create"
-          className="bg-blue-600 text-white rounded-xl p-4 flex items-center justify-center space-x-2 hover:bg-blue-700 transition-colors"
-        >
-          <Plus size={20} />
-          <span className="font-medium">Ajouter un objet</span>
-        </Link>
-        <Link
-          to="/items"
-          className="bg-white border-2 border-blue-600 text-blue-600 rounded-xl p-4 flex items-center justify-center space-x-2 hover:bg-blue-50 transition-colors"
-        >
-          <Search size={20} />
-          <span className="font-medium">Parcourir</span>
-        </Link>
-      </motion.div>
+      {/* Comment ça marche */}
+      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {[{
+          title: '1. Ajoutez vos objets',
+          desc: 'Indiquez une description, des photos et la disponibilité.',
+          Icon: Plus
+        }, {
+          title: '2. Trouvez près de chez vous',
+          desc: 'Cherchez par catégorie, tags, distance et période.',
+          Icon: MapPin
+        }, {
+          title: '3. Échangez en toute sérénité',
+          desc: 'Discutez, convenez d’un créneau et validez la demande.',
+          Icon: MessageCircle
+        }].map(({ title, desc, Icon }) => (
+          <div key={title} className="card p-5">
+            <div className="w-10 h-10 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center mb-3">
+              <Icon className="w-5 h-5" />
+            </div>
+            <h3 className="font-semibold text-gray-900 mb-1">{title}</h3>
+            <p className="text-sm text-gray-600">{desc}</p>
+          </div>
+        ))}
+      </motion.section>
+
+      {/* Points forts */}
+      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="card p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Pourquoi TrocAll ?</h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[{
+            Icon: Shield,
+            title: 'Confiance locale',
+            desc: 'Profils publics et messagerie intégrée.'
+          }, { Icon: Clock, title: 'Rapide', desc: 'Trouver et réserver en quelques clics.' }, { Icon: Star, title: 'Économique', desc: 'Évitez d’acheter ce que vous pouvez emprunter.' }, { Icon: Lock, title: 'Vos données', desc: 'Sécurisées par Supabase.' }].map(({ Icon, title, desc }) => (
+            <div key={title} className="p-4 border border-gray-200 rounded-2xl">
+              <Icon className="w-5 h-5 text-brand-700 mb-2" />
+              <p className="font-medium text-gray-900">{title}</p>
+              <p className="text-sm text-gray-600">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </motion.section>
 
       {/* Stats */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8"
-      >
+      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {stats.map((stat) => (
-          <div key={stat.label} className="bg-white rounded-xl p-4 border border-gray-200">
+          <div key={stat.label} className="card p-4">
             <div className="flex items-center">
               <div className={`p-2 rounded-lg ${stat.color} text-white`}>
-                <stat.icon size={20} />
+                <stat.icon size={18} />
               </div>
               <div className="ml-3">
                 <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
@@ -101,26 +121,14 @@ const HomePage: React.FC = () => {
             </div>
           </div>
         ))}
-      </motion.div>
+      </motion.section>
 
-      {/* Recent Items */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Objets récemment ajoutés
-          </h2>
-          <Link 
-            to="/items" 
-            className="text-blue-600 hover:text-blue-700 font-medium text-sm"
-          >
-            Voir tout
-          </Link>
+      {/* Objets récents */}
+      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-gray-900">Objets récemment ajoutés</h2>
+          <Link to="/items" className="text-brand-700 hover:text-brand-800 font-medium text-sm">Voir tout</Link>
         </div>
-
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {itemsLoading ? (
             <ItemCardSkeleton count={4} />
@@ -129,25 +137,45 @@ const HomePage: React.FC = () => {
               <ItemCard key={item.id} item={item} userLocation={userLoc || undefined} />
             ))
           ) : (
-            <div className="col-span-full bg-white rounded-xl p-8 text-center border border-gray-200">
-              <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Aucun objet disponible
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Soyez le premier à partager un objet avec vos voisins !
-              </p>
-              <Link
-                to="/create"
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <Plus size={16} className="mr-2" />
-                Ajouter un objet
-              </Link>
+            <div className="col-span-full card p-8 text-center">
+              <Search className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+              <h3 className="text-lg font-medium text-gray-900 mb-1">Aucun objet disponible</h3>
+              <p className="text-sm text-gray-600 mb-4">Soyez le premier à partager un objet avec vos voisins !</p>
+              <Link to="/create" className="btn btn-primary"><Plus className="w-4 h-4 mr-2" />Ajouter un objet</Link>
             </div>
           )}
         </div>
-      </motion.div>
+      </motion.section>
+
+      {/* FAQ / Sécurité */}
+      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="card p-6">
+          <h3 className="font-semibold text-gray-900 mb-3 flex items-center"><HelpCircle className="w-4 h-4 mr-2" /> Questions fréquentes</h3>
+          <ul className="space-y-3 text-sm text-gray-700">
+            <li>
+              <p className="font-medium text-gray-900">Comment faire une demande ?</p>
+              <p className="text-gray-600">Ouvrez la fiche de l’objet puis cliquez sur “Demander à emprunter”. Rédigez un message et envoyez.</p>
+            </li>
+            <li>
+              <p className="font-medium text-gray-900">C’est gratuit ?</p>
+              <p className="text-gray-600">Oui. Certains prêteurs affichent une valeur indicative; l’échange reste libre.</p>
+            </li>
+            <li>
+              <p className="font-medium text-gray-900">Puis-je modifier ou cacher mon objet ?</p>
+              <p className="text-gray-600">Oui, depuis la page de l’objet (bouton Modifier, Désactiver / Réactiver).</p>
+            </li>
+          </ul>
+        </div>
+        <div className="card p-6">
+          <h3 className="font-semibold text-gray-900 mb-3 flex items-center"><Shield className="w-4 h-4 mr-2" /> Conseils de sécurité</h3>
+          <ul className="space-y-2 text-sm text-gray-700">
+            {["Rencontrez-vous dans un lieu public quand c’est possible.", "Vérifiez le profil et les évaluations.", "Prenez des photos de l’état avant/après.", "Respectez les horaires convenus."]
+              .map((t) => (
+                <li key={t} className="flex items-start"><CheckCircle className="w-4 h-4 text-green-600 mr-2 mt-0.5" /> <span>{t}</span></li>
+              ))}
+          </ul>
+        </div>
+      </motion.section>
     </div>
   );
 };

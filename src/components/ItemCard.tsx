@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { MapPin, User } from 'lucide-react';
+import { MapPin, User, Star } from 'lucide-react';
 import type { Item } from '../types';
 import { getCategoryIcon, getCategoryLabel } from '../utils/categories';
 
@@ -61,6 +61,13 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation 
         
         <div className="p-4">
           <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{item.title}</h3>
+          {typeof item.average_rating === 'number' && item.ratings_count ? (
+            <div className="flex items-center text-xs text-gray-600 mb-2">
+              <Star className="w-4 h-4 text-yellow-500 mr-1" />
+              <span className="font-medium">{item.average_rating.toFixed(1)}</span>
+              <span className="ml-1">({item.ratings_count})</span>
+            </div>
+          ) : null}
           
           {item.description && (
             <p className="text-sm text-gray-600 mb-3 line-clamp-2">{item.description}</p>

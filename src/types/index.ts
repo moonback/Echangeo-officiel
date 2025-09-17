@@ -33,6 +33,17 @@ export interface Item {
   updated_at: string;
   owner?: Profile;
   images?: ItemImage[];
+  average_rating?: number;
+  ratings_count?: number;
+}
+
+export interface ItemRating {
+  id: string;
+  item_id: string;
+  rater_id: string;
+  score: number; // 1..5
+  comment?: string;
+  created_at: string;
 }
 
 export interface ItemImage {

@@ -27,7 +27,9 @@ export function useItems(filters?: {
         .select(`
           *,
           owner:profiles(*),
-          ${selectImages}
+          ${selectImages},
+          average_rating:avg(item_ratings(score)),
+          ratings_count:item_ratings(count)
         `)
         .order('created_at', { ascending: false });
 
@@ -103,7 +105,9 @@ export function useItem(id: string) {
         .select(`
           *,
           owner:profiles(*),
-          images:item_images(*)
+          images:item_images(*),
+          average_rating:avg(item_ratings(score)),
+          ratings_count:item_ratings(count)
         `)
         .eq('id', id)
         .single();
