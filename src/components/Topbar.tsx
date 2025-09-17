@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Package, Plus, Search, MessageCircle, User, LogOut, Menu, X, Users, HelpCircle, Star, Settings } from 'lucide-react';
+import { Package, Plus, Search, MessageCircle, User, LogOut, Menu, X, Users, HelpCircle, Star, Settings, Sparkles } from 'lucide-react';
 import { Link, useNavigate, useLocation, NavLink } from 'react-router-dom';
 import Button from './ui/Button';
 import { useAuthStore } from '../store/authStore';
@@ -149,6 +149,7 @@ const Topbar: React.FC = () => {
   const navigationLinks = useMemo(() => [
     { to: '/items', label: 'Objets' },
     { to: '/neighbours', label: 'Voisins' },
+    { to: '/ai-features', label: 'IA' },
     { to: '/help', label: 'Aide' },
     ...(user ? [] : [
       { to: '/pro', label: 'Pro' },
@@ -157,10 +158,10 @@ const Topbar: React.FC = () => {
   ], [user]);
 
   const mobileNavigationLinks = useMemo(() => [
-    ...navigationLinks.slice(0, 3), // Objets, Voisins, Aide
+    ...navigationLinks.slice(0, 4), // Objets, Voisins, IA, Aide
     { to: '/requests', label: 'Échanges' },
     { to: '/me', label: 'Mon profil' },
-    ...navigationLinks.slice(3) // Pro et Créer un compte si pas connecté
+    ...navigationLinks.slice(4) // Pro et Créer un compte si pas connecté
   ], [navigationLinks]);
 
   return (
@@ -339,6 +340,7 @@ const Topbar: React.FC = () => {
                   const Icon = (
                     to === '/items' ? Search :
                     to === '/neighbours' ? Users :
+                    to === '/ai-features' ? Sparkles :
                     to === '/help' ? HelpCircle :
                     to === '/requests' ? MessageCircle :
                     to === '/me' ? User :

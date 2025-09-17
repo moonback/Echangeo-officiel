@@ -11,16 +11,21 @@ import {
   Heart,
   CheckCircle,
   X,
-  AlertCircle
+  AlertCircle,
+  Sparkles,
+  Wand2
 } from 'lucide-react';
 import { useItem, useUpdateItem } from '../hooks/useItems';
 import { useFavorites, useIsItemFavorited } from '../hooks/useFavorites';
 import { useUpsertItemRating } from '../hooks/useRatings';
 import { useCreateRequest, useRequests } from '../hooks/useRequests';
+import { useRequestMessageGenerator } from '../hooks/useChatAI';
 import { getCategoryIcon, getCategoryLabel } from '../utils/categories';
 import { getOfferTypeIcon, getOfferTypeLabel } from '../utils/offerTypes';
 import { useAuthStore } from '../store/authStore';
+import { useProfile } from '../hooks/useProfiles';
 import Button from '../components/ui/Button';
+import CompatibilityScore from '../components/CompatibilityScore';
 import Badge from '../components/ui/Badge';
 import Card from '../components/ui/Card';
 
@@ -42,6 +47,8 @@ const ItemDetailPage: React.FC = () => {
   const [showRatingForm, setShowRatingForm] = useState(false);
   const [ratingScore, setRatingScore] = useState<number>(5);
   const [ratingComment, setRatingComment] = useState<string>('');
+  const { generateMessage, isGenerating } = useRequestMessageGenerator();
+  const { data: currentUserProfile } = useProfile(user?.id);
   const hasCompletedBorrow = !!(item && allRequests?.some(
     (r) => r.requester_id === user?.id && r.item_id === item.id && r.status === 'completed'
   ));
@@ -435,6 +442,20 @@ const ItemDetailPage: React.FC = () => {
             </div>
           )}
 
+          {/* Score de compatibilité IA */}
+          {!isOwner && currentUserProfile && item.owner && (
+            <CompatibilityScore
+              requesterProfile={currentUserProfile}
+              ownerProfile={item.owner}
+              item={item}
+              requestHistory={allRequests?.filter(r => 
+                (r.requester_id === user?.id && r.item?.owner_id === item.owner_id) ||
+                (r.item?.owner_id === user?.id && r.requester_id === item.owner_id)
+              )}
+              className="mb-6"
+            />
+          )}
+
           {/* Actions */}
           {!isOwner && item.is_available && !hasPendingRequest && (
             <div className="space-y-4">
@@ -452,6 +473,41 @@ const ItemDetailPage: React.FC = () => {
                 </div>
               ) : (
                 <form onSubmit={handleRequestSubmit} className="space-y-4">
+                  {/* Assistant IA pour générer le message */}
+                  {import.meta.env.VITE_MISTRAL_API_KEY && (
+                    <div className="bg-gradient-to-r from-purple-50/50 to-blue-50/50 border border-purple-200/50 rounded-xl p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Sparkles className="w-4 h-4 text-purple-600" />
+                        <span className="text-sm font-medium text-gray-900">Assistant IA</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={async () => {
+                            try {
+                              const generated = await generateMessage({
+                                itemTitle: item.title,
+                                itemCategory: item.category,
+                                requestType: item.offer_type,
+                                userMessage: requestMessage,
+                              });
+                              setRequestMessage(generated);
+                            } catch (error) {
+                              console.error('Erreur génération message:', error);
+                            }
+                          }}
+                          disabled={isGenerating}
+                          leftIcon={<Wand2 size={14} />}
+                          className="border border-purple-200 text-purple-700 hover:bg-purple-50"
+                        >
+                          {isGenerating ? 'Génération...' : 'Générer un message'}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  
                   <div>
                     <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
                       Message (optionnel)

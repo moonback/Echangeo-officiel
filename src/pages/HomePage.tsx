@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Plus, Search, MessageCircle, TrendingUp } from 'lucide-react';
+import { Plus, Search, MessageCircle, TrendingUp, Sparkles } from 'lucide-react';
 import { useItems } from '../hooks/useItems';
 import { useRequests } from '../hooks/useRequests';
 import ItemCard from '../components/ItemCard';
@@ -96,6 +96,28 @@ const HomePage: React.FC = () => {
                   </Button>
                 </Link>
               </motion.div>
+              
+              {/* Nouveau badge IA */}
+              {import.meta.env.VITE_MISTRAL_API_KEY && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.8, duration: 0.5 }}
+                  className="mt-6"
+                >
+                  <Link to="/ai-features">
+                    <div className="inline-flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-200/50 rounded-2xl hover:from-purple-500/20 hover:to-blue-500/20 transition-all duration-200 hover:scale-105">
+                      <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-lg">
+                        <Sparkles className="w-4 h-4 text-white" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-semibold text-gray-900">Nouveau ! IA intégrée</p>
+                        <p className="text-xs text-gray-600">Reconnaissance d'objets, chat intelligent et plus</p>
+                      </div>
+                    </div>
+                  </Link>
+                </motion.div>
+              )}
             </div>
           </div>
         </Card>
