@@ -7,7 +7,7 @@ const BottomNavigation: React.FC = () => {
   const navItems = [
     { to: '/', icon: Home, label: 'Accueil' },
     { to: '/items', icon: Search, label: 'Rechercher' },
-    { to: '/communities', icon: Users, label: 'Communautés' },
+    { to: '/communities', icon: Users, label: 'Quartiers' },
     { to: '/requests', icon: MessageCircle, label: 'Échanges' },
     { to: '/me', icon: User, label: 'Profil' },
   ];

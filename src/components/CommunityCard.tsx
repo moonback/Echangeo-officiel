@@ -1,9 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { MapPin, Users, Calendar, MessageCircle, TrendingUp } from 'lucide-react';
+import { MapPin, Users, Calendar, MessageCircle, TrendingUp, UserPlus, Check } from 'lucide-react';
 import Card from './ui/Card';
 import Badge from './ui/Badge';
+import Button from './ui/Button';
+import { useJoinCommunity, useLeaveCommunity, useUserCommunities } from '../hooks/useCommunities';
+import { useAuthStore } from '../store/authStore';
 import type { CommunityOverview } from '../types';
 
 interface CommunityCardProps {
@@ -17,6 +20,47 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
   showDistance = false, 
   distance 
 }) => {
+  const { user } = useAuthStore();
+  const { data: userCommunities } = useUserCommunities(user?.id);
+  const joinCommunity = useJoinCommunity();
+  const leaveCommunity = useLeaveCommunity();
+
+  const isMember = userCommunities?.some(uc => uc.id === community.id) || false;
+  const isJoining = joinCommunity.isPending;
+  const isLeaving = leaveCommunity.isPending;
+
+  const handleJoinCommunity = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!user) return;
+    
+    try {
+      await joinCommunity.mutateAsync({
+        communityId: community.id,
+        userId: user.id,
+        role: 'member'
+      });
+    } catch (error) {
+      console.error('Erreur lors de la rejointe de la communauté:', error);
+    }
+  };
+
+  const handleLeaveCommunity = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!user) return;
+    
+    try {
+      await leaveCommunity.mutateAsync({
+        communityId: community.id,
+        userId: user.id
+      });
+    } catch (error) {
+      console.error('Erreur lors de la sortie de la communauté:', error);
+    }
+  };
   const getActivityColor = (level: string) => {
     switch (level) {
       case 'active': return 'bg-green-100 text-green-700 border-green-200';
@@ -117,8 +161,40 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
                   : 'Jamais'
               }
             </div>
-            <div className="text-sm font-medium text-brand-600 group-hover:text-brand-700">
-              Voir la communauté →
+            <div className="flex items-center gap-2">
+              {isMember ? (
+                <Button
+                  onClick={handleLeaveCommunity}
+                  disabled={isLeaving}
+                  variant="outline"
+                  size="sm"
+                  className="text-red-600 border-red-200 hover:bg-red-50"
+                >
+                  {isLeaving ? 'Sortie...' : 'Quitter'}
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleJoinCommunity}
+                  disabled={isJoining || !user}
+                  size="sm"
+                  className="bg-brand-600 hover:bg-brand-700"
+                >
+                  {isJoining ? (
+                    'Rejoindre...'
+                  ) : (
+                    <>
+                      <UserPlus className="w-4 h-4 mr-1" />
+                      Rejoindre
+                    </>
+                  )}
+                </Button>
+              )}
+              <Link 
+                to={`/communities/${community.id}`}
+                className="text-sm font-medium text-brand-600 hover:text-brand-700"
+              >
+                Voir →
+              </Link>
             </div>
           </div>
         </Link>

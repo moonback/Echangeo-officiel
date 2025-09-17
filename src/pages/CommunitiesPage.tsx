@@ -77,17 +77,17 @@ const CommunitiesPage: React.FC = () => {
         >
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 gradient-text">
-                Communautés de quartier
-              </h1>
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 gradient-text">
+          Quartiers
+        </h1>
               <p className="text-gray-600 text-lg">
-                Rejoignez votre communauté locale et participez à l'économie collaborative
+                Rejoignez votre quartier et participez à l'économie collaborative
               </p>
             </div>
             <Link to="/communities/create">
               <Button className="flex items-center gap-2">
                 <Plus className="w-4 h-4" />
-                Créer une communauté
+                Créer un quartier
               </Button>
             </Link>
           </div>
@@ -194,14 +194,14 @@ const CommunitiesPage: React.FC = () => {
           ) : (
             <EmptyState
               icon={<Users className="w-12 h-12 mx-auto" />}
-              title="Aucune communauté trouvée"
+              title="Aucun quartier trouvé"
               description={searchQuery ? 
-                `Aucune communauté ne correspond à "${searchQuery}"` : 
-                "Il n'y a pas encore de communauté active"
+                `Aucun quartier ne correspond à "${searchQuery}"` : 
+                "Il n'y a pas encore de quartier actif"
               }
               action={
                 <Link to="/communities/create">
-                  <Button>Créer la première communauté</Button>
+                  <Button>Créer le premier quartier</Button>
                 </Link>
               }
             />
