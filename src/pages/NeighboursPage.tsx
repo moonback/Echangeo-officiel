@@ -1,17 +1,35 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNeighbours } from '../hooks/useProfiles';
+import { useCommunities } from '../hooks/useCommunities';
 import { Link } from 'react-router-dom';
-import { Search, MapPin, MessageCircle, User, ExternalLink, SortAsc } from 'lucide-react';
+import { Search, MapPin, MessageCircle, User, ExternalLink, SortAsc, Users } from 'lucide-react';
 import MapboxMap from '../components/MapboxMap';
 import Card from '../components/ui/Card';
 
 const NeighboursPage: React.FC = () => {
   const { data, isLoading } = useNeighbours();
+  const { data: communities } = useCommunities();
+  
+  // Debug temporaire
+  React.useEffect(() => {
+    if (communities) {
+      console.log('Communities data:', communities);
+      communities.forEach((c: any) => {
+        console.log(`Community ${c.name}:`, {
+          stats: c.stats,
+          total_members: c.stats?.total_members,
+          stats_type: typeof c.stats,
+          stats_length: Array.isArray(c.stats) ? c.stats.length : 'not array'
+        });
+      });
+    }
+  }, [communities]);
   const [query, setQuery] = React.useState('');
   const [sortBy, setSortBy] = React.useState<'distance' | 'name'>('distance');
   const [userLoc, setUserLoc] = React.useState<{ lat: number; lng: number } | null>(null);
   const [hasCoordsOnly, setHasCoordsOnly] = React.useState(false);
+  const [showCommunities, setShowCommunities] = React.useState(true);
 
   React.useEffect(() => {
     if (!navigator.geolocation) return;
@@ -147,38 +165,104 @@ const NeighboursPage: React.FC = () => {
           <Card className="p-0 mb-6 glass-card overflow-hidden">
             <div className="p-6 bg-gradient-to-r from-brand-50/50 to-purple-50/50 flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-1">Carte de la communauté</h2>
-                <p className="text-sm text-gray-600">Explorez votre quartier et découvrez vos voisins</p>
+                <h2 className="text-lg font-semibold text-gray-900 mb-1">Carte des quartiers</h2>
+                <p className="text-sm text-gray-600">Explorez les quartiers de votre communauté</p>
               </div>
-              <div className="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border border-brand-200/50">
-                <span className="text-sm font-semibold text-brand-700">
-                  {neighbors?.filter((p: any) => typeof p.latitude === 'number' && typeof p.longitude === 'number').length || 0} localisés
-                </span>
+              <div className="flex items-center gap-3">
+                <div className="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border border-brand-200/50">
+                  <span className="text-sm font-semibold text-brand-700">
+                    {communities?.length || 0} quartier{(communities?.length || 0) > 1 ? 's' : ''}
+                  </span>
+                </div>
+                <label className="text-sm text-gray-700 inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm px-3 py-2 rounded-full border border-gray-200/50 hover:bg-white/80 transition-colors cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={showCommunities} 
+                    onChange={(e) => setShowCommunities(e.target.checked)}
+                    className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                  />
+                  <Users className="w-4 h-4 text-brand-600" />
+                  Afficher quartiers
+                </label>
               </div>
             </div>
             <div className="relative">
               <MapboxMap
                 center={{ lat: userLoc?.lat ?? 48.8566, lng: userLoc?.lng ?? 2.3522 }}
-                zoom={12}
+                zoom={11}
                 height={300}
                 autoFit
                 showUserLocation={!!userLoc}
                 userLocation={userLoc || undefined}
-                markers={(neighbors || [])
+                markers={showCommunities ? (communities || [])
+                  .filter((c: any) => typeof c.center_latitude === 'number' && typeof c.center_longitude === 'number')
+                  .map((c: any) => ({
+                    id: c.id,
+                    latitude: parseFloat(c.center_latitude),
+                    longitude: parseFloat(c.center_longitude),
+                    title: c.name,
+                    description: `${c.city} - ${c.stats?.total_members || 0} membres`,
+                    color: '#8B5CF6', // Couleur violette pour les quartiers
+                  })) : (neighbors || [])
                   .filter((p: any) => typeof p.latitude === 'number' && typeof p.longitude === 'number')
                   .map((p: any) => ({
                     id: p.id,
                     latitude: p.latitude as number,
                     longitude: p.longitude as number,
                     title: p.full_name || p.email || 'Voisin',
+                    color: '#3B82F6', // Couleur bleue pour les utilisateurs
                   }))}
                 onMarkerClick={(id) => {
-                  window.location.href = `/profile/${id}`;
+                  if (showCommunities) {
+                    window.location.href = `/communities/${id}`;
+                  } else {
+                    window.location.href = `/profile/${id}`;
+                  }
                 }}
               />
             </div>
           </Card>
         </motion.div>
+
+        {/* Quartiers disponibles */}
+        {showCommunities && communities && communities.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+            className="mb-6"
+          >
+            <Card className="p-6 glass-card">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Users className="w-5 h-5 text-brand-600" />
+                Quartiers disponibles
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {communities.map((community: any) => (
+                  <div key={community.id} className="bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-gray-200/50 hover:bg-white/80 transition-colors">
+                    <div className="flex items-start justify-between mb-2">
+                      <h4 className="font-medium text-gray-900">{community.name}</h4>
+                      <span className="text-xs text-gray-500">{community.city}</span>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{community.description}</p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <Users className="w-4 h-4" />
+                        <span>{community.stats?.total_members || 0} membres</span>
+                      </div>
+                      <Link 
+                        to={`/communities/${community.id}`}
+                        className="text-xs text-brand-600 hover:text-brand-700 font-medium"
+                      >
+                        Voir →
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </motion.div>
+        )}
 
         <div className="bg-white rounded-xl border border-gray-200 glass">
           {isLoading ? (

@@ -6,10 +6,11 @@ import type {
   CommunityEvent, 
   CommunityDiscussion,
   NearbyCommunity,
-  CommunityOverview,
-  EventParticipant,
-  DiscussionReply
+  CommunityOverview
 } from '../types';
+
+// Note: Utilisation de (supabase as any) pour les tables de communautés
+// car elles ne sont pas encore dans les types générés de Supabase
 
 // ===== QUERIES =====
 
@@ -78,7 +79,8 @@ export function useNearbyCommunities(
     queryFn: async (): Promise<NearbyCommunity[]> => {
       try {
         // Essayer d'abord la fonction PostgreSQL
-        const { data, error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data, error } = await (supabase as any)
           .rpc('find_nearby_communities', {
             p_latitude: latitude,
             p_longitude: longitude,
@@ -87,7 +89,7 @@ export function useNearbyCommunities(
 
         if (error) throw error;
         return data || [];
-      } catch (rpcError) {
+      } catch {
         // Fallback : calcul côté client si la fonction PostgreSQL n'est pas disponible
         console.warn('Fonction PostgreSQL non disponible, calcul côté client');
         
@@ -109,17 +111,25 @@ export function useNearbyCommunities(
         // Calculer les distances côté client
         const nearbyCommunities = communities
           ?.map(community => {
+            const communityData = community as {
+              id: string;
+              name: string;
+              center_latitude: number;
+              center_longitude: number;
+              stats?: { total_members: number };
+            };
+            
             const distance = calculateDistance(
               latitude,
               longitude,
-              community.center_latitude,
-              community.center_longitude
+              communityData.center_latitude,
+              communityData.center_longitude
             );
             return {
-              community_id: community.id,
-              community_name: community.name,
+              community_id: communityData.id,
+              community_name: communityData.name,
               distance_km: distance,
-              member_count: community.stats?.total_members || 0
+              member_count: communityData.stats?.total_members || 0
             };
           })
           .filter(community => community.distance_km <= radiusKm)
@@ -173,7 +183,7 @@ export function useUserCommunities(userId?: string) {
         .eq('is_active', true);
 
       if (error) throw error;
-      return data?.map(item => item.community).filter(Boolean) || [];
+      return data?.map((item: { community: Community }) => item.community).filter(Boolean) || [];
     },
     enabled: !!userId,
     staleTime: 1000 * 60 * 5,
@@ -282,7 +292,8 @@ export function useJoinCommunity() {
       role?: 'member' | 'moderator' | 'admin' 
     }) => {
       // Vérifier d'abord si l'utilisateur est déjà membre
-      const { data: existingMember } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: existingMember } = await (supabase as any)
         .from('community_members')
         .select('id')
         .eq('community_id', communityId)
@@ -291,7 +302,8 @@ export function useJoinCommunity() {
 
       if (existingMember) {
         // Mettre à jour le membre existant
-        const { data, error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data, error } = await (supabase as any)
           .from('community_members')
           .update({
             role,
@@ -306,7 +318,8 @@ export function useJoinCommunity() {
         return data;
       } else {
         // Créer un nouveau membre
-        const { data, error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data, error } = await (supabase as any)
           .from('community_members')
           .insert({
             community_id: communityId,
@@ -322,13 +335,15 @@ export function useJoinCommunity() {
         return data;
       }
     },
-    onSuccess: (data) => {
-      // Invalider les caches concernés
-      queryClient.invalidateQueries({ queryKey: ['userCommunities', data.user_id] });
-      queryClient.invalidateQueries({ queryKey: ['communityMembers', data.community_id] });
-      queryClient.invalidateQueries({ queryKey: ['community', data.community_id] });
-      queryClient.invalidateQueries({ queryKey: ['communities'] });
-    },
+            onSuccess: (data: { user_id: string; community_id: string } | null) => {
+              // Invalider les caches concernés
+              if (data) {
+                queryClient.invalidateQueries({ queryKey: ['userCommunities', data.user_id] });
+                queryClient.invalidateQueries({ queryKey: ['communityMembers', data.community_id] });
+                queryClient.invalidateQueries({ queryKey: ['community', data.community_id] });
+                queryClient.invalidateQueries({ queryKey: ['communities'] });
+              }
+            },
   });
 }
 
@@ -346,7 +361,8 @@ export function useLeaveCommunity() {
       communityId: string; 
       userId: string; 
     }) => {
-      const { error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any)
         .from('community_members')
         .update({ is_active: false })
         .eq('community_id', communityId)
@@ -384,7 +400,8 @@ export function useCreateCommunityEvent() {
       max_participants?: number;
       created_by: string;
     }) => {
-      const { data, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any)
         .from('community_events')
         .insert(eventData)
         .select()
@@ -393,9 +410,11 @@ export function useCreateCommunityEvent() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['communityEvents', data.community_id] });
-      queryClient.invalidateQueries({ queryKey: ['community', data.community_id] });
+    onSuccess: (data: { community_id: string } | null) => {
+      if (data) {
+        queryClient.invalidateQueries({ queryKey: ['communityEvents', data.community_id] });
+        queryClient.invalidateQueries({ queryKey: ['community', data.community_id] });
+      }
     },
   });
 }
@@ -414,7 +433,8 @@ export function useJoinEvent() {
       eventId: string; 
       userId: string; 
     }) => {
-      const { data, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any)
         .from('event_participants')
         .insert({
           event_id: eventId,
@@ -427,7 +447,7 @@ export function useJoinEvent() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['communityEvents'] });
     },
   });
@@ -447,7 +467,8 @@ export function useCreateDiscussion() {
       author_id: string;
       category: 'general' | 'items' | 'events' | 'help' | 'announcements';
     }) => {
-      const { data, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any)
         .from('community_discussions')
         .insert(discussionData)
         .select()
@@ -456,9 +477,11 @@ export function useCreateDiscussion() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['communityDiscussions', data.community_id] });
-      queryClient.invalidateQueries({ queryKey: ['community', data.community_id] });
+    onSuccess: (data: { community_id: string } | null) => {
+      if (data) {
+        queryClient.invalidateQueries({ queryKey: ['communityDiscussions', data.community_id] });
+        queryClient.invalidateQueries({ queryKey: ['community', data.community_id] });
+      }
     },
   });
 }
@@ -476,7 +499,8 @@ export function useReplyToDiscussion() {
       content: string;
       parent_reply_id?: string;
     }) => {
-      const { data, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any)
         .from('discussion_replies')
         .insert(replyData)
         .select()
@@ -485,7 +509,7 @@ export function useReplyToDiscussion() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['communityDiscussions'] });
     },
   });
@@ -508,7 +532,8 @@ export function useCreateCommunity() {
       radius_km?: number;
       created_by: string;
     }) => {
-      const { data, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any)
         .from('communities')
         .insert({
           ...communityData,
@@ -521,19 +546,22 @@ export function useCreateCommunity() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
-      // Ajouter le créateur comme admin de la communauté
-      supabase
-        .from('community_members')
-        .insert({
-          community_id: data.id,
-          user_id: data.created_by,
-          role: 'admin',
-          is_active: true
-        });
+    onSuccess: (data: { id: string; created_by: string } | null) => {
+      if (data) {
+        // Ajouter le créateur comme admin de la communauté
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase as any)
+          .from('community_members')
+          .insert({
+            community_id: data.id,
+            user_id: data.created_by,
+            role: 'admin',
+            is_active: true
+          });
 
-      queryClient.invalidateQueries({ queryKey: ['communities'] });
-      queryClient.invalidateQueries({ queryKey: ['userCommunities', data.created_by] });
+        queryClient.invalidateQueries({ queryKey: ['communities'] });
+        queryClient.invalidateQueries({ queryKey: ['userCommunities', data.created_by] });
+      }
     },
   });
 }
