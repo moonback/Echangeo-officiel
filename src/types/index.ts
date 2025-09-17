@@ -26,6 +26,8 @@ export interface Item {
   available_from?: string; // ISO date
   available_to?: string;   // ISO date
   location_hint?: string;
+  latitude?: number;
+  longitude?: number;
   is_available: boolean;
   created_at: string;
   updated_at: string;

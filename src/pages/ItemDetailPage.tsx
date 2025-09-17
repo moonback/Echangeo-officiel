@@ -244,6 +244,21 @@ const ItemDetailPage: React.FC = () => {
                     </p>
                   </div>
                 )}
+                {(item.latitude !== undefined && item.longitude !== undefined) && (
+                  <div className="sm:col-span-2">
+                    <span className="text-gray-500">Position :</span>
+                    <p className="font-medium text-gray-900">
+                      {item.latitude?.toFixed(6)}, {item.longitude?.toFixed(6)}{' '}
+                      <a
+                        className="text-blue-600 hover:text-blue-700 ml-2"
+                        href={`https://www.google.com/maps?q=${item.latitude},${item.longitude}`}
+                        target="_blank" rel="noreferrer"
+                      >
+                        Ouvrir la carte
+                      </a>
+                    </p>
+                  </div>
+                )}
                 {item.tags && item.tags.length > 0 && (
                   <div className="sm:col-span-2">
                     <span className="text-gray-500">Tags :</span>

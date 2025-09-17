@@ -22,6 +22,10 @@ const createItemSchema = z.object({
   available_from: z.string().optional(),
   available_to: z.string().optional(),
   location_hint: z.string().max(200).optional(),
+  latitude: z
+    .preprocess((v) => (v === '' || v === undefined ? undefined : Number(v)), z.number().min(-90).max(90).optional()),
+  longitude: z
+    .preprocess((v) => (v === '' || v === undefined ? undefined : Number(v)), z.number().min(-180).max(180).optional()),
 });
 
 type CreateItemForm = z.infer<typeof createItemSchema>;
@@ -258,6 +262,54 @@ const CreateItemPage: React.FC = () => {
             id="location_hint"
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
+        </div>
+
+        {/* Coordinates */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label htmlFor="latitude" className="block text-sm font-medium text-gray-700 mb-1">
+              Latitude
+            </label>
+            <input
+              {...register('latitude')}
+              type="number"
+              step="any"
+              id="latitude"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label htmlFor="longitude" className="block text-sm font-medium text-gray-700 mb-1">
+              Longitude
+            </label>
+            <input
+              {...register('longitude')}
+              type="number"
+              step="any"
+              id="longitude"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div className="flex items-end">
+            <button
+              type="button"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              onClick={() => {
+                if (!navigator.geolocation) return;
+                navigator.geolocation.getCurrentPosition((pos) => {
+                  const lat = pos.coords.latitude;
+                  const lng = pos.coords.longitude;
+                  // Note: react-hook-form register without setValue here, using DOM assignment
+                  const latInput = document.getElementById('latitude') as HTMLInputElement | null;
+                  const lngInput = document.getElementById('longitude') as HTMLInputElement | null;
+                  if (latInput) latInput.value = String(lat);
+                  if (lngInput) lngInput.value = String(lng);
+                });
+              }}
+            >
+              Utiliser ma position
+            </button>
+          </div>
         </div>
 
         {/* Description */}

@@ -69,6 +69,8 @@ export function useCreateItem() {
       available_from?: string;
       available_to?: string;
       location_hint?: string;
+      latitude?: number;
+      longitude?: number;
       images: File[];
     }) => {
       const user = await supabase.auth.getUser();
@@ -90,6 +92,8 @@ export function useCreateItem() {
           available_from: data.available_from || null,
           available_to: data.available_to || null,
           location_hint: data.location_hint || null,
+          latitude: typeof data.latitude === 'number' ? data.latitude : null,
+          longitude: typeof data.longitude === 'number' ? data.longitude : null,
         })
         .select()
         .single();
