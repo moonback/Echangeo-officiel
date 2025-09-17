@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, Upload, X, Plus } from 'lucide-react';
+import { ArrowLeft, Upload, X } from 'lucide-react';
 import { useCreateItem } from '../hooks/useItems';
 import { categories } from '../utils/categories';
 import type { ItemCategory } from '../types';
@@ -76,7 +76,7 @@ const CreateItemPage: React.FC = () => {
   const goNext = async () => {
     let fieldsToValidate: (keyof CreateItemForm)[] = [];
     if (step === 1) fieldsToValidate = ['title', 'category', 'condition'];
-    const isValid = fieldsToValidate.length ? await trigger(fieldsToValidate as any) : true;
+    const isValid = fieldsToValidate.length ? await trigger(fieldsToValidate as (keyof CreateItemForm)[]) : true;
     if (isValid) setStep((s) => Math.min(TOTAL_STEPS, s + 1));
   };
 
@@ -85,7 +85,9 @@ const CreateItemPage: React.FC = () => {
     const sub = watch((values) => {
       try {
         localStorage.setItem('create_item_draft', JSON.stringify(values));
-      } catch {}
+      } catch {
+        // Do nothing
+      }
     });
     return () => sub.unsubscribe();
   }, [watch]);
@@ -101,20 +103,39 @@ const CreateItemPage: React.FC = () => {
           if (parsed[k] !== undefined) setValue(k, parsed[k]);
         });
       }
-    } catch {}
+    } catch {
+      // Do nothing
+    }
   }, [setValue]);
 
   // Suggestions de tags depuis marque/modèle + catégorie
   React.useEffect(() => {
+    // Suggestions enrichies pour chaque catégorie
     const CATEGORY_SUGGESTIONS: Record<ItemCategory, string[]> = {
-      tools: ['bricolage', 'outil', 'manuel', 'électrique', 'atelier'],
-      electronics: ['électronique', 'audio', 'vidéo', 'smart', 'usb'],
-      books: ['livre', 'roman', 'bd', 'éducation', 'enfant'],
-      sports: ['sport', 'fitness', 'extérieur', 'ballon', 'vélo'],
-      kitchen: ['cuisine', 'ustensile', 'mixeur', 'cuisson', 'baking'],
-      garden: ['jardin', 'extérieur', 'plante', 'arrosage', 'tonte'],
-      toys: ['jouet', 'enfant', 'jeu', 'puzzle', 'éducatif'],
-      other: ['divers', 'maison', 'pratique'],
+      tools: [
+        'bricolage', 'outil', 'manuel', 'électrique', 'atelier', 'perceuse', 'tournevis', 'marteau', 'scie', 'ponceuse', 'visseuse', 'clé', 'rangement', 'réparation', 'travaux', 'mesure'
+      ],
+      electronics: [
+        'électronique', 'audio', 'vidéo', 'smart', 'usb', 'télévision', 'enceinte', 'casque', 'ordinateur', 'tablette', 'chargeur', 'console', 'caméra', 'wifi', 'bluetooth', 'batterie'
+      ],
+      books: [
+        'livre', 'roman', 'bd', 'éducation', 'enfant', 'lecture', 'magazine', 'manuel', 'fiction', 'non-fiction', 'jeunesse', 'bande dessinée', 'scolaire', 'auteur', 'bibliothèque'
+      ],
+      sports: [
+        'sport', 'fitness', 'extérieur', 'ballon', 'vélo', 'raquette', 'course', 'yoga', 'musculation', 'randonnée', 'tennis', 'football', 'basket', 'natation', 'équipement'
+      ],
+      kitchen: [
+        'cuisine', 'ustensile', 'mixeur', 'cuisson', 'baking', 'four', 'poêle', 'casserole', 'robot', 'grille-pain', 'micro-ondes', 'vaisselle', 'gourmet', 'pâtisserie', 'accessoire'
+      ],
+      garden: [
+        'jardin', 'extérieur', 'plante', 'arrosage', 'tonte', 'pelouse', 'outil de jardin', 'potager', 'fleur', 'serre', 'brouette', 'taille-haie', 'débroussailleuse', 'engrais', 'compost'
+      ],
+      toys: [
+        'jouet', 'enfant', 'jeu', 'puzzle', 'éducatif', 'peluche', 'construction', 'créatif', 'voiture', 'poupée', 'lego', 'society', 'apprentissage', 'famille', 'divertissement'
+      ],
+      other: [
+        'divers', 'maison', 'pratique', 'décoration', 'organisation', 'accessoire', 'quotidien', 'loisir', 'événement', 'occasion', 'stockage', 'mobilier', 'éclairage', 'sécurité', 'polyvalent'
+      ],
     };
 
     const brand = watch('brand')?.trim();
@@ -423,8 +444,8 @@ const CreateItemPage: React.FC = () => {
                     navigator.geolocation.getCurrentPosition((pos) => {
                       const lat = pos.coords.latitude;
                       const lng = pos.coords.longitude;
-                      setValue('latitude', lat as any, { shouldValidate: true, shouldDirty: true });
-                      setValue('longitude', lng as any, { shouldValidate: true, shouldDirty: true });
+                      setValue('latitude', lat as unknown as number, { shouldValidate: true, shouldDirty: true });
+                      setValue('longitude', lng as unknown as number, { shouldValidate: true, shouldDirty: true });
 
                       fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`, {
                         headers: { 'Accept-Language': 'fr' },
