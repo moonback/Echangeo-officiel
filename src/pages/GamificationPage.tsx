@@ -6,8 +6,6 @@ import {
   Award, 
   Target, 
   TrendingUp, 
-  Users, 
-  Crown,
   Gift,
   Calendar,
   Zap
@@ -27,11 +25,9 @@ import {
   useUserBadges, 
   useLeaderboard,
   useUserChallenges,
-  useChallenges,
   useClaimChallengeReward,
   useCheckBadges,
-  getLevelColor,
-  getLevelIcon
+  getLevelColor
 } from '../hooks/useGamification';
 
 const GamificationPage: React.FC = () => {
@@ -42,7 +38,6 @@ const GamificationPage: React.FC = () => {
   const { data: userBadges } = useUserBadges();
   const { data: leaderboard } = useLeaderboard(20);
   const { data: userChallenges } = useUserChallenges();
-  const { data: challenges } = useChallenges();
   const claimRewardMutation = useClaimChallengeReward();
   const checkBadgesMutation = useCheckBadges();
 
@@ -104,26 +99,53 @@ const GamificationPage: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Navigation par onglets */}
+        {/* Navigation par onglets - Version icônes uniquement */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <div className="flex bg-white rounded-lg shadow-sm border border-gray-200 p-1">
+          <div className="flex bg-white rounded-xl shadow-sm border border-gray-200 p-2 gap-1 w-full">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-md transition-colors ${
+                onClick={() => setActiveTab(tab.id as 'overview' | 'challenges' | 'leaderboard' | 'badges' | 'rewards' | 'events' | 'stats')}
+                className={`relative flex items-center justify-center flex-1 h-12 rounded-lg transition-all duration-200 group ${
                   activeTab === tab.id
-                    ? 'bg-brand-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'bg-brand-600 text-white shadow-lg scale-105'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 hover:scale-105'
+                }`}
+                title={tab.label}
+              >
+                <div className="transition-transform duration-200 group-hover:scale-110">
+                  {tab.icon}
+                </div>
+                
+                {/* Indicateur de sélection */}
+                {activeTab === tab.id && (
+                  <motion.div
+                    layoutId="activeTabIndicator"
+                    className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-brand-600 rounded-full"
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  />
+                )}
+              </button>
+            ))}
+          </div>
+          
+          {/* Labels des onglets (optionnel, peut être masqué sur mobile) */}
+          <div className="hidden md:flex justify-between mt-3 px-2">
+            {tabs.map((tab) => (
+              <span
+                key={tab.id}
+                className={`text-xs font-medium transition-colors text-center ${
+                  activeTab === tab.id
+                    ? 'text-brand-600'
+                    : 'text-gray-500'
                 }`}
               >
-                {tab.icon}
                 {tab.label}
-              </button>
+              </span>
             ))}
           </div>
         </motion.div>
@@ -138,63 +160,57 @@ const GamificationPage: React.FC = () => {
           {activeTab === 'overview' && (
             <div className="space-y-8">
               {/* Statistiques rapides */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <Card className="p-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-brand-100 flex items-center justify-center">
-                      <Star className="w-6 h-6 text-brand-600" />
+              <Card className="p-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-brand-100 flex items-center justify-center">
+                      <Star className="w-5 h-5 text-brand-600" />
                     </div>
                     <div>
-                      <div className="text-2xl font-bold text-gray-900">
+                      <div className="text-xl font-bold text-gray-900">
                         {stats?.points || 0}
                       </div>
-                      <div className="text-sm text-gray-600">Points totaux</div>
+                      <div className="text-xs text-gray-600">Points totaux</div>
                     </div>
                   </div>
-                </Card>
 
-                <Card className="p-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-emerald-100 flex items-center justify-center">
-                      <Trophy className="w-6 h-6 text-emerald-600" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+                      <Trophy className="w-5 h-5 text-emerald-600" />
                     </div>
                     <div>
-                      <div className="text-2xl font-bold text-gray-900">
+                      <div className="text-xl font-bold text-gray-900">
                         {stats?.total_transactions || 0}
                       </div>
-                      <div className="text-sm text-gray-600">Transactions</div>
+                      <div className="text-xs text-gray-600">Transactions</div>
                     </div>
                   </div>
-                </Card>
 
-                <Card className="p-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
-                      <Award className="w-6 h-6 text-purple-600" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                      <Award className="w-5 h-5 text-purple-600" />
                     </div>
                     <div>
-                      <div className="text-2xl font-bold text-gray-900">
+                      <div className="text-xl font-bold text-gray-900">
                         {stats?.badges_count || 0}
                       </div>
-                      <div className="text-sm text-gray-600">Badges</div>
+                      <div className="text-xs text-gray-600">Badges</div>
                     </div>
                   </div>
-                </Card>
 
-                <Card className="p-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
-                      <TrendingUp className="w-6 h-6 text-blue-600" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                      <TrendingUp className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
-                      <div className="text-2xl font-bold text-gray-900">
+                      <div className="text-xl font-bold text-gray-900">
                         {stats?.overall_score ? stats.overall_score.toFixed(1) : '—'}
                       </div>
-                      <div className="text-sm text-gray-600">Réputation</div>
+                      <div className="text-xs text-gray-600">Réputation</div>
                     </div>
                   </div>
-                </Card>
-              </div>
+                </div>
+              </Card>
 
               {/* Affichage de la réputation */}
               {stats && (
@@ -298,7 +314,15 @@ const GamificationPage: React.FC = () => {
 
           {activeTab === 'leaderboard' && (
             <Leaderboard
-              entries={leaderboard || []}
+              entries={(leaderboard || []).map(entry => ({
+                id: entry.profile_id,
+                name: entry.full_name,
+                avatar_url: entry.avatar_url,
+                score: entry.points,
+                level: entry.level,
+                badges: Array(entry.badges_count).fill('badge'),
+                position: entry.position,
+              }))}
               currentUserId={stats?.profile_id}
               period="all_time"
             />
