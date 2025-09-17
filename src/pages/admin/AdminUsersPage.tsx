@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useAdminUsers } from '../../hooks/useAdmin';
 import AdminLayout from '../../components/admin/AdminLayout';
 import AdminTable from '../../components/admin/AdminTable';
+import UserDetailsModal from '../../components/admin/UserDetailsModal';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import type { UserManagement } from '../../types/admin';
@@ -11,6 +12,8 @@ export default function AdminUsersPage() {
   const { users, loading, error, refetch, banUser, unbanUser } = useAdminUsers();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'banned'>('all');
+  const [selectedUser, setSelectedUser] = useState<UserManagement | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = !searchTerm || 
@@ -44,6 +47,16 @@ export default function AdminUsersPage() {
         alert('Erreur lors du débannissement de l\'utilisateur');
       }
     }
+  };
+
+  const handleShowDetails = (user: UserManagement) => {
+    setSelectedUser(user);
+    setIsDetailsModalOpen(true);
+  };
+
+  const handleCloseDetails = () => {
+    setIsDetailsModalOpen(false);
+    setSelectedUser(null);
   };
 
   const columns = [
@@ -236,13 +249,23 @@ export default function AdminUsersPage() {
                   Débannir
                 </button>
               )}
-              <button className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors">
+              <button 
+                onClick={() => handleShowDetails(user)}
+                className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors"
+              >
                 Détails
               </button>
             </div>
           )}
         />
       </div>
+
+      {/* Modal de détails utilisateur */}
+      <UserDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={handleCloseDetails}
+        user={selectedUser}
+      />
     </AdminLayout>
   );
 }

@@ -153,16 +153,19 @@ export function useAdminUsers() {
       setError(null);
 
       const { data, error: fetchError } = await supabase
-        .from('profiles')
+        .from('user_ban_stats')
         .select(`
-          id,
+          user_id,
           email,
           full_name,
-          avatar_url,
-          created_at,
-          updated_at
+          is_banned,
+          ban_reason,
+          ban_type,
+          expires_at,
+          banned_at,
+          banned_by_name
         `)
-        .order('created_at', { ascending: false })
+        .order('banned_at', { ascending: false })
         .limit(100);
 
       if (fetchError) throw fetchError;
@@ -171,20 +174,20 @@ export function useAdminUsers() {
       const enrichedUsers: UserManagement[] = await Promise.all(
         (data || []).map(async (user) => {
           const [itemsCount, requestsCount, communitiesCount] = await Promise.all([
-            supabase.from('items').select('id', { count: 'exact' }).eq('owner_id', user.id),
-            supabase.from('requests').select('id', { count: 'exact' }).eq('requester_id', user.id),
-            supabase.from('community_members').select('id', { count: 'exact' }).eq('user_id', user.id)
+            supabase.from('items').select('id', { count: 'exact' }).eq('owner_id', user.user_id),
+            supabase.from('requests').select('id', { count: 'exact' }).eq('requester_id', user.user_id),
+            supabase.from('community_members').select('id', { count: 'exact' }).eq('user_id', user.user_id)
           ]);
 
           return {
-            id: user.id,
+            id: user.user_id,
             email: user.email,
             full_name: user.full_name,
-            avatar_url: user.avatar_url,
-            created_at: user.created_at,
-            last_active: user.updated_at,
-            is_active: true, // À calculer selon l'activité récente
-            is_banned: false, // À implémenter avec une table bans
+            avatar_url: null, // À récupérer depuis profiles si nécessaire
+            created_at: user.banned_at || new Date().toISOString(),
+            last_active: user.banned_at || new Date().toISOString(),
+            is_active: !user.is_banned,
+            is_banned: user.is_banned || false,
             total_items: itemsCount.count || 0,
             total_requests: requestsCount.count || 0,
             communities_count: communitiesCount.count || 0,
@@ -204,10 +207,21 @@ export function useAdminUsers() {
 
   const banUser = async (userId: string, reason?: string) => {
     try {
-      // Implémenter la logique de bannissement
-      console.log('Bannir utilisateur:', userId, reason);
+      const { user } = useAuthStore.getState();
+      if (!user) throw new Error('Utilisateur non authentifié');
+
+      const { error } = await supabase.rpc('ban_user', {
+        target_user_id: userId,
+        admin_user_id: user.id,
+        ban_reason: reason || 'Banni par l\'administrateur',
+        ban_type: 'temporary',
+        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 jours
+      });
+
+      if (error) throw error;
+      
       // Actualiser la liste
-      fetchUsers();
+      await fetchUsers();
     } catch (err) {
       console.error('Erreur lors du bannissement:', err);
       throw err;
@@ -216,10 +230,14 @@ export function useAdminUsers() {
 
   const unbanUser = async (userId: string) => {
     try {
-      // Implémenter la logique de débannissement
-      console.log('Débannir utilisateur:', userId);
+      const { error } = await supabase.rpc('unban_user', {
+        target_user_id: userId
+      });
+
+      if (error) throw error;
+      
       // Actualiser la liste
-      fetchUsers();
+      await fetchUsers();
     } catch (err) {
       console.error('Erreur lors du débannissement:', err);
       throw err;
