@@ -256,7 +256,7 @@ const ProfilePage: React.FC = () => {
             </Card>
           </div>
           <div className="md:col-span-2">
-            {(reputation.count || badges.length > 0) && (
+            {(reputation.count || badges.length > 0 || ratingStats.count) && (
               <Card className="mb-4">
                 <div className="p-4 border-b border-gray-100 font-medium">Confiance & Réputation</div>
                 <div className="p-4 flex items-center gap-3 flex-wrap">
@@ -267,6 +267,11 @@ const ProfilePage: React.FC = () => {
                   ) : (
                     <span className="text-sm text-gray-600">Aucune évaluation utilisateur pour le moment</span>
                   )}
+                  {ratingStats.count ? (
+                    <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-sm inline-flex items-center">
+                      <Star className="w-4 h-4 mr-1 text-amber-600" /> Avis sur objets {ratingStats.average?.toFixed(1)} ({ratingStats.count})
+                    </span>
+                  ) : null}
                   {badges.map((b) => (
                     <Badge key={b.slug} variant="success" className="px-3 py-1">{b.label}</Badge>
                   ))}
