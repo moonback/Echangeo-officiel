@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Package, Plus, Search, MessageCircle, User, LogOut, Menu, X } from 'lucide-react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Package, Plus, Search, MessageCircle, User, LogOut, Menu, X, Users, HelpCircle } from 'lucide-react';
+import { Link, useNavigate, useLocation, NavLink } from 'react-router-dom';
 import Button from './ui/Button';
 import { useAuthStore } from '../store/authStore';
 
@@ -62,7 +62,7 @@ const useMobileMenu = () => {
 
 const Topbar: React.FC = () => {
   const navigate = useNavigate();
-  const { signOut, user } = useAuthStore();
+  const { signOut, user, profile } = useAuthStore();
   const { query, setQuery, handleKeyDown } = useSearch();
   const { isOpen: mobileOpen, toggle: toggleMobile, close: closeMobile } = useMobileMenu();
 
@@ -239,42 +239,78 @@ const Topbar: React.FC = () => {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -320, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="absolute left-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl border-r border-gray-200 flex flex-col"
+              className="absolute left-0 top-0 h-full w-80 max-w-[85vw] bg-white/90 backdrop-blur-xl shadow-2xl border-r border-gray-200 rounded-r-3xl flex flex-col overflow-hidden"
               role="dialog"
               aria-modal="true"
               aria-label="Menu de navigation"
             >
-              {/* Header du menu mobile */}
-              <div className="flex items-center justify-between p-4 border-b border-gray-100">
-                <div className="flex items-center gap-2">
-                  <Package className="w-5 h-5 text-brand-600" />
-                  <span className="font-semibold text-gray-900">TrocAll</span>
+              {/* Header profil */}
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-brand-600 to-brand-700" />
+                <div className="relative flex items-center justify-between p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white font-bold">
+                      {(profile?.full_name || user?.email || 'U')?.slice(0, 1).toUpperCase()}
+                    </div>
+                    <div className="text-white">
+                      <div className="text-sm font-semibold leading-none">{profile?.full_name || 'Mon compte'}</div>
+                      <div className="text-xs opacity-90">{profile?.email || user?.email || ''}</div>
+                    </div>
+                  </div>
+                  <button
+                    className="p-2 rounded-lg hover:bg-white/10 text-white/90 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
+                    onClick={closeMobile}
+                    aria-label="Fermer le menu"
+                  >
+                    <X size={18} />
+                  </button>
                 </div>
-                <button
-                  className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
-                  onClick={closeMobile}
-                  aria-label="Fermer le menu"
-                >
-                  <X size={18} />
-                </button>
               </div>
 
               {/* Navigation mobile */}
-              <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-                {mobileNavigationLinks.map(({ to, label }) => (
-                  <Link
-                    key={to}
-                    to={to}
-                    className="block px-3 py-3 rounded-lg hover:bg-gray-100 text-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
-                    onClick={closeMobile}
-                  >
-                    {label}
-                  </Link>
-                ))}
+              <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+                {mobileNavigationLinks.map(({ to, label }) => {
+                  const Icon = (
+                    to === '/items' ? Search :
+                    to === '/neighbours' ? Users :
+                    to === '/help' ? HelpCircle :
+                    to === '/requests' ? MessageCircle :
+                    to === '/me' ? User :
+                    to === '/pro' ? Package :
+                    User
+                  );
+                  return (
+                    <NavLink
+                      key={to}
+                      to={to}
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 px-3 py-3 rounded-xl relative transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 ${
+                          isActive ? 'bg-brand-50 text-brand-700' : 'text-gray-800 hover:bg-gray-50'
+                        }`
+                      }
+                      onClick={closeMobile}
+                    >
+                      {({ isActive }) => (
+                        <>
+                          <Icon size={18} className={isActive ? 'text-brand-700' : 'text-gray-500'} />
+                          <span className="text-sm font-medium">{label}</span>
+                          {isActive && (
+                            <motion.div
+                              layoutId="mobileNavActiveIndicator"
+                              className="absolute left-1 top-1 bottom-1 w-1 bg-brand-600 rounded-full"
+                              initial={false}
+                              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                            />
+                          )}
+                        </>
+                      )}
+                    </NavLink>
+                  );
+                })}
               </nav>
 
               {/* Actions du menu mobile */}
-              <div className="p-4 border-t border-gray-100 space-y-3 bg-gray-50/50">
+              <div className="p-4 border-t border-gray-100 space-y-3 bg-gray-50/60" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
                 <Button 
                   variant="primary" 
                   size="sm" 
@@ -287,11 +323,13 @@ const Topbar: React.FC = () => {
                 
                 <button
                   onClick={handleSignOut}
-                  className="w-full px-4 py-3 rounded-lg bg-white hover:bg-gray-50 text-gray-800 text-left border border-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 flex items-center gap-2"
+                  className="w-full px-4 py-3 rounded-lg bg-white/80 backdrop-blur-sm hover:bg-white text-gray-800 text-left border border-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 flex items-center gap-2"
                 >
                   <LogOut size={16} />
                   Se déconnecter
                 </button>
+
+                <div className="text-[11px] text-gray-400 text-center pt-1">TrocAll • Interface mobile</div>
               </div>
             </motion.aside>
           </div>

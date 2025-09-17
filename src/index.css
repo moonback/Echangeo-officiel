@@ -31,6 +31,15 @@
       radial-gradient(900px 600px at 90% -10%, rgba(8,74,160,0.20), transparent),
       linear-gradient(180deg, #0b1220 0%, #0f172a 100%); }
   }
+
+  /* Accessibilité: réduire les animations si l'utilisateur le souhaite */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation: none !important;
+      transition: none !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 @layer components {

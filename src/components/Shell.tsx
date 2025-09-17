@@ -4,6 +4,7 @@ import BottomNavigation from './BottomNavigation';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { Plus, MessageCircle, Settings } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface ShellProps {
   children: React.ReactNode;
@@ -17,13 +18,24 @@ const Shell: React.FC<ShellProps> = ({ children }) => {
     <div className="min-h-screen bg-gray-50">
       <Topbar />
       <main className={`min-h-[calc(100vh-56px)] ${isMobile ? 'pb-16' : ''}`}>
-        {children}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+            className="max-w-7xl mx-auto px-4 py-6"
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
       </main>
       {/* Floating primary action */}
       {isMobile && location.pathname !== '/create' && (
         <button
           onClick={() => navigate('/create')}
-          className="fixed right-4 bottom-20 z-50 inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-brand-500 to-brand-600 text-white shadow-soft hover:opacity-95 focus-visible:ring-2 focus-visible:ring-brand-500"
+          className="fixed right-4 bottom-20 z-50 inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-brand-500 to-brand-600 text-white shadow-soft hover:opacity-95 focus-visible:ring-2 focus-visible:ring-brand-500 pop-in"
           aria-label="Publier un objet"
         >
           <Plus size={22} />
@@ -34,7 +46,7 @@ const Shell: React.FC<ShellProps> = ({ children }) => {
         <div className="fixed right-4 bottom-[9.5rem] z-50 flex flex-col gap-2">
           <button
             onClick={() => navigate('/neighbours')}
-            className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-white/90 backdrop-blur border border-gray-200 shadow-soft text-gray-700 hover:bg-white"
+            className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-white/90 backdrop-blur border border-gray-200 shadow-soft text-gray-700 hover:bg-white transition-transform hover:scale-105 active:scale-95"
             aria-label="Ouvrir le chat"
             title="Chat"
           >
@@ -42,7 +54,7 @@ const Shell: React.FC<ShellProps> = ({ children }) => {
           </button>
           <button
             onClick={() => navigate('/settings')}
-            className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-white/90 backdrop-blur border border-gray-200 shadow-soft text-gray-700 hover:bg-white"
+            className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-white/90 backdrop-blur border border-gray-200 shadow-soft text-gray-700 hover:bg-white transition-transform hover:scale-105 active:scale-95"
             aria-label="Ouvrir les paramètres"
             title="Paramètres"
           >
