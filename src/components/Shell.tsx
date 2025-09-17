@@ -31,7 +31,7 @@ const Shell: React.FC<ShellProps> = ({ children }) => {
       )}
       {/* Quick actions: chat and settings */}
       {isMobile && (
-        <div className="fixed right-4 bottom-[7.5rem] z-50 flex flex-col gap-2">
+        <div className="fixed right-4 bottom-[9.5rem] z-50 flex flex-col gap-2">
           <button
             onClick={() => navigate('/neighbours')}
             className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-white/90 backdrop-blur border border-gray-200 shadow-soft text-gray-700 hover:bg-white"

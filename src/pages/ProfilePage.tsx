@@ -15,6 +15,7 @@ type ReviewRow = { id: string; item_id: string; item_title: string; rater_name: 
 const ProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { data: profile, isLoading } = useProfile(id);
+  const [userLoc, setUserLoc] = React.useState<{ lat: number; lng: number } | null>(null);
   // Client-managed items with server pagination & filters
   const [items, setItems] = React.useState<OwnedItem[]>([]);
   const [itemsPage, setItemsPage] = React.useState(0);
@@ -34,6 +35,26 @@ const ProfilePage: React.FC = () => {
   const reviewsPageSize = 10;
   const [reviewsHasMore, setReviewsHasMore] = React.useState(true);
   const [copied, setCopied] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition((pos) => {
+      setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+    });
+  }, []);
+
+  const distanceKm = React.useMemo(() => {
+    const lat = profile?.latitude as number | undefined;
+    const lng = profile?.longitude as number | undefined;
+    if (!userLoc || typeof lat !== 'number' || typeof lng !== 'number') return null;
+    const toRad = (v: number) => (v * Math.PI) / 180;
+    const R = 6371;
+    const dLat = toRad(lat - userLoc.lat);
+    const dLon = toRad(lng - userLoc.lng);
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(userLoc.lat)) * Math.cos(toRad(lat)) * Math.sin(dLon / 2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }, [userLoc, profile]);
 
   React.useEffect(() => {
     const loadRatingStats = async () => {
@@ -165,8 +186,15 @@ const ProfilePage: React.FC = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h2 className="text-xl md:text-2xl font-semibold text-gray-900 truncate">{profile.full_name || profile.email}</h2>
-                      {profile.address && (
-                        <div className="mt-1 text-sm text-gray-600 flex items-center"><MapPin className="w-4 h-4 mr-1" /> {profile.address}</div>
+                      {(profile.address || distanceKm != null) && (
+                        <div className="mt-1 text-sm text-gray-600 flex items-center flex-wrap gap-2">
+                          {profile.address && <span className="inline-flex items-center"><MapPin className="w-4 h-4 mr-1" /> {profile.address}</span>}
+                          {distanceKm != null && (
+                            <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[11px]">
+                              {distanceKm.toFixed(1)} km
+                            </span>
+                          )}
+                        </div>
                       )}
                       {profile.bio && (
                         <p className="mt-2 text-gray-700 text-sm md:text-base max-w-prose">{profile.bio}</p>

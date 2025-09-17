@@ -18,6 +18,8 @@ const profileSchema = z.object({
   bio: z.string().optional(),
   phone: z.string().optional(),
   address: z.string().optional(),
+  latitude: z.preprocess((v) => (v === '' || v === undefined ? undefined : Number(v)), z.number().min(-90).max(90).optional()),
+  longitude: z.preprocess((v) => (v === '' || v === undefined ? undefined : Number(v)), z.number().min(-180).max(180).optional()),
 });
 
 type ProfileForm = z.infer<typeof profileSchema>;
@@ -36,6 +38,7 @@ const MyProfilePage: React.FC = () => {
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
   } = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
@@ -43,6 +46,8 @@ const MyProfilePage: React.FC = () => {
       bio: profile?.bio || '',
       phone: profile?.phone || '',
       address: profile?.address || '',
+      latitude: (profile as any)?.latitude as any,
+      longitude: (profile as any)?.longitude as any,
     },
   });
 
@@ -245,7 +250,7 @@ const MyProfilePage: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Input {...register('full_name')} id="full_name" label="Nom complet *" />
@@ -259,10 +264,46 @@ const MyProfilePage: React.FC = () => {
                     <div className="md:col-span-2">
                       <TextArea {...register('bio')} id="bio" rows={3} label="Bio" placeholder="Parlez-vous en quelques mots..." />
                     </div>
-                    <div className="md:col-span-2">
-                      <Input {...register('address')} id="address" label="Adresse" placeholder="123 rue de la Paix, 75001 Paris" />
-                    </div>
+                  <div className="md:col-span-2">
+                    <Input {...register('address')} id="address" label="Adresse" placeholder="123 rue de la Paix, 75001 Paris" />
                   </div>
+                  <div>
+                    <Input {...register('latitude')} id="latitude" label="Latitude" type="number" step="any" />
+                  </div>
+                  <div>
+                    <Input {...register('longitude')} id="longitude" label="Longitude" type="number" step="any" />
+                  </div>
+                  </div>
+                <div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="border border-gray-300"
+                    onClick={() => {
+                      if (!navigator.geolocation) return;
+                      navigator.geolocation.getCurrentPosition((pos) => {
+                        const lat = pos.coords.latitude;
+                        const lng = pos.coords.longitude;
+                        setValue('latitude', lat as any, { shouldValidate: true, shouldDirty: true });
+                        setValue('longitude', lng as any, { shouldValidate: true, shouldDirty: true });
+
+                        fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`, {
+                          headers: { 'Accept-Language': 'fr' },
+                        })
+                          .then((r) => r.json())
+                          .then((json) => {
+                            const display = json?.display_name as string | undefined;
+                            if (display) {
+                              setValue('address', display, { shouldValidate: true, shouldDirty: true });
+                            }
+                          })
+                          .catch(() => {});
+                      });
+                    }}
+                  >
+                    Utiliser ma position
+                  </Button>
+                </div>
                   <div className="flex flex-col sm:flex-row gap-3 pt-2">
                     <Button type="submit" disabled={loading} className="disabled:opacity-50" leftIcon={<Save size={16} />}>{loading ? 'Enregistrement...' : 'Enregistrer'}</Button>
                     <Button type="button" variant="ghost" className="border border-gray-300" onClick={handleCancel} leftIcon={<X size={16} />}>Annuler</Button>
