@@ -108,12 +108,19 @@ Créer un fichier `.env.local` :
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 VITE_MAPBOX_TOKEN=your_mapbox_token
+VITE_MISTRAL_API_KEY=your_mistral_api_key
 ```
 
 ### 5. Configuration Mapbox (optionnel)
 1. Créer un compte sur [mapbox.com](https://mapbox.com)
 2. Générer un token d'accès public
 3. L'ajouter dans `.env.local`
+
+### 6. Configuration Mistral IA (optionnel)
+1. Créer un compte sur [mistral.ai](https://mistral.ai)
+2. Générer une clé API
+3. L'ajouter dans `.env.local` comme `VITE_MISTRAL_API_KEY`
+4. Fonctionnalité : Analyse automatique d'images pour pré-remplir les informations d'objets
 
 ## 🚀 Lancement du Projet
 
@@ -201,6 +208,7 @@ src/
 | `VITE_SUPABASE_URL` | URL de votre projet Supabase | ✅ |
 | `VITE_SUPABASE_ANON_KEY` | Clé anonyme Supabase | ✅ |
 | `VITE_MAPBOX_TOKEN` | Token d'accès Mapbox | ❌ |
+| `VITE_MISTRAL_API_KEY` | Clé API Mistral pour l'analyse IA | ❌ |
 
 ## 🗄️ Base de Données
 

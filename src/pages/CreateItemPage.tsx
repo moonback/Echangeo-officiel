@@ -4,16 +4,18 @@ import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, Upload, X } from 'lucide-react';
+import { ArrowLeft, Upload, X, Sparkles } from 'lucide-react';
 import { useCreateItem } from '../hooks/useItems';
 import { categories } from '../utils/categories';
 import { offerTypes } from '../utils/offerTypes';
 import type { ItemCategory, OfferType } from '../types';
+import type { AIAnalysisResult } from '../services/aiService';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import TextArea from '../components/ui/TextArea';
 import Card from '../components/ui/Card';
+import AIImageUpload from '../components/AIImageUpload';
 
 const createItemSchema = z.object({
   title: z.string().min(1, 'Le titre est requis').max(100, 'Le titre est trop long'),
@@ -54,6 +56,7 @@ const CreateItemPage: React.FC = () => {
   const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number; fileName?: string } | null>(null);
   const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
   const [isLocating, setIsLocating] = useState(false);
+  const [aiAnalysisApplied, setAiAnalysisApplied] = useState(false);
 
   const {
     register,
@@ -69,16 +72,26 @@ const CreateItemPage: React.FC = () => {
   const [step, setStep] = useState(1);
   const TOTAL_STEPS = 4;
   const steps = [
-    { id: 1, label: 'Informations' },
-    { id: 2, label: 'Détails' },
-    { id: 3, label: 'Disponibilité' },
-    { id: 4, label: 'Photos' },
+    { id: 1, label: 'Photos & IA' },
+    { id: 2, label: 'Informations' },
+    { id: 3, label: 'Détails' },
+    { id: 4, label: 'Disponibilité' },
   ];
 
   const goPrev = () => setStep((s) => Math.max(1, s - 1));
   const goNext = async () => {
     let fieldsToValidate: (keyof CreateItemForm)[] = [];
-    if (step === 1) fieldsToValidate = ['title', 'category', 'condition', 'offer_type'];
+    // Étape 1 : Photos (pas de validation obligatoire, mais au moins une image recommandée)
+    if (step === 1) {
+      if (selectedImages.length === 0) {
+        setImagesError('Ajoutez au moins une photo pour continuer (recommandé pour l\'analyse IA)');
+        return;
+      }
+      setImagesError(null);
+    }
+    // Étape 2 : Informations de base
+    if (step === 2) fieldsToValidate = ['title', 'category', 'condition', 'offer_type'];
+    
     const isValid = fieldsToValidate.length ? await trigger(fieldsToValidate as (keyof CreateItemForm)[]) : true;
     if (isValid) setStep((s) => Math.min(TOTAL_STEPS, s + 1));
   };
@@ -155,76 +168,38 @@ const CreateItemPage: React.FC = () => {
     setTagSuggestions(Array.from(suggestions).slice(0, 8));
   }, [watch('brand'), watch('model'), watch('category')]);
 
-  const acceptFiles = (files: File[]) => {
-    const MAX_FILES = 8;
-    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-    const valid: File[] = [];
-    for (const f of files) {
-      if (!f.type.startsWith('image/')) {
-        setImagesError('Seules les images sont autorisées.');
-        continue;
-      }
-      if (f.size > MAX_SIZE) {
-        setImagesError('Taille maximale par image: 5 Mo.');
-        continue;
-      }
-      valid.push(f);
-    }
-    if (valid.length === 0) return;
-    const merged = [...selectedImages, ...valid].slice(0, MAX_FILES);
-    setSelectedImages(merged);
-    setImagePreviews(merged.map((f) => URL.createObjectURL(f)));
-    setImagesError(null);
-  };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) return;
-    acceptFiles(files);
-  };
-
-  const onDropImages: React.DragEventHandler<HTMLLabelElement> = (e) => {
-    e.preventDefault();
-    const files = Array.from(e.dataTransfer.files || []);
-    acceptFiles(files);
-  };
-
-  const moveImage = (index: number, direction: -1 | 1) => {
-    const newIndex = index + direction;
-    if (newIndex < 0 || newIndex >= selectedImages.length) return;
-    const imgs = [...selectedImages];
-    const prevs = [...imagePreviews];
-    [imgs[index], imgs[newIndex]] = [imgs[newIndex], imgs[index]];
-    [prevs[index], prevs[newIndex]] = [prevs[newIndex], prevs[index]];
-    setSelectedImages(imgs);
-    setImagePreviews(prevs);
-  };
-
-  const setPrimaryImage = (index: number) => {
-    if (index === 0) return;
-    const imgs = [...selectedImages];
-    const prevs = [...imagePreviews];
-    const [img] = imgs.splice(index, 1);
-    const [prev] = prevs.splice(index, 1);
-    imgs.unshift(img);
-    prevs.unshift(prev);
-    setSelectedImages(imgs);
-    setImagePreviews(prevs);
-  };
-
-  const removeImage = (index: number) => {
-    const newImages = selectedImages.filter((_, i) => i !== index);
-    const newPreviews = imagePreviews.filter((_, i) => i !== index);
+  // Gérer les résultats de l'analyse IA
+  const handleAIAnalysisResult = (analysis: AIAnalysisResult) => {
+    // Appliquer automatiquement les suggestions de l'IA
+    setValue('title', analysis.title, { shouldValidate: true, shouldDirty: true });
+    setValue('description', analysis.description, { shouldValidate: true, shouldDirty: true });
+    setValue('category', analysis.category, { shouldValidate: true, shouldDirty: true });
+    setValue('condition', analysis.condition, { shouldValidate: true, shouldDirty: true });
     
-    URL.revokeObjectURL(imagePreviews[index]); // Clean up old URL
-    setSelectedImages(newImages);
-    setImagePreviews(newPreviews);
+    if (analysis.brand) {
+      setValue('brand', analysis.brand, { shouldValidate: true, shouldDirty: true });
+    }
+    
+    if (analysis.model) {
+      setValue('model', analysis.model, { shouldValidate: true, shouldDirty: true });
+    }
+    
+    if (analysis.estimated_value) {
+      setValue('estimated_value', analysis.estimated_value, { shouldValidate: true, shouldDirty: true });
+    }
+    
+    if (analysis.tags.length > 0) {
+      setValue('tags', analysis.tags.join(', '), { shouldValidate: true, shouldDirty: true });
+    }
+
+    setAiAnalysisApplied(true);
   };
 
   const onSubmit = async (data: CreateItemForm) => {
     try {
       if (selectedImages.length === 0) {
-        setStep(4);
+        setStep(1);
         setImagesError('Veuillez ajouter au moins une photo.');
         return;
       }
@@ -281,18 +256,75 @@ const CreateItemPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Step 1: Informations */}
+        {/* Step 1: Photos & IA */}
         {step === 1 && (
           <>
+            <div className="space-y-4">
+              <div className="text-center mb-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-2 flex items-center justify-center gap-2">
+                  <Sparkles className="w-5 h-5 text-purple-600" />
+                  Ajoutez des photos pour une analyse IA automatique
+                </h2>
+                <p className="text-gray-600">
+                  Notre IA analysera vos photos pour pré-remplir automatiquement les informations de l'objet
+                </p>
+              </div>
+              
+              <AIImageUpload
+                images={selectedImages}
+                imagePreviews={imagePreviews}
+                onImagesChange={(images, previews) => {
+                  setSelectedImages(images);
+                  setImagePreviews(previews);
+                  setImagesError(null);
+                }}
+                onAIAnalysisResult={handleAIAnalysisResult}
+                maxImages={8}
+                error={imagesError}
+              />
+            </div>
+          </>
+        )}
+
+        {/* Step 2: Informations de base */}
+        {step === 2 && (
+          <>
+            {/* Indicateur IA si des données ont été appliquées */}
+            {aiAnalysisApplied && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4"
+              >
+                <div className="flex items-center gap-2 p-3 bg-purple-50 border border-purple-200 rounded-xl">
+                  <Sparkles className="w-4 h-4 text-purple-600" />
+                  <span className="text-sm text-purple-800 font-medium">
+                    Informations pré-remplies par l'IA - Vous pouvez les modifier
+                  </span>
+                </div>
+              </motion.div>
+            )}
+            
             <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
-              <Input label="Titre *" placeholder="Ex: Perceuse électrique Bosch" {...register('title')} error={errors.title?.message} />
+              <Input 
+                label="Titre *" 
+                placeholder="Ex: Perceuse électrique Bosch" 
+                {...register('title')} 
+                error={errors.title?.message}
+                className={aiAnalysisApplied ? 'bg-purple-50/50 border-purple-200' : ''}
+              />
               <div className="text-xs text-gray-500 mt-1">{(watch('title')?.length || 0)}/100</div>
             </div>
+            
             <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
               <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
                 Catégorie *
               </label>
-              <Select {...register('category')} id="category">
+              <Select 
+                {...register('category')} 
+                id="category"
+                className={aiAnalysisApplied ? 'bg-purple-50/50 border-purple-200' : ''}
+              >
                 <option value="">Choisissez une catégorie</option>
                 {categories.map((category) => (
                   <option key={category.value} value={category.value}>
@@ -304,11 +336,16 @@ const CreateItemPage: React.FC = () => {
                 <p className="text-red-500 text-xs mt-1">{errors.category.message}</p>
               )}
             </div>
+            
             <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
               <label htmlFor="condition" className="block text-sm font-medium text-gray-700 mb-1">
                 État *
               </label>
-              <Select {...register('condition')} id="condition">
+              <Select 
+                {...register('condition')} 
+                id="condition"
+                className={aiAnalysisApplied ? 'bg-purple-50/50 border-purple-200' : ''}
+              >
                 <option value="">Choisissez l'état</option>
                 {conditions.map((condition) => (
                   <option key={condition.value} value={condition.value}>
@@ -320,6 +357,7 @@ const CreateItemPage: React.FC = () => {
                 <p className="text-red-500 text-xs mt-1">{errors.condition.message}</p>
               )}
             </div>
+            
             <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
               <label htmlFor="offer_type" className="block text-sm font-medium text-gray-700 mb-1">
                 Type d'offre *
@@ -340,6 +378,7 @@ const CreateItemPage: React.FC = () => {
                 <p className="text-red-500 text-xs mt-1">{errors.offer_type.message}</p>
               )}
             </div>
+            
             {watch('offer_type') === 'trade' && (
               <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
                 <label htmlFor="desired_items" className="block text-sm font-medium text-gray-700 mb-1">
@@ -359,24 +398,46 @@ const CreateItemPage: React.FC = () => {
                 )}
               </div>
             )}
+            
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                Description
+              </label>
+              <TextArea 
+                {...register('description')} 
+                id="description" 
+                rows={4} 
+                placeholder="Décrivez votre objet, son état, ses accessoires..."
+                className={aiAnalysisApplied ? 'bg-purple-50/50 border-purple-200' : ''}
+              />
+              <div className="text-xs text-gray-500 mt-1">{(watch('description')?.length ?? 0)} caractères</div>
+            </div>
           </>
         )}
 
-        {/* Step 2: Détails */}
-        {step === 2 && (
+        {/* Step 3: Détails */}
+        {step === 3 && (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
                 <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-1">
                   Marque
                 </label>
-                <Input {...register('brand')} id="brand" />
+                <Input 
+                  {...register('brand')} 
+                  id="brand" 
+                  className={aiAnalysisApplied ? 'bg-purple-50/50 border-purple-200' : ''}
+                />
               </div>
               <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
                 <label htmlFor="model" className="block text-sm font-medium text-gray-700 mb-1">
                   Modèle
                 </label>
-                <Input {...register('model')} id="model" />
+                <Input 
+                  {...register('model')} 
+                  id="model" 
+                  className={aiAnalysisApplied ? 'bg-purple-50/50 border-purple-200' : ''}
+                />
               </div>
             </div>
 
@@ -384,14 +445,27 @@ const CreateItemPage: React.FC = () => {
               <label htmlFor="estimated_value" className="block text-sm font-medium text-gray-700 mb-1">
                 Valeur estimée (€)
               </label>
-              <Input {...register('estimated_value')} type="number" step="0.01" min="0" id="estimated_value" />
+              <Input 
+                {...register('estimated_value')} 
+                type="number" 
+                step="0.01" 
+                min="0" 
+                id="estimated_value" 
+                className={aiAnalysisApplied ? 'bg-purple-50/50 border-purple-200' : ''}
+              />
             </div>
 
             <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
               <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-1">
                 Tags (séparés par des virgules)
               </label>
-              <Input {...register('tags')} type="text" id="tags" placeholder="ex: perceuse, bosch, 18v" />
+              <Input 
+                {...register('tags')} 
+                type="text" 
+                id="tags" 
+                placeholder="ex: perceuse, bosch, 18v" 
+                className={aiAnalysisApplied ? 'bg-purple-50/50 border-purple-200' : ''}
+              />
               {watch('tags') && (
                 <div className="mt-2 flex flex-wrap gap-2">
                   {watch('tags')!.split(',').map(t => t.trim()).filter(Boolean).map((t) => (
@@ -423,19 +497,11 @@ const CreateItemPage: React.FC = () => {
                 </div>
               )}
             </div>
-
-            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                Description
-              </label>
-              <TextArea {...register('description')} id="description" rows={4} placeholder="Décrivez votre objet, son état, ses accessoires..." />
-              <div className="text-xs text-gray-500 mt-1">{(watch('description')?.length ?? 0)} caractères</div>
-            </div>
           </>
         )}
 
-        {/* Step 3: Disponibilité */}
-        {step === 3 && (
+        {/* Step 4: Disponibilité */}
+        {step === 4 && (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
@@ -514,67 +580,6 @@ const CreateItemPage: React.FC = () => {
           </>
         )}
 
-        {/* Step 4: Photos */}
-        {step === 4 && (
-          <Card className="p-4 glass">
-            <div className="flex items-center justify-between mb-3">
-              <label className="block text-sm font-medium text-gray-900">
-                Photos (au moins 1, max 8)
-              </label>
-              <span className="text-xs text-gray-500">{selectedImages.length}/8</span>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
-              {imagePreviews.map((preview, index) => (
-                <div key={index} className="relative aspect-square group">
-                  <img
-                    src={preview}
-                    alt={`Aperçu ${index + 1}`}
-                    className="w-full h-full object-cover rounded-lg border border-gray-200"
-                  />
-                  <div className="absolute top-2 left-2 flex gap-2">
-                    {index === 0 ? (
-                      <span className="px-2 py-0.5 text-xs rounded bg-blue-600 text-white shadow">Principale</span>
-                    ) : (
-                      <button type="button" onClick={() => setPrimaryImage(index)} className="px-2 py-0.5 text-xs rounded bg-white/95 border border-gray-300 hover:bg-white shadow-sm">Définir principale</button>
-                    )}
-                  </div>
-                  <div className="absolute bottom-2 left-2 right-2 flex justify-between opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button type="button" onClick={() => moveImage(index, -1)} className="px-2 py-1 text-xs rounded bg-white/95 border border-gray-300 hover:bg-white shadow-sm">◀</button>
-                    <button type="button" onClick={() => moveImage(index, 1)} className="px-2 py-1 text-xs rounded bg-white/95 border border-gray-300 hover:bg-white shadow-sm">▶</button>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow"
-                    aria-label="Supprimer l'image"
-                    title="Supprimer"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              ))}
-
-              {selectedImages.length < 8 && (
-                <label onDragOver={(e) => e.preventDefault()} onDrop={onDropImages} className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
-                  <div className="text-center">
-                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <span className="text-sm text-gray-600">Glisser-déposer ou cliquer</span>
-                    <div className="text-xs text-gray-400">PNG, JPG, GIF</div>
-                  </div>
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                  />
-                </label>
-              )}
-            </div>
-            {imagesError && <p className="text-xs text-red-600">{imagesError}</p>}
-          </Card>
-        )}
         
 
 
