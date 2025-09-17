@@ -1,14 +1,42 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Check, X, Clock, MessageCircle } from 'lucide-react';
+import { Check, X, Clock, MessageCircle, Star } from 'lucide-react';
 import { useRequests, useUpdateRequestStatus } from '../hooks/useRequests';
 import { useAuthStore } from '../store/authStore';
+import { useUpsertItemRating } from '../hooks/useRatings';
+import { supabase } from '../services/supabase';
 
 const RequestsPage: React.FC = () => {
   const { user } = useAuthStore();
   const { data: requests, isLoading } = useRequests();
   const updateStatus = useUpdateRequestStatus();
+  const upsertRating = useUpsertItemRating();
+  const [openRatingFor, setOpenRatingFor] = React.useState<string | null>(null);
+  const [ratingScore, setRatingScore] = React.useState<number>(5);
+  const [ratingComment, setRatingComment] = React.useState<string>('');
+  const [ratingStatsMap, setRatingStatsMap] = React.useState<Record<string, { average_rating?: number; ratings_count?: number }>>({});
+
+  React.useEffect(() => {
+    const loadStats = async () => {
+      const ids = Array.from(new Set((requests ?? []).map(r => r.item_id).filter(Boolean))) as string[];
+      if (ids.length === 0) return;
+      const { data } = await supabase
+        .from('item_rating_stats')
+        .select('*')
+        .in('item_id', ids);
+      const map: Record<string, { average_rating?: number; ratings_count?: number }> = {};
+      for (const row of data ?? []) {
+        const item_id = (row as any).item_id as string;
+        map[item_id] = {
+          average_rating: (row as any).average_rating ?? undefined,
+          ratings_count: (row as any).ratings_count ?? undefined,
+        };
+      }
+      setRatingStatsMap(map);
+    };
+    loadStats();
+  }, [requests]);
 
   if (isLoading) {
     return (
@@ -102,6 +130,13 @@ const RequestsPage: React.FC = () => {
                       >
                         {request.item?.title}
                       </Link>
+                      {ratingStatsMap[request.item_id] && (
+                        <div className="mt-1 flex items-center text-xs text-gray-600">
+                          <Star className="w-4 h-4 text-yellow-500 mr-1" />
+                          <span className="font-medium">{ratingStatsMap[request.item_id].average_rating?.toFixed?.(1) ?? '—'}</span>
+                          <span className="ml-1">({ratingStatsMap[request.item_id].ratings_count ?? 0})</span>
+                        </div>
+                      )}
                     </div>
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(request.status)}`}>
                       {getStatusLabel(request.status)}
@@ -204,7 +239,61 @@ const RequestsPage: React.FC = () => {
                         Marquer comme terminé
                       </button>
                     )}
+                    {request.status === 'completed' && request.requester_id === user?.id && (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setOpenRatingFor(openRatingFor === request.id ? null : request.id)}
+                          className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition-colors"
+                        >
+                          Laisser un avis
+                        </button>
+                      </div>
+                    )}
                   </div>
+                  {openRatingFor === request.id && (
+                    <form
+                      className="mt-3 bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-2"
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        if (!request.item_id) return;
+                        await upsertRating.mutateAsync({ item_id: request.item_id, score: ratingScore, comment: ratingComment });
+                        setOpenRatingFor(null);
+                        setRatingComment('');
+                      }}
+                    >
+                      <div>
+                        <label className="block text-sm text-gray-700 mb-1">Note</label>
+                        <div className="flex items-center gap-2">
+                          {[1,2,3,4,5].map((s) => (
+                            <button
+                              key={s}
+                              type="button"
+                              onClick={() => setRatingScore(s)}
+                              className={`w-7 h-7 rounded-full border ${ratingScore >= s ? 'bg-yellow-400 border-yellow-500' : 'border-gray-300'} hover:bg-yellow-300`}
+                              aria-label={`Note ${s}`}
+                            />
+                          ))}
+                          <span className="text-xs text-gray-600 ml-2">{ratingScore}/5</span>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm text-gray-700 mb-1">Commentaire (optionnel)</label>
+                        <textarea
+                          value={ratingComment}
+                          onChange={(e) => setRatingComment(e.target.value)}
+                          rows={2}
+                          className="input"
+                          placeholder="Partagez votre expérience..."
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <button type="submit" className="btn btn-primary btn-sm" disabled={upsertRating.isPending}>
+                          {upsertRating.isPending ? 'Envoi...' : 'Publier'}
+                        </button>
+                        <button type="button" className="btn btn-outline btn-sm" onClick={() => setOpenRatingFor(null)}>Annuler</button>
+                      </div>
+                    </form>
+                  )}
                 </div>
               ))}
             </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Plus, Search, MessageCircle, TrendingUp, Shield, MapPin, Clock, Star, HelpCircle, CheckCircle, Lock } from 'lucide-react';
+import { Plus, Search, MessageCircle, TrendingUp, Shield, MapPin, Clock, Star, Lock } from 'lucide-react';
 import { useItems } from '../hooks/useItems';
 import { useRequests } from '../hooks/useRequests';
 import ItemCard from '../components/ItemCard';
@@ -147,35 +147,7 @@ const HomePage: React.FC = () => {
         </div>
       </motion.section>
 
-      {/* FAQ / Sécurité */}
-      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="card p-6">
-          <h3 className="font-semibold text-gray-900 mb-3 flex items-center"><HelpCircle className="w-4 h-4 mr-2" /> Questions fréquentes</h3>
-          <ul className="space-y-3 text-sm text-gray-700">
-            <li>
-              <p className="font-medium text-gray-900">Comment faire une demande ?</p>
-              <p className="text-gray-600">Ouvrez la fiche de l’objet puis cliquez sur “Demander à emprunter”. Rédigez un message et envoyez.</p>
-            </li>
-            <li>
-              <p className="font-medium text-gray-900">C’est gratuit ?</p>
-              <p className="text-gray-600">Oui. Certains prêteurs affichent une valeur indicative; l’échange reste libre.</p>
-            </li>
-            <li>
-              <p className="font-medium text-gray-900">Puis-je modifier ou cacher mon objet ?</p>
-              <p className="text-gray-600">Oui, depuis la page de l’objet (bouton Modifier, Désactiver / Réactiver).</p>
-            </li>
-          </ul>
-        </div>
-        <div className="card p-6">
-          <h3 className="font-semibold text-gray-900 mb-3 flex items-center"><Shield className="w-4 h-4 mr-2" /> Conseils de sécurité</h3>
-          <ul className="space-y-2 text-sm text-gray-700">
-            {["Rencontrez-vous dans un lieu public quand c’est possible.", "Vérifiez le profil et les évaluations.", "Prenez des photos de l’état avant/après.", "Respectez les horaires convenus."]
-              .map((t) => (
-                <li key={t} className="flex items-start"><CheckCircle className="w-4 h-4 text-green-600 mr-2 mt-0.5" /> <span>{t}</span></li>
-              ))}
-          </ul>
-        </div>
-      </motion.section>
+      
     </div>
   );
 };

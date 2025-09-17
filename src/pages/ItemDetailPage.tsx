@@ -11,7 +11,8 @@ import {
   Heart
 } from 'lucide-react';
 import { useItem, useUpdateItem } from '../hooks/useItems';
-import { useCreateRequest } from '../hooks/useRequests';
+import { useUpsertItemRating } from '../hooks/useRatings';
+import { useCreateRequest, useRequests } from '../hooks/useRequests';
 import { getCategoryIcon, getCategoryLabel } from '../utils/categories';
 import { useAuthStore } from '../store/authStore';
 
@@ -20,10 +21,18 @@ const ItemDetailPage: React.FC = () => {
   const { user } = useAuthStore();
   const { data: item, isLoading } = useItem(id!);
   const updateItem = useUpdateItem();
+  const upsertRating = useUpsertItemRating();
+  const { data: allRequests } = useRequests();
   const createRequest = useCreateRequest();
   const [requestMessage, setRequestMessage] = useState('');
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showRatingForm, setShowRatingForm] = useState(false);
+  const [ratingScore, setRatingScore] = useState<number>(5);
+  const [ratingComment, setRatingComment] = useState<string>('');
+  const hasCompletedBorrow = !!(item && allRequests?.some(
+    (r) => r.requester_id === user?.id && r.item_id === item.id && r.status === 'completed'
+  ));
 
   if (isLoading) {
     return (
@@ -368,6 +377,64 @@ const ItemDetailPage: React.FC = () => {
                   </button>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Rating Form (emprunteurs uniquement, demande terminée) */}
+          {!isOwner && hasCompletedBorrow && (
+            <div className="bg-white border border-gray-200 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-gray-900">Laisser un avis</h3>
+                <button
+                  onClick={() => setShowRatingForm(!showRatingForm)}
+                  className="text-sm text-blue-600 hover:text-blue-700"
+                >
+                  {showRatingForm ? 'Fermer' : 'Évaluer'}
+                </button>
+              </div>
+              {showRatingForm && (
+                <form
+                  className="space-y-3"
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    await upsertRating.mutateAsync({ item_id: item.id, score: ratingScore, comment: ratingComment });
+                    setShowRatingForm(false);
+                    setRatingComment('');
+                  }}
+                >
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Note</label>
+                    <div className="flex items-center gap-2">
+                      {[1,2,3,4,5].map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => setRatingScore(s)}
+                          className={`w-8 h-8 rounded-full border ${ratingScore >= s ? 'bg-yellow-400 border-yellow-500' : 'border-gray-300'} hover:bg-yellow-300`}
+                          aria-label={`Note ${s}`}
+                        />
+                      ))}
+                      <span className="text-sm text-gray-600 ml-2">{ratingScore}/5</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Commentaire (optionnel)</label>
+                    <textarea
+                      value={ratingComment}
+                      onChange={(e) => setRatingComment(e.target.value)}
+                      rows={3}
+                      className="input"
+                      placeholder="Partagez votre expérience..."
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <button type="submit" className="btn btn-primary" disabled={upsertRating.isPending}>
+                      {upsertRating.isPending ? 'Envoi...' : 'Publier l\'avis'}
+                    </button>
+                    <button type="button" className="btn btn-outline" onClick={() => setShowRatingForm(false)}>Annuler</button>
+                  </div>
+                </form>
+              )}
             </div>
           )}
         </motion.div>
