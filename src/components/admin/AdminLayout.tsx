@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAdminAuth } from '../../hooks/useAdmin';
@@ -90,7 +90,24 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const navigate = useNavigate();
   const { permissions, adminRole } = useAdminAuth();
   const { profile, signOut } = useAuthStore();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Détection de la taille d'écran
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 1024);
+      if (window.innerWidth < 1024) {
+        setSidebarOpen(false);
+      } else {
+        setSidebarOpen(true);
+      }
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   const filteredMenuItems = menuItems.filter(item => {
     if (!item.permission) return true;
@@ -107,65 +124,89 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex">
+      {/* Overlay pour mobile */}
+      {isMobile && sidebarOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+        />
+      )}
+
       {/* Sidebar */}
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div
-            initial={{ x: -280 }}
+            initial={{ x: isMobile ? -320 : -280 }}
             animate={{ x: 0 }}
-            exit={{ x: -280 }}
-            transition={{ duration: 0.3 }}
-            className="w-70 bg-white shadow-xl border-r border-gray-200 flex flex-col"
+            exit={{ x: isMobile ? -320 : -280 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className={`
+              ${isMobile ? 'fixed inset-y-0 left-0 z-50 w-80' : 'w-72'}
+              bg-white shadow-2xl border-r border-gray-200 flex flex-col
+              backdrop-blur-sm bg-white/95
+            `}
           >
             {/* Header */}
-            <div className="p-6 border-b border-gray-200">
+            <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">A</span>
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
                 </div>
                 <div>
                   <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
-                  <p className="text-sm text-gray-500 capitalize">{adminRole}</p>
+                  <p className="text-sm text-gray-600 capitalize font-medium">{adminRole}</p>
                 </div>
               </div>
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 p-4 space-y-2">
+            <nav className="flex-1 p-4 space-y-1">
               {filteredMenuItems.map((item) => {
                 const isActive = location.pathname === item.path;
                 return (
                   <Link
                     key={item.id}
                     to={item.path}
+                    onClick={() => isMobile && setSidebarOpen(false)}
                     className={`
-                      flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200
+                      flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group
                       ${isActive
-                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg transform scale-105'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:shadow-md hover:scale-105'
                       }
                     `}
                   >
-                    <span className={isActive ? 'text-blue-600' : 'text-gray-400'}>
+                    <span className={`
+                      transition-colors duration-200
+                      ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-600'}
+                    `}>
                       {item.icon}
                     </span>
                     <span className="font-medium">{item.title}</span>
+                    {isActive && (
+                      <div className="ml-auto w-2 h-2 bg-white rounded-full"></div>
+                    )}
                   </Link>
                 );
               })}
             </nav>
 
             {/* User Info */}
-            <div className="p-4 border-t border-gray-200">
-              <div className="flex items-center space-x-3 mb-3">
+            <div className="p-4 border-t border-gray-200 bg-gray-50">
+              <div className="flex items-center space-x-3 mb-4">
                 <img
                   src={profile?.avatar_url || `https://ui-avatars.com/api/?name=${profile?.full_name}&background=random`}
                   alt={profile?.full_name}
-                  className="w-8 h-8 rounded-full"
+                  className="w-10 h-10 rounded-full border-2 border-white shadow-md"
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+                  <p className="text-sm font-semibold text-gray-900 truncate">
                     {profile?.full_name || 'Administrateur'}
                   </p>
                   <p className="text-xs text-gray-500 truncate">
@@ -173,17 +214,23 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   </p>
                 </div>
               </div>
-              <div className="flex space-x-2">
+              <div className="flex flex-col space-y-2">
                 <Link
                   to="/"
-                  className="flex-1 px-3 py-2 text-sm text-center text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-center px-3 py-2 text-sm text-center text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-white hover:shadow-sm transition-all duration-200"
                 >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
                   Retour à l'app
                 </Link>
                 <button
                   onClick={handleSignOut}
-                  className="flex-1 px-3 py-2 text-sm text-center text-red-600 hover:text-red-700 border border-red-300 rounded-md hover:bg-red-50 transition-colors"
+                  className="flex items-center justify-center px-3 py-2 text-sm text-center text-red-600 hover:text-red-700 border border-red-300 rounded-lg hover:bg-red-50 hover:shadow-sm transition-all duration-200"
                 >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
                   Déconnexion
                 </button>
               </div>
@@ -195,28 +242,47 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-
+        <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between shadow-sm">
           <div className="flex items-center space-x-4">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-all duration-200 lg:hidden"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <div className="hidden lg:block">
+              <h2 className="text-lg font-semibold text-gray-900">
+                {location.pathname === '/admin' ? 'Tableau de bord' :
+                 location.pathname === '/admin/users' ? 'Gestion des utilisateurs' :
+                 location.pathname === '/admin/items' ? 'Gestion des objets' :
+                 location.pathname === '/admin/communities' ? 'Gestion des communautés' :
+                 location.pathname === '/admin/reports' ? 'Signalements' :
+                 location.pathname === '/admin/logs' ? 'Logs système' : 'Admin Panel'}
+              </h2>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-3">
+            <div className="hidden sm:flex items-center space-x-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-sm text-gray-600">En ligne</span>
+            </div>
             <div className="relative">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                En ligne
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                Système opérationnel
               </span>
             </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-6 overflow-auto">
-          {children}
+        <main className="flex-1 p-4 sm:p-6 overflow-auto bg-gradient-to-br from-gray-50 to-gray-100">
+          <div className="max-w-7xl mx-auto">
+            {children}
+          </div>
         </main>
       </div>
     </div>

@@ -59,17 +59,18 @@ export default function AdminTable<T extends Record<string, any>>({
   }
 
   return (
-    <div className={`bg-white rounded-xl border border-gray-200 overflow-hidden ${className}`}>
-      <div className="overflow-x-auto">
+    <div className={`bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm ${className}`}>
+      {/* Version desktop */}
+      <div className="hidden lg:block overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+          <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
             <tr>
               {columns.map((column, index) => (
                 <th
                   key={String(column.key)}
                   className={`
-                    px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider
-                    ${column.sortable ? 'cursor-pointer hover:bg-gray-100' : ''}
+                    px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider
+                    ${column.sortable ? 'cursor-pointer hover:bg-gray-200 transition-colors' : ''}
                   `}
                   style={{ width: column.width }}
                 >
@@ -77,7 +78,7 @@ export default function AdminTable<T extends Record<string, any>>({
                 </th>
               ))}
               {actions && (
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Actions
                 </th>
               )}
@@ -91,8 +92,8 @@ export default function AdminTable<T extends Record<string, any>>({
                 animate={{ opacity: 1 }}
                 transition={{ delay: index * 0.05 }}
                 className={`
-                  hover:bg-gray-50 transition-colors duration-150
-                  ${onRowClick ? 'cursor-pointer' : ''}
+                  hover:bg-gray-50 transition-all duration-200
+                  ${onRowClick ? 'cursor-pointer hover:shadow-sm' : ''}
                 `}
                 onClick={() => onRowClick?.(item, index)}
               >
@@ -116,6 +117,44 @@ export default function AdminTable<T extends Record<string, any>>({
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Version mobile */}
+      <div className="lg:hidden">
+        {data.map((item, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05 }}
+            className={`
+              p-4 border-b border-gray-200 last:border-b-0
+              ${onRowClick ? 'cursor-pointer hover:bg-gray-50' : ''}
+            `}
+            onClick={() => onRowClick?.(item, index)}
+          >
+            <div className="space-y-3">
+              {columns.map((column) => (
+                <div key={String(column.key)} className="flex justify-between items-start">
+                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {column.title}
+                  </span>
+                  <div className="text-sm text-gray-900 text-right flex-1 ml-4">
+                    {column.render
+                      ? column.render(item[column.key as keyof T], item, index)
+                      : String(item[column.key as keyof T] || '-')
+                    }
+                  </div>
+                </div>
+              ))}
+              {actions && (
+                <div className="flex justify-end pt-2 border-t border-gray-100">
+                  {actions(item, index)}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        ))}
       </div>
     </div>
   );

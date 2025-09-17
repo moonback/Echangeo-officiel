@@ -55,29 +55,37 @@ export default function StatsCard({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
+      whileHover={{ scale: 1.02 }}
       className={`
         bg-white rounded-xl border ${colors.border} p-6 
-        hover:shadow-lg transition-all duration-200
+        hover:shadow-xl transition-all duration-300
         ${loading ? 'animate-pulse' : ''}
+        relative overflow-hidden
       `}
     >
-      <div className="flex items-center justify-between">
+      {/* Gradient overlay */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg} opacity-5`}></div>
+      
+      <div className="relative flex items-center justify-between">
         <div className="flex-1">
-          <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
+          <p className="text-sm font-medium text-gray-600 mb-2">{title}</p>
           {loading ? (
             <div className="h-8 w-20 bg-gray-200 rounded animate-pulse" />
           ) : (
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-3xl font-bold text-gray-900 mb-2">
               {typeof value === 'number' ? value.toLocaleString() : value}
             </p>
           )}
           
           {change && !loading && (
-            <div className="flex items-center mt-2">
+            <div className="flex items-center">
               <span
                 className={`
-                  text-sm font-medium
-                  ${change.type === 'increase' ? 'text-green-600' : 'text-red-600'}
+                  text-sm font-semibold px-2 py-1 rounded-full
+                  ${change.type === 'increase' 
+                    ? 'text-green-700 bg-green-100' 
+                    : 'text-red-700 bg-red-100'
+                  }
                 `}
               >
                 {change.type === 'increase' ? '↗' : '↘'} {Math.abs(change.value)}%
@@ -88,10 +96,11 @@ export default function StatsCard({
         </div>
         
         <div className={`
-          p-3 rounded-full ${colors.bg}
+          p-4 rounded-xl ${colors.bg} shadow-lg
           ${loading ? 'animate-pulse' : ''}
+          transition-transform duration-200 hover:scale-110
         `}>
-          <div className={`w-6 h-6 ${colors.icon}`}>
+          <div className={`w-8 h-8 ${colors.icon}`}>
             {icon}
           </div>
         </div>
