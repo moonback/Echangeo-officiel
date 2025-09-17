@@ -8,6 +8,8 @@ import { Star, MapPin, MessageCircle, Link as LinkIcon } from 'lucide-react';
 import Card from '../components/ui/Card';
 import EmptyState from '../components/EmptyState';
 import Button from '../components/ui/Button';
+import Badge from '../components/ui/Badge';
+import { fetchProfileReputation, fetchProfileBadges } from '../hooks/useRatings';
 
 type OwnedItem = { id: string; title: string; description?: string; created_at: string; is_available: boolean; category: string; latitude?: number; longitude?: number };
 type ReviewRow = { id: string; item_id: string; item_title: string; rater_name: string; score: number; comment?: string; created_at: string };
@@ -35,6 +37,8 @@ const ProfilePage: React.FC = () => {
   const reviewsPageSize = 10;
   const [reviewsHasMore, setReviewsHasMore] = React.useState(true);
   const [copied, setCopied] = React.useState(false);
+  const [reputation, setReputation] = React.useState<{ overall?: number; comm?: number; punct?: number; care?: number; count?: number }>({});
+  const [badges, setBadges] = React.useState<{ slug: string; label: string }[]>([]);
 
   React.useEffect(() => {
     if (!navigator.geolocation) return;
@@ -42,6 +46,27 @@ const ProfilePage: React.FC = () => {
       setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
     });
   }, []);
+
+  React.useEffect(() => {
+    const loadReputation = async () => {
+      if (!id) return;
+      const stats = await fetchProfileReputation(id);
+      if (stats) {
+        setReputation({
+          overall: Number(stats.overall_score ?? 0),
+          comm: Number(stats.avg_communication ?? 0),
+          punct: Number(stats.avg_punctuality ?? 0),
+          care: Number(stats.avg_care ?? 0),
+          count: Number(stats.ratings_count ?? 0),
+        });
+      } else {
+        setReputation({});
+      }
+      const badgeRows = await fetchProfileBadges(id);
+      setBadges((badgeRows ?? []).map(b => ({ slug: b.badge_slug, label: b.badge_label })));
+    };
+    loadReputation();
+  }, [id]);
 
   const distanceKm = React.useMemo(() => {
     const lat = profile?.latitude as number | undefined;
@@ -231,6 +256,23 @@ const ProfilePage: React.FC = () => {
             </Card>
           </div>
           <div className="md:col-span-2">
+            {(reputation.count || badges.length > 0) && (
+              <Card className="mb-4">
+                <div className="p-4 border-b border-gray-100 font-medium">Confiance & Réputation</div>
+                <div className="p-4 flex items-center gap-3 flex-wrap">
+                  {typeof reputation.overall === 'number' && reputation.count ? (
+                    <span className="px-3 py-1 rounded-full bg-yellow-50 text-yellow-800 border border-yellow-200 text-sm inline-flex items-center">
+                      <Star className="w-4 h-4 mr-1 text-yellow-600" /> Score global {reputation.overall.toFixed(1)} ({reputation.count})
+                    </span>
+                  ) : (
+                    <span className="text-sm text-gray-600">Aucune évaluation utilisateur pour le moment</span>
+                  )}
+                  {badges.map((b) => (
+                    <Badge key={b.slug} variant="success" className="px-3 py-1">{b.label}</Badge>
+                  ))}
+                </div>
+              </Card>
+            )}
             <Card>
               <div className="p-4 border-b border-gray-100 font-medium flex items-center justify-between">
                 <span>Objets publiés</span>

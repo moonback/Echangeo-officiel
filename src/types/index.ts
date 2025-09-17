@@ -92,3 +92,31 @@ export type ItemCategory =
 export type ItemCondition = 'excellent' | 'good' | 'fair' | 'poor';
 
 export type RequestStatus = 'pending' | 'approved' | 'rejected' | 'completed';
+
+// Reputation: user-to-user ratings
+export interface UserRating {
+  id: string;
+  request_id: string;
+  rater_id: string;
+  rated_user_id: string;
+  communication_score: number; // 1..5
+  punctuality_score: number;   // 1..5
+  care_score: number;          // 1..5
+  comment?: string;
+  created_at: string;
+}
+
+export interface ProfileReputationStats {
+  profile_id: string;
+  ratings_count: number;
+  avg_communication: number; // numeric
+  avg_punctuality: number;   // numeric
+  avg_care: number;          // numeric
+  overall_score: number;     // numeric
+}
+
+export interface ProfileBadgeRow {
+  profile_id: string;
+  badge_slug: string;
+  badge_label: string;
+}
