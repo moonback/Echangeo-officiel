@@ -111,4 +111,28 @@ export function useLendHistory(userId?: string) {
   });
 }
 
+export function useTransactions(userId?: string) {
+  return useQuery({
+    queryKey: ['transactions', userId],
+    queryFn: async () => {
+      const [asBorrower, asLender] = await Promise.all([
+        supabase
+          .from('requests')
+          .select(`*, item:items(*), other:items(owner:profiles(*))`)
+          .eq('requester_id', userId),
+        supabase
+          .from('requests')
+          .select(`*, item:items!inner(*), other:requester:profiles(*)`)
+          .eq('items.owner_id', userId),
+      ]);
+
+      const a = (asBorrower.data ?? []).map((r: any) => ({ ...r, role: 'borrower' as const }));
+      const b = (asLender.data ?? []).map((r: any) => ({ ...r, role: 'lender' as const }));
+      const merged = [...a, ...b].sort((r1: any, r2: any) => new Date(r2.created_at).getTime() - new Date(r1.created_at).getTime());
+      return merged;
+    },
+    enabled: !!userId,
+  });
+}
+
 

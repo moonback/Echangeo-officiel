@@ -3,8 +3,9 @@ import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { User, Edit3, Save, X } from 'lucide-react';
+import { User, Edit3, Save, X, CheckCircle, Clock, XCircle, ArrowRight } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import { useTransactions } from '../hooks/useProfiles';
 
 const profileSchema = z.object({
   full_name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
@@ -19,6 +20,7 @@ const MyProfilePage: React.FC = () => {
   const { profile, updateProfile } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { data: transactions } = useTransactions(profile?.id);
 
   const {
     register,
@@ -199,6 +201,45 @@ const MyProfilePage: React.FC = () => {
             </form>
           )}
         </div>
+      </motion.div>
+
+      {/* Historique des transactions */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-xl p-6 border border-gray-200"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-gray-900">Historique de mes transactions</h2>
+        </div>
+        <ul className="divide-y divide-gray-100">
+          {transactions?.map((t: any) => (
+            <li key={t.id} className="py-3 flex items-start justify-between">
+              <div>
+                <div className="text-gray-900 font-medium">
+                  {t.role === 'borrower' ? 'Emprunt' : 'Prêt'} — {t.item?.title}
+                </div>
+                <div className="text-xs text-gray-500">
+                  Le {new Date(t.created_at).toLocaleDateString('fr-FR')} • Statut: {t.status}
+                </div>
+              </div>
+              <div className="flex items-center text-xs">
+                {t.status === 'completed' ? (
+                  <span className="inline-flex items-center px-2 py-1 rounded bg-green-100 text-green-700"><CheckCircle className="w-4 h-4 mr-1" /> Terminé</span>
+                ) : t.status === 'pending' ? (
+                  <span className="inline-flex items-center px-2 py-1 rounded bg-yellow-100 text-yellow-700"><Clock className="w-4 h-4 mr-1" /> En attente</span>
+                ) : t.status === 'rejected' ? (
+                  <span className="inline-flex items-center px-2 py-1 rounded bg-red-100 text-red-700"><XCircle className="w-4 h-4 mr-1" /> Refusé</span>
+                ) : (
+                  <span className="inline-flex items-center px-2 py-1 rounded bg-gray-100 text-gray-700"><ArrowRight className="w-4 h-4 mr-1" /> {t.status}</span>
+                )}
+              </div>
+            </li>
+          ))}
+          {(!transactions || transactions.length === 0) && (
+            <li className="py-6 text-center text-gray-500">Aucune transaction pour le moment.</li>
+          )}
+        </ul>
       </motion.div>
     </div>
   );
