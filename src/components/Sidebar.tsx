@@ -13,9 +13,10 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../store/authStore';
+import { LogOut } from 'lucide-react';
 
 const Sidebar: React.FC = () => {
-  const { profile } = useAuthStore();
+  const { profile, signOut } = useAuthStore();
 
   const navItems = [
     { to: '/', icon: Home, label: 'Accueil' },
@@ -81,6 +82,21 @@ const Sidebar: React.FC = () => {
               </p>
               <p className="text-xs text-gray-500">{profile?.email}</p>
             </div>
+            <button
+              onClick={async () => {
+                try {
+                  await signOut();
+                  window.location.href = '/';
+                } catch (e) {
+                  console.error(e);
+                }
+              }}
+              className="ml-auto inline-flex items-center px-2 py-2 text-sm text-gray-600 hover:text-red-500 hover:bg-gray-50 rounded-lg"
+              title="Se déconnecter"
+            >
+              <LogOut className="w-4 h-4 " />
+              
+            </button>
           </div>
         </div>
       </div>
