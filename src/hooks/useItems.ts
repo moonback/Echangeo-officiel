@@ -86,7 +86,13 @@ export function useCreateItem() {
       if (data.images.length > 0) {
         for (let i = 0; i < data.images.length; i++) {
           const file = data.images[i];
-          const fileName = `${item.id}/${Date.now()}-${file.name}`;
+          // Sanitize filename to avoid invalid storage keys (spaces, accents, special chars)
+          const sanitizedOriginal = file.name
+            .normalize('NFKD')
+            .replace(/[^\w.\-\s]/g, '')
+            .replace(/\s+/g, '-')
+            .toLowerCase();
+          const fileName = `${item.id}/${Date.now()}-${sanitizedOriginal}`;
           
           const { error: uploadError } = await supabase.storage
             .from('items')

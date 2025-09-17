@@ -9,18 +9,40 @@ export function useRequests() {
       const user = await supabase.auth.getUser();
       if (!user.data.user) throw new Error('Not authenticated');
 
-      const { data, error } = await supabase
+      // Query A: requests where I am the requester
+      const queryA = supabase
         .from('requests')
         .select(`
           *,
           requester:profiles!requests_requester_id_fkey(*),
           item:items(*, owner:profiles(*))
         `)
-        .or(`requester_id.eq.${user.data.user.id},item.owner_id.eq.${user.data.user.id}`)
-        .order('created_at', { ascending: false });
+        .eq('requester_id', user.data.user.id);
 
-      if (error) throw error;
-      return data as Request[];
+      // Query B: requests on items that I own (filter on foreign table scope)
+      const queryB = supabase
+        .from('requests')
+        .select(`
+          *,
+          requester:profiles!requests_requester_id_fkey(*),
+          item:items!inner(*, owner:profiles(*))
+        `)
+        .filter('items.owner_id', 'eq', user.data.user.id);
+
+      const [{ data: a, error: errorA }, { data: b, error: errorB }] = await Promise.all([queryA, queryB]);
+      if (errorA) throw errorA;
+      if (errorB) throw errorB;
+
+      const combined = [...(a ?? []), ...(b ?? [])];
+      // De-duplicate by id (a request can appear in both if requester is also owner)
+      const dedupedMap = new Map<string, Request>();
+      for (const req of combined as Request[]) {
+        dedupedMap.set((req as any).id, req);
+      }
+      const result = Array.from(dedupedMap.values());
+      // Sort by created_at desc (client-side)
+      result.sort((r1: any, r2: any) => new Date(r2.created_at).getTime() - new Date(r1.created_at).getTime());
+      return result;
     },
   });
 }
