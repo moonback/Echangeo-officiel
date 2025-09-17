@@ -55,17 +55,17 @@ const HomePage: React.FC = () => {
         transition={{ duration: 0.6, ease: "easeOut" }}
       >
         <Card className="overflow-hidden glass-strong">
-          <div className="relative p-8 md:p-12 bg-gradient-to-br from-brand-50/80 via-white/60 to-purple-50/40">
-            {/* Background Decorations */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-brand-200/20 to-purple-200/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-blue-200/20 to-brand-200/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
+          <div className="relative p-4 md:p-6 bg-gradient-to-br from-brand-50/80 via-white/60 to-purple-50/40">
+            {/* Décorations de fond plus discrètes */}
+            <div className="absolute top-0 right-0 w-40 h-40 md:w-64 md:h-64 bg-gradient-to-br from-brand-200/20 to-purple-200/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-24 h-24 md:w-40 md:h-40 bg-gradient-to-tr from-blue-200/20 to-brand-200/20 rounded-full blur-xl translate-y-1/2 -translate-x-1/2 pointer-events-none" />
             
-            <div className="relative max-w-4xl">
+            <div className="relative max-w-2xl md:max-w-3xl">
               <motion.h1 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.6 }}
-                className="text-3xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight"
+                className="text-2xl md:text-4xl font-bold text-gray-900 mb-2 leading-tight"
               >
                 Partagez. Empruntez. <span className="gradient-text">Réduisez.</span> 🌱
               </motion.h1>
@@ -74,45 +74,45 @@ const HomePage: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.6 }}
-                className="text-lg text-gray-600 mb-8 leading-relaxed max-w-2xl"
+                className="text-base md:text-lg text-gray-600 mb-4 leading-relaxed max-w-xl"
               >
-                TrocAll facilite le prêt et le troc d'objets entre voisins. Économisez de l'argent, gagnez de la place et créez du lien social dans votre quartier.
+                TrocAll facilite le prêt et le troc d'objets entre voisins. Économisez, gagnez de la place et créez du lien dans votre quartier.
               </motion.p>
               
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6, duration: 0.6 }}
-                className="flex flex-col sm:flex-row gap-4"
+                className="flex gap-2 flex-col xs:flex-row"
               >
                 <Link to="/create">
-                  <Button leftIcon={<Plus className="w-5 h-5" />} size="lg" className="min-w-[180px]">
-                    Ajouter un objet
+                  <Button leftIcon={<Plus className="w-5 h-5" />} size="md" className="min-w-[120px]">
+                    Ajouter
                   </Button>
                 </Link>
                 <Link to="/items">
-                  <Button variant="ghost" leftIcon={<Search className="w-5 h-5" />} size="lg" className="min-w-[180px]">
+                  <Button variant="ghost" leftIcon={<Search className="w-5 h-5" />} size="md" className="min-w-[120px]">
                     Parcourir
                   </Button>
                 </Link>
               </motion.div>
               
-              {/* Nouveau badge IA */}
+              {/* Badge IA compact */}
               {import.meta.env.VITE_MISTRAL_API_KEY && (
                 <motion.div 
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.8, duration: 0.5 }}
-                  className="mt-6"
+                  className="mt-4"
                 >
                   <Link to="/ai-features">
-                    <div className="inline-flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-200/50 rounded-2xl hover:from-purple-500/20 hover:to-blue-500/20 transition-all duration-200 hover:scale-105">
-                      <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-lg">
+                    <div className="inline-flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-200/50 rounded-xl hover:from-purple-500/20 hover:to-blue-500/20 transition-all duration-200 hover:scale-105">
+                      <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow">
                         <Sparkles className="w-4 h-4 text-white" />
                       </div>
                       <div className="text-left">
-                        <p className="text-sm font-semibold text-gray-900">Nouveau ! IA intégrée</p>
-                        <p className="text-xs text-gray-600">Reconnaissance d'objets, chat intelligent et plus</p>
+                        <p className="text-xs font-semibold text-gray-900 leading-tight">Nouveau&nbsp;: IA intégrée</p>
+                        <p className="text-[11px] text-gray-600">Reconnaissance, chat, etc.</p>
                       </div>
                     </div>
                   </Link>
