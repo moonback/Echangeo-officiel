@@ -110,15 +110,32 @@ const CreateItemPage: React.FC = () => {
 
   // Suggestions de tags depuis marque/modèle + catégorie
   React.useEffect(() => {
+    // Suggestions enrichies pour chaque catégorie
     const CATEGORY_SUGGESTIONS: Record<ItemCategory, string[]> = {
-      tools: ['bricolage', 'outil', 'manuel', 'électrique', 'atelier'],
-      electronics: ['électronique', 'audio', 'vidéo', 'smart', 'usb'],
-      books: ['livre', 'roman', 'bd', 'éducation', 'enfant'],
-      sports: ['sport', 'fitness', 'extérieur', 'ballon', 'vélo'],
-      kitchen: ['cuisine', 'ustensile', 'mixeur', 'cuisson', 'baking'],
-      garden: ['jardin', 'extérieur', 'plante', 'arrosage', 'tonte'],
-      toys: ['jouet', 'enfant', 'jeu', 'puzzle', 'éducatif'],
-      other: ['divers', 'maison', 'pratique'],
+      tools: [
+        'bricolage', 'outil', 'manuel', 'électrique', 'atelier', 'perceuse', 'tournevis', 'marteau', 'scie', 'ponceuse', 'visseuse', 'clé', 'rangement', 'réparation', 'travaux', 'mesure'
+      ],
+      electronics: [
+        'électronique', 'audio', 'vidéo', 'smart', 'usb', 'télévision', 'enceinte', 'casque', 'ordinateur', 'tablette', 'chargeur', 'console', 'caméra', 'wifi', 'bluetooth', 'batterie'
+      ],
+      books: [
+        'livre', 'roman', 'bd', 'éducation', 'enfant', 'lecture', 'magazine', 'manuel', 'fiction', 'non-fiction', 'jeunesse', 'bande dessinée', 'scolaire', 'auteur', 'bibliothèque'
+      ],
+      sports: [
+        'sport', 'fitness', 'extérieur', 'ballon', 'vélo', 'raquette', 'course', 'yoga', 'musculation', 'randonnée', 'tennis', 'football', 'basket', 'natation', 'équipement'
+      ],
+      kitchen: [
+        'cuisine', 'ustensile', 'mixeur', 'cuisson', 'baking', 'four', 'poêle', 'casserole', 'robot', 'grille-pain', 'micro-ondes', 'vaisselle', 'gourmet', 'pâtisserie', 'accessoire'
+      ],
+      garden: [
+        'jardin', 'extérieur', 'plante', 'arrosage', 'tonte', 'pelouse', 'outil de jardin', 'potager', 'fleur', 'serre', 'brouette', 'taille-haie', 'débroussailleuse', 'engrais', 'compost'
+      ],
+      toys: [
+        'jouet', 'enfant', 'jeu', 'puzzle', 'éducatif', 'peluche', 'construction', 'créatif', 'voiture', 'poupée', 'lego', 'society', 'apprentissage', 'famille', 'divertissement'
+      ],
+      other: [
+        'divers', 'maison', 'pratique', 'décoration', 'organisation', 'accessoire', 'quotidien', 'loisir', 'événement', 'occasion', 'stockage', 'mobilier', 'éclairage', 'sécurité', 'polyvalent'
+      ],
     };
 
     const brand = watch('brand')?.trim();
