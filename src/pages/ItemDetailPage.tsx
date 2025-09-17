@@ -8,7 +8,10 @@ import {
   Calendar,
   MessageCircle,
   Share2,
-  Heart
+  Heart,
+  CheckCircle,
+  X,
+  AlertCircle
 } from 'lucide-react';
 import { useItem, useUpdateItem } from '../hooks/useItems';
 import { useUpsertItemRating } from '../hooks/useRatings';
@@ -30,12 +33,18 @@ const ItemDetailPage: React.FC = () => {
   const createRequest = useCreateRequest();
   const [requestMessage, setRequestMessage] = useState('');
   const [showRequestForm, setShowRequestForm] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showRatingForm, setShowRatingForm] = useState(false);
   const [ratingScore, setRatingScore] = useState<number>(5);
   const [ratingComment, setRatingComment] = useState<string>('');
   const hasCompletedBorrow = !!(item && allRequests?.some(
     (r) => r.requester_id === user?.id && r.item_id === item.id && r.status === 'completed'
+  ));
+  
+  const hasPendingRequest = !!(item && allRequests?.some(
+    (r) => r.requester_id === user?.id && r.item_id === item.id && r.status === 'pending'
   ));
 
   if (isLoading) {
@@ -72,14 +81,28 @@ const ItemDetailPage: React.FC = () => {
   const handleRequestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Effacer les messages précédents
+      setErrorMessage(null);
+      setShowSuccessMessage(false);
+      
       await createRequest.mutateAsync({
         item_id: item.id,
         message: requestMessage,
       });
       setShowRequestForm(false);
       setRequestMessage('');
+      setShowSuccessMessage(true);
+      // Masquer le message après 5 secondes
+      setTimeout(() => setShowSuccessMessage(false), 5000);
     } catch (error) {
       console.error('Error creating request:', error);
+      setErrorMessage(
+        item.offer_type === 'trade' 
+          ? 'Erreur lors de l\'envoi de la proposition d\'échange. Veuillez réessayer.'
+          : 'Erreur lors de l\'envoi de la demande d\'emprunt. Veuillez réessayer.'
+      );
+      // Masquer le message d'erreur après 5 secondes
+      setTimeout(() => setErrorMessage(null), 5000);
     }
   };
 
@@ -326,8 +349,85 @@ const ItemDetailPage: React.FC = () => {
             </div>
           )}
 
+          {/* Message de succès */}
+          {showSuccessMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mb-6"
+            >
+              <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-xl">
+                <div className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
+                  <div>
+                    <p className="font-medium text-green-800">
+                      {item.offer_type === 'trade' ? 'Proposition d\'échange envoyée !' : 'Demande d\'emprunt envoyée !'}
+                    </p>
+                    <p className="text-sm text-green-600">
+                      {item.offer_type === 'trade' 
+                        ? 'Le propriétaire va examiner votre proposition d\'échange.'
+                        : 'Le propriétaire va examiner votre demande d\'emprunt.'
+                      }
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowSuccessMessage(false)}
+                  className="text-green-600 hover:text-green-800 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Message d'erreur */}
+          {errorMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mb-6"
+            >
+              <div className="flex items-center justify-between p-4 bg-red-50 border border-red-200 rounded-xl">
+                <div className="flex items-center">
+                  <AlertCircle className="w-5 h-5 text-red-600 mr-3" />
+                  <div>
+                    <p className="font-medium text-red-800">Erreur d'envoi</p>
+                    <p className="text-sm text-red-600">{errorMessage}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setErrorMessage(null)}
+                  className="text-red-600 hover:text-red-800 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Message demande en cours */}
+          {!isOwner && item.is_available && hasPendingRequest && (
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+              <div className="flex items-center">
+                <CheckCircle className="w-5 h-5 text-blue-600 mr-3" />
+                <div>
+                  <p className="font-medium text-blue-800">
+                    {item.offer_type === 'trade' ? 'Proposition d\'échange en cours' : 'Demande d\'emprunt en cours'}
+                  </p>
+                  <p className="text-sm text-blue-600">
+                    Vous avez déjà envoyé une {item.offer_type === 'trade' ? 'proposition d\'échange' : 'demande d\'emprunt'} pour cet objet. 
+                    Le propriétaire va vous répondre bientôt.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Actions */}
-          {!isOwner && item.is_available && (
+          {!isOwner && item.is_available && !hasPendingRequest && (
             <div className="space-y-4">
               {!showRequestForm ? (
                 <div className="flex space-x-3">
@@ -456,7 +556,7 @@ const ItemDetailPage: React.FC = () => {
         </motion.div>
       </div>
       {/* Floating CTA for borrow request */}
-      {!isOwner && item.is_available && (
+      {!isOwner && item.is_available && !hasPendingRequest && (
         <div className="fixed inset-x-0 bottom-16 md:bottom-6 z-40 flex justify-center pointer-events-none">
           <div className="pointer-events-auto">
             {!showRequestForm ? (
