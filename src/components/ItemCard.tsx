@@ -149,10 +149,38 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation 
             {/* Footer */}
             <div className="flex items-center justify-between">
               <div className="flex items-center text-sm text-gray-500">
-                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center mr-2">
-                  <User className="w-3.5 h-3.5 text-white" />
-                </div>
-                <span className="font-medium">{item.owner?.full_name || 'Anonyme'}</span>
+                <Link 
+                  to={`/profile/${item.owner_id}`}
+                  onClick={(e) => e.stopPropagation()} // Éviter de déclencher le clic sur la carte
+                  className="block mr-2"
+                >
+                  <div className="relative w-7 h-7 rounded-full overflow-hidden bg-gradient-to-br from-brand-400 to-brand-600 border border-white shadow-md hover:shadow-lg hover:scale-110 transition-all duration-200 cursor-pointer">
+                    {item.owner?.avatar_url ? (
+                      <img
+                        src={item.owner.avatar_url}
+                        alt={`Avatar de ${item.owner.full_name || 'Propriétaire'}`}
+                        className="w-full h-full object-cover hover:scale-110 transition-transform duration-200"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <User className="w-3.5 h-3.5 text-white" />
+                      </div>
+                    )}
+                    
+                    {/* Indicateur de profil vérifié */}
+                    {item.owner?.avatar_url && item.owner?.full_name && item.owner?.phone && (
+                      <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border border-white rounded-full" 
+                           title="Profil vérifié" />
+                    )}
+                  </div>
+                </Link>
+                <Link 
+                  to={`/profile/${item.owner_id}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="font-medium hover:text-brand-600 transition-colors duration-200"
+                >
+                  {item.owner?.full_name || 'Anonyme'}
+                </Link>
               </div>
               
               <div className="flex items-center text-sm text-gray-500 bg-gray-50/80 rounded-full px-2.5 py-1">
