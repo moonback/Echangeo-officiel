@@ -199,6 +199,67 @@ const ItemDetailPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Additional fields */}
+          {(item.brand || item.model || item.estimated_value || (item.tags && item.tags.length) || item.available_from || item.available_to || item.location_hint) && (
+            <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+              <h3 className="font-semibold text-gray-900">Informations supplémentaires</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                {item.brand && (
+                  <div>
+                    <span className="text-gray-500">Marque :</span>
+                    <p className="font-medium text-gray-900">{item.brand}</p>
+                  </div>
+                )}
+                {item.model && (
+                  <div>
+                    <span className="text-gray-500">Modèle :</span>
+                    <p className="font-medium text-gray-900">{item.model}</p>
+                  </div>
+                )}
+                {typeof item.estimated_value === 'number' && !isNaN(item.estimated_value) && (
+                  <div>
+                    <span className="text-gray-500">Valeur estimée :</span>
+                    <p className="font-medium text-gray-900">{item.estimated_value.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</p>
+                  </div>
+                )}
+                {(item.available_from || item.available_to) && (
+                  <div className="sm:col-span-2">
+                    <span className="text-gray-500">Période de disponibilité :</span>
+                    <p className="font-medium text-gray-900 flex items-center">
+                      <Calendar className="w-4 h-4 mr-2" />
+                      <span>
+                        {item.available_from ? new Date(item.available_from).toLocaleDateString('fr-FR') : '—'}
+                        {' '}→{' '}
+                        {item.available_to ? new Date(item.available_to).toLocaleDateString('fr-FR') : '—'}
+                      </span>
+                    </p>
+                  </div>
+                )}
+                {item.location_hint && (
+                  <div className="sm:col-span-2">
+                    <span className="text-gray-500">Indication de localisation :</span>
+                    <p className="font-medium text-gray-900 flex items-center">
+                      <MapPin className="w-4 h-4 mr-2" />
+                      {item.location_hint}
+                    </p>
+                  </div>
+                )}
+                {item.tags && item.tags.length > 0 && (
+                  <div className="sm:col-span-2">
+                    <span className="text-gray-500">Tags :</span>
+                    <div className="mt-1 flex flex-wrap gap-2">
+                      {item.tags.map((t) => (
+                        <span key={t} className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-200 text-gray-700">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Actions */}
           {!isOwner && item.is_available && (
             <div className="space-y-4">
