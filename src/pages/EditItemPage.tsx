@@ -6,6 +6,10 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useItem, useUpdateItem, useDeleteItem } from '../hooks/useItems';
 import { categories } from '../utils/categories';
+import Button from '../components/ui/Button';
+import Input from '../components/ui/Input';
+import Select from '../components/ui/Select';
+import TextArea from '../components/ui/TextArea';
 
 const schema = z.object({
   title: z.string().min(1).max(100),
@@ -81,94 +85,95 @@ const EditItemPage: React.FC = () => {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Titre</label>
-          <input {...register('title')} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+          <Input {...register('title')} />
           {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>}
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-          <textarea {...register('description')} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+          <TextArea {...register('description')} rows={3} />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
-            <select {...register('category')} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+            <Select {...register('category')}>
               {categories.map((c) => (
                 <option key={c.value} value={c.value}>{c.label}</option>
               ))}
-            </select>
+            </Select>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">État</label>
-            <select {...register('condition')} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+            <Select {...register('condition')}>
               <option value="excellent">Excellent</option>
               <option value="good">Bon</option>
               <option value="fair">Correct</option>
               <option value="poor">Usé</option>
-            </select>
+            </Select>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Marque</label>
-            <input {...register('brand')} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+            <Input {...register('brand')} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Modèle</label>
-            <input {...register('model')} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+            <Input {...register('model')} />
           </div>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Valeur estimée (€)</label>
-          <input type="number" step="0.01" min="0" {...register('estimated_value')} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+          <Input type="number" step="0.01" min="0" {...register('estimated_value')} />
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Tags (séparés par des virgules)</label>
-          <input {...register('tags')} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+          <Input {...register('tags')} />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Disponible à partir du</label>
-            <input type="date" {...register('available_from')} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+            <Input type="date" {...register('available_from')} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Disponible jusqu'au</label>
-            <input type="date" {...register('available_to')} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+            <Input type="date" {...register('available_to')} />
           </div>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Indication de localisation</label>
-          <input {...register('location_hint')} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+          <Input {...register('location_hint')} />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Latitude</label>
-            <input type="number" step="any" {...register('latitude')} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+            <Input type="number" step="any" {...register('latitude')} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Longitude</label>
-            <input type="number" step="any" {...register('longitude')} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+            <Input type="number" step="any" {...register('longitude')} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Disponibilité</label>
-            <select {...register('is_available')} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+            <Select {...register('is_available')}>
               <option value="true">Disponible</option>
               <option value="false">Non disponible</option>
-            </select>
+            </Select>
           </div>
         </div>
 
         <div>
-          <button
+          <Button
             type="button"
-            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+            variant="ghost"
+            className="border border-gray-300"
             onClick={() => {
               if (!navigator.geolocation) return;
               navigator.geolocation.getCurrentPosition((pos) => {
@@ -192,16 +197,15 @@ const EditItemPage: React.FC = () => {
             }}
           >
             Utiliser ma position
-          </button>
+          </Button>
         </div>
 
         <div className="flex space-x-3 pt-2">
-          <button type="button" onClick={() => navigate(-1)} className="px-6 py-3 border border-gray-300 rounded-xl">Annuler</button>
-          <button type="submit" disabled={updateItem.isPending} className="px-6 py-3 bg-blue-600 text-white rounded-xl">
-            {updateItem.isPending ? 'Enregistrement...' : 'Enregistrer'}
-          </button>
-          <button
+          <Button type="button" variant="ghost" className="border border-gray-300" onClick={() => navigate(-1)}>Annuler</Button>
+          <Button type="submit" disabled={updateItem.isPending}>{updateItem.isPending ? 'Enregistrement...' : 'Enregistrer'}</Button>
+          <Button
             type="button"
+            variant="danger"
             onClick={async () => {
               if (!id) return;
               const confirmed = window.confirm('Supprimer définitivement cet objet ?');
@@ -209,10 +213,9 @@ const EditItemPage: React.FC = () => {
               await deleteItem.mutateAsync(id);
               navigate('/items');
             }}
-            className="px-6 py-3 bg-red-600 text-white rounded-xl"
           >
             Supprimer
-          </button>
+          </Button>
         </div>
       </form>
     </div>

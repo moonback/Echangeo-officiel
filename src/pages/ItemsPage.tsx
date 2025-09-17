@@ -6,6 +6,10 @@ import ItemCard from '../components/ItemCard';
 import { ItemCardSkeleton } from '../components/SkeletonLoader';
 import { categories, getCategoryIcon } from '../utils/categories';
 import type { ItemCategory } from '../types';
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
+import Input from '../components/ui/Input';
+import EmptyState from '../components/EmptyState';
 
 const ItemsPage: React.FC = () => {
   const [search, setSearch] = useState('');
@@ -50,13 +54,7 @@ const ItemsPage: React.FC = () => {
         {/* Search Bar */}
         <div className="relative mb-4">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher un objet..."
-            className="input pl-10"
-          />
+          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Rechercher un objet..." className="pl-10" />
         </div>
 
         {/* Filter Toggle */}
@@ -70,15 +68,8 @@ const ItemsPage: React.FC = () => {
       </motion.div>
 
       {/* Category Filters */}
-      <motion.div
-        initial={{ height: 0, opacity: 0 }}
-        animate={{ 
-          height: showFilters ? 'auto' : 0, 
-          opacity: showFilters ? 1 : 0 
-        }}
-        className="overflow-hidden mb-6"
-      >
-        <div className="bg-white rounded-xl p-4 border border-gray-200 space-y-4">
+      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: showFilters ? 'auto' : 0, opacity: showFilters ? 1 : 0 }} className="overflow-hidden mb-6">
+        <Card className="p-4 space-y-4">
           <p className="text-sm font-medium text-gray-700 mb-3">Catégories</p>
           <div className="flex flex-wrap gap-2">
             <button
@@ -152,7 +143,7 @@ const ItemsPage: React.FC = () => {
               <input type="checkbox" checked={isAvailable} onChange={(e) => setIsAvailable(e.target.checked)} />
             </div>
           </div>
-        </div>
+        </Card>
       </motion.div>
 
       {/* Results */}
@@ -177,15 +168,12 @@ const ItemsPage: React.FC = () => {
               <ItemCard key={item.id} item={item} />
             ))
           ) : (
-            <div className="col-span-full bg-white rounded-xl p-8 text-center border border-gray-200">
-              <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Aucun objet trouvé
-              </h3>
-              <p className="text-gray-600">
-                Essayez de modifier vos critères de recherche.
-              </p>
-            </div>
+            <EmptyState
+              icon={<Search className="w-12 h-12" />}
+              title="Aucun objet trouvé"
+              description="Essayez de modifier vos critères de recherche."
+              className="col-span-full"
+            />
           )}
         </div>
       </motion.div>

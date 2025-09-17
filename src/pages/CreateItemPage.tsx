@@ -8,6 +8,11 @@ import { ArrowLeft, Upload, X, Plus } from 'lucide-react';
 import { useCreateItem } from '../hooks/useItems';
 import { categories } from '../utils/categories';
 import type { ItemCategory } from '../types';
+import Button from '../components/ui/Button';
+import Input from '../components/ui/Input';
+import Select from '../components/ui/Select';
+import TextArea from '../components/ui/TextArea';
+import Card from '../components/ui/Card';
 
 const createItemSchema = z.object({
   title: z.string().min(1, 'Le titre est requis').max(100, 'Le titre est trop long'),
@@ -112,8 +117,9 @@ const CreateItemPage: React.FC = () => {
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-6"
       >
-        {/* Images */}
-        <div>
+        <Card className="p-4">
+          {/* Images */}
+          <div>
           <label className="block text-sm font-medium text-gray-700 mb-3">
             Photos (optionnel, max 5)
           </label>
@@ -152,24 +158,10 @@ const CreateItemPage: React.FC = () => {
               </label>
             )}
           </div>
-        </div>
+          </div>
+        </Card>
 
-        {/* Title */}
-        <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-            Titre *
-          </label>
-          <input
-            {...register('title')}
-            type="text"
-            id="title"
-            placeholder="Ex: Perceuse électrique Bosch"
-            className="input"
-          />
-          {errors.title && (
-            <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>
-          )}
-        </div>
+        <Input label="Titre *" placeholder="Ex: Perceuse électrique Bosch" {...register('title')} error={errors.title?.message} />
 
         {/* Brand / Model */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -177,23 +169,13 @@ const CreateItemPage: React.FC = () => {
             <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-1">
               Marque
             </label>
-            <input
-              {...register('brand')}
-              type="text"
-              id="brand"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+            <Input {...register('brand')} id="brand" />
           </div>
           <div>
             <label htmlFor="model" className="block text-sm font-medium text-gray-700 mb-1">
               Modèle
             </label>
-            <input
-              {...register('model')}
-              type="text"
-              id="model"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+            <Input {...register('model')} id="model" />
           </div>
         </div>
 
@@ -202,14 +184,7 @@ const CreateItemPage: React.FC = () => {
           <label htmlFor="estimated_value" className="block text-sm font-medium text-gray-700 mb-1">
             Valeur estimée (€)
           </label>
-          <input
-            {...register('estimated_value')}
-            type="number"
-            step="0.01"
-            min="0"
-            id="estimated_value"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
+          <Input {...register('estimated_value')} type="number" step="0.01" min="0" id="estimated_value" />
         </div>
 
         {/* Tags (comma-separated) */}
@@ -217,13 +192,7 @@ const CreateItemPage: React.FC = () => {
           <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-1">
             Tags (séparés par des virgules)
           </label>
-          <input
-            {...register('tags')}
-            type="text"
-            id="tags"
-            placeholder="ex: perceuse, bosch, 18v"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
+          <Input {...register('tags')} type="text" id="tags" placeholder="ex: perceuse, bosch, 18v" />
         </div>
 
         {/* Availability window */}
@@ -232,23 +201,13 @@ const CreateItemPage: React.FC = () => {
             <label htmlFor="available_from" className="block text-sm font-medium text-gray-700 mb-1">
               Disponible à partir du
             </label>
-            <input
-              {...register('available_from')}
-              type="date"
-              id="available_from"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+            <Input {...register('available_from')} type="date" id="available_from" />
           </div>
           <div>
             <label htmlFor="available_to" className="block text-sm font-medium text-gray-700 mb-1">
               Disponible jusqu'au
             </label>
-            <input
-              {...register('available_to')}
-              type="date"
-              id="available_to"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+            <Input {...register('available_to')} type="date" id="available_to" />
           </div>
         </div>
 
@@ -257,12 +216,7 @@ const CreateItemPage: React.FC = () => {
           <label htmlFor="location_hint" className="block text-sm font-medium text-gray-700 mb-1">
             Indication de localisation (ex: étage, bâtiment, etc.)
           </label>
-          <input
-            {...register('location_hint')}
-            type="text"
-            id="location_hint"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
+          <Input {...register('location_hint')} id="location_hint" />
         </div>
 
         {/* Coordinates */}
@@ -271,30 +225,19 @@ const CreateItemPage: React.FC = () => {
             <label htmlFor="latitude" className="block text-sm font-medium text-gray-700 mb-1">
               Latitude
             </label>
-            <input
-              {...register('latitude')}
-              type="number"
-              step="any"
-              id="latitude"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+            <Input {...register('latitude')} type="number" step="any" id="latitude" />
           </div>
           <div>
             <label htmlFor="longitude" className="block text-sm font-medium text-gray-700 mb-1">
               Longitude
             </label>
-            <input
-              {...register('longitude')}
-              type="number"
-              step="any"
-              id="longitude"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+            <Input {...register('longitude')} type="number" step="any" id="longitude" />
           </div>
           <div className="flex items-end">
-            <button
+            <Button
               type="button"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              variant="ghost"
+              className="w-full border border-gray-300"
               onClick={() => {
                 if (!navigator.geolocation) return;
                 navigator.geolocation.getCurrentPosition((pos) => {
@@ -321,7 +264,7 @@ const CreateItemPage: React.FC = () => {
               }}
             >
               Utiliser ma position
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -330,13 +273,7 @@ const CreateItemPage: React.FC = () => {
           <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
             Description
           </label>
-          <textarea
-            {...register('description')}
-            id="description"
-            rows={4}
-            placeholder="Décrivez votre objet, son état, ses accessoires..."
-            className="input"
-          />
+          <TextArea {...register('description')} id="description" rows={4} placeholder="Décrivez votre objet, son état, ses accessoires..." />
         </div>
 
         {/* Category */}
@@ -344,18 +281,14 @@ const CreateItemPage: React.FC = () => {
           <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
             Catégorie *
           </label>
-          <select
-            {...register('category')}
-            id="category"
-            className="input"
-          >
+          <Select {...register('category')} id="category">
             <option value="">Choisissez une catégorie</option>
             {categories.map((category) => (
               <option key={category.value} value={category.value}>
                 {category.label}
               </option>
             ))}
-          </select>
+          </Select>
           {errors.category && (
             <p className="text-red-500 text-xs mt-1">{errors.category.message}</p>
           )}
@@ -366,18 +299,14 @@ const CreateItemPage: React.FC = () => {
           <label htmlFor="condition" className="block text-sm font-medium text-gray-700 mb-1">
             État *
           </label>
-          <select
-            {...register('condition')}
-            id="condition"
-            className="input"
-          >
+          <Select {...register('condition')} id="condition">
             <option value="">Choisissez l'état</option>
             {conditions.map((condition) => (
               <option key={condition.value} value={condition.value}>
                 {condition.label}
               </option>
             ))}
-          </select>
+          </Select>
           {errors.condition && (
             <p className="text-red-500 text-xs mt-1">{errors.condition.message}</p>
           )}
@@ -385,20 +314,10 @@ const CreateItemPage: React.FC = () => {
 
         {/* Submit Button */}
         <div className="flex space-x-4">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="btn btn-outline flex-1"
-          >
-            Annuler
-          </button>
-          <button
-            type="submit"
-            disabled={createItem.isPending}
-            className="btn btn-primary flex-1 disabled:opacity-50"
-          >
-            {createItem.isPending ? 'Création...' : 'Créer l\'objet'}
-          </button>
+          <Button type="button" variant="ghost" onClick={() => navigate(-1)} className="flex-1 border border-gray-300">Annuler</Button>
+          <Button type="submit" disabled={createItem.isPending} className="flex-1 disabled:opacity-50">
+            {createItem.isPending ? 'Création...' : "Créer l'objet"}
+          </Button>
         </div>
       </motion.form>
     </div>

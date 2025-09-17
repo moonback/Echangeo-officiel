@@ -6,6 +6,9 @@ import { useItems } from '../hooks/useItems';
 import { useRequests } from '../hooks/useRequests';
 import ItemCard from '../components/ItemCard';
 import { ItemCardSkeleton } from '../components/SkeletonLoader';
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
+import EmptyState from '../components/EmptyState';
 
 const HomePage: React.FC = () => {
   const { data: items, isLoading: itemsLoading } = useItems();
@@ -45,22 +48,20 @@ const HomePage: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto p-4 space-y-12">
       {/* Hero */}
-      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="card overflow-hidden">
+      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <Card className="overflow-hidden">
         <div className="relative p-6 md:p-10 bg-gradient-to-br from-brand-50 to-white">
           <div className="max-w-3xl">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">Partagez. Empruntez. Réduisez. 🌱</h1>
             <p className="text-gray-600">TrocAll facilite le prêt et le troc d’objets entre voisins. Économisez de l’argent, gagnez de la place et créez du lien.</p>
             <div className="mt-6 flex gap-3">
-              <Link to="/create" className="btn btn-primary">
-                <Plus className="w-4 h-4 mr-2" /> Ajouter un objet
-              </Link>
-              <Link to="/items" className="btn btn-outline">
-                <Search className="w-4 h-4 mr-2" /> Parcourir
-              </Link>
+              <Link to="/create"><Button leftIcon={<Plus className="w-4 h-4" />}>Ajouter un objet</Button></Link>
+              <Link to="/items"><Button variant="ghost" leftIcon={<Search className="w-4 h-4" />}>Parcourir</Button></Link>
             </div>
           </div>
           <div className="absolute -right-8 -bottom-8 w-48 h-48 md:w-64 md:h-64 bg-brand-100 rounded-full blur-3xl opacity-40 pointer-events-none" />
         </div>
+        </Card>
       </motion.section>
 
       {/* Comment ça marche */}
@@ -89,7 +90,8 @@ const HomePage: React.FC = () => {
       </motion.section>
 
       {/* Points forts */}
-      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="card p-6">
+      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <Card className="p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Pourquoi TrocAll ?</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[{
@@ -104,6 +106,7 @@ const HomePage: React.FC = () => {
             </div>
           ))}
         </div>
+        </Card>
       </motion.section>
 
       {/* Stats */}
@@ -137,12 +140,13 @@ const HomePage: React.FC = () => {
               <ItemCard key={item.id} item={item} userLocation={userLoc || undefined} />
             ))
           ) : (
-            <div className="col-span-full card p-8 text-center">
-              <Search className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-              <h3 className="text-lg font-medium text-gray-900 mb-1">Aucun objet disponible</h3>
-              <p className="text-sm text-gray-600 mb-4">Soyez le premier à partager un objet avec vos voisins !</p>
-              <Link to="/create" className="btn btn-primary"><Plus className="w-4 h-4 mr-2" />Ajouter un objet</Link>
-            </div>
+            <EmptyState
+              icon={<Search className="w-10 h-10" />}
+              title="Aucun objet disponible"
+              description="Soyez le premier à partager un objet avec vos voisins !"
+              action={<Link to="/create"><Button leftIcon={<Plus className="w-4 h-4" />}>Ajouter un objet</Button></Link>}
+              className="col-span-full"
+            />
           )}
         </div>
       </motion.section>
