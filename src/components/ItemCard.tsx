@@ -28,10 +28,10 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation 
     <motion.div
       whileHover={{ y: -2 }}
       whileTap={{ scale: 0.98 }}
-      className={`bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden ${className}`}
+      className={`bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden ${className}`}
     >
       <Link to={`/items/${item.id}`}>
-        <div className="aspect-video bg-gray-100 relative overflow-hidden">
+        <div className="bg-gray-100 relative overflow-hidden" style={{ aspectRatio: '4 / 3' }}>
           {item.images && item.images.length > 0 ? (
             <img
               src={item.images[0].url}
@@ -45,15 +45,15 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation 
             </div>
           )}
           <div className="absolute top-2 left-2">
-            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/90 text-gray-700">
+            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/90 text-gray-700 shadow">
               <CategoryIcon className="w-3 h-3 mr-1" />
               {getCategoryLabel(item.category)}
             </span>
           </div>
           {!item.is_available && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                Non disponible
+            <div className="absolute top-2 right-2">
+              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 shadow">
+                Indisponible
               </span>
             </div>
           )}

@@ -439,6 +439,22 @@ const ItemDetailPage: React.FC = () => {
           )}
         </motion.div>
       </div>
+      {/* Floating CTA for borrow request */}
+      {!isOwner && item.is_available && (
+        <div className="fixed inset-x-0 bottom-16 md:bottom-6 z-40 flex justify-center pointer-events-none">
+          <div className="pointer-events-auto">
+            {!showRequestForm ? (
+              <button
+                onClick={() => setShowRequestForm(true)}
+                className="px-6 py-3 rounded-full shadow-soft bg-blue-600 text-white font-medium hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                aria-label="Demander à emprunter"
+              >
+                Demander à emprunter
+              </button>
+            ) : null}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

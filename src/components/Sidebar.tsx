@@ -20,11 +20,11 @@ const Sidebar: React.FC = () => {
 
   const navItems = [
     { to: '/', icon: Home, label: 'Accueil' },
-    { to: '/items', icon: Search, label: 'Parcourir' },
-    { to: '/create', icon: Plus, label: 'Ajouter un objet' },
-    { to: '/requests', icon: MessageCircle, label: 'Mes demandes' },
+    { to: '/items', icon: Search, label: 'Rechercher' },
+    { to: '/create', icon: Plus, label: 'Proposer un objet' },
+    { to: '/requests', icon: MessageCircle, label: 'Mes échanges' },
     { to: '/neighbours', icon: Users, label: 'Voisins' },
-    { to: '/me', icon: User, label: 'Mon profil' },
+    { to: '/me', icon: User, label: 'Profil' },
     { to: '/settings', icon: Settings, label: 'Paramètres' },
     { to: '/help', icon: HelpCircle, label: 'Aide' },
   ];

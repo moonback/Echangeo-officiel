@@ -1,24 +1,24 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Search, Plus, MessageCircle, User } from 'lucide-react';
+import { Home, Search, MessageCircle, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const BottomNavigation: React.FC = () => {
   const navItems = [
     { to: '/', icon: Home, label: 'Accueil' },
-    { to: '/items', icon: Search, label: 'Objets' },
-    { to: '/create', icon: Plus, label: 'Ajouter' },
-    { to: '/requests', icon: MessageCircle, label: 'Demandes' },
+    { to: '/items', icon: Search, label: 'Rechercher' },
+    { to: '/requests', icon: MessageCircle, label: 'Échanges' },
     { to: '/me', icon: User, label: 'Profil' },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
-      <div className="grid grid-cols-5">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-gray-200 z-50">
+      <div className="grid grid-cols-4">
         {navItems.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
             to={to}
+            aria-label={label}
             className={({ isActive }) =>
               `flex flex-col items-center py-2 px-1 relative ${
                 isActive ? 'text-blue-600' : 'text-gray-500'
