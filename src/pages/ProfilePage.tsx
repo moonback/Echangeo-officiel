@@ -9,7 +9,7 @@ import Card from '../components/ui/Card';
 import EmptyState from '../components/EmptyState';
 import Button from '../components/ui/Button';
 
-type OwnedItem = { id: string; title: string; description?: string; created_at: string; is_available: boolean; category: string };
+type OwnedItem = { id: string; title: string; description?: string; created_at: string; is_available: boolean; category: string; latitude?: number; longitude?: number };
 type ReviewRow = { id: string; item_id: string; item_title: string; rater_name: string; score: number; comment?: string; created_at: string };
 
 const ProfilePage: React.FC = () => {
@@ -89,7 +89,7 @@ const ProfilePage: React.FC = () => {
       const to = from + itemsPageSize - 1;
       let query = supabase
         .from('items')
-        .select('id,title,description,created_at,is_available,category', { count: 'exact' })
+        .select('id,title,description,created_at,is_available,category,latitude,longitude', { count: 'exact' })
         .eq('owner_id', id)
         .order('created_at', { ascending: false })
         .range(from, to);
@@ -268,19 +268,36 @@ const ProfilePage: React.FC = () => {
                       const ab = itemStatsMap[b.id]?.average ?? 0;
                       return ab - aa;
                     })
-                    .map((it) => (
-                    <Card key={it.id} className="p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="min-w-0 pr-3">
-                          <div className="text-gray-900 font-medium truncate">{it.title}</div>
-                          {it.description && (
-                            <div className="text-gray-600 text-sm line-clamp-2">{it.description}</div>
-                          )}
-                        </div>
-                        <Link to={`/items/${it.id}`} className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-sm">Voir</Link>
-                      </div>
-                    </Card>
-                  ))}
+                    .map((it) => {
+                      let dist: number | null = null;
+                      if (userLoc && typeof it.latitude === 'number' && typeof it.longitude === 'number') {
+                        const toRad = (v: number) => (v * Math.PI) / 180;
+                        const R = 6371;
+                        const dLat = toRad(it.latitude - userLoc.lat);
+                        const dLon = toRad(it.longitude - userLoc.lng);
+                        const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(userLoc.lat)) * Math.cos(toRad(it.latitude)) * Math.sin(dLon / 2) ** 2;
+                        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                        dist = R * c;
+                      }
+                      return (
+                        <Card key={it.id} className="p-4">
+                          <div className="flex items-start justify-between">
+                            <div className="min-w-0 pr-3">
+                              <div className="flex items-center gap-2">
+                                <div className="text-gray-900 font-medium truncate">{it.title}</div>
+                                {dist != null && (
+                                  <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[11px]">{dist.toFixed(1)} km</span>
+                                )}
+                              </div>
+                              {it.description && (
+                                <div className="text-gray-600 text-sm line-clamp-2">{it.description}</div>
+                              )}
+                            </div>
+                            <Link to={`/items/${it.id}`} className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-sm">Voir</Link>
+                          </div>
+                        </Card>
+                      );
+                    })}
                   {itemsHasMore && (
                     <div className="col-span-full flex justify-center pt-2">
                       <Button variant="ghost" className="border border-gray-300" onClick={() => setItemsPage((n) => n + 1)}>Voir plus</Button>
