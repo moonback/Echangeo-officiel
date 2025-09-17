@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, Upload, X, Plus } from 'lucide-react';
+import { ArrowLeft, Upload, X } from 'lucide-react';
 import { useCreateItem } from '../hooks/useItems';
 import { categories } from '../utils/categories';
 import type { ItemCategory } from '../types';
@@ -76,7 +76,7 @@ const CreateItemPage: React.FC = () => {
   const goNext = async () => {
     let fieldsToValidate: (keyof CreateItemForm)[] = [];
     if (step === 1) fieldsToValidate = ['title', 'category', 'condition'];
-    const isValid = fieldsToValidate.length ? await trigger(fieldsToValidate as any) : true;
+    const isValid = fieldsToValidate.length ? await trigger(fieldsToValidate as (keyof CreateItemForm)[]) : true;
     if (isValid) setStep((s) => Math.min(TOTAL_STEPS, s + 1));
   };
 
@@ -85,7 +85,9 @@ const CreateItemPage: React.FC = () => {
     const sub = watch((values) => {
       try {
         localStorage.setItem('create_item_draft', JSON.stringify(values));
-      } catch {}
+      } catch {
+        // Do nothing
+      }
     });
     return () => sub.unsubscribe();
   }, [watch]);
@@ -101,7 +103,9 @@ const CreateItemPage: React.FC = () => {
           if (parsed[k] !== undefined) setValue(k, parsed[k]);
         });
       }
-    } catch {}
+    } catch {
+      // Do nothing
+    }
   }, [setValue]);
 
   // Suggestions de tags depuis marque/modèle + catégorie
@@ -423,8 +427,8 @@ const CreateItemPage: React.FC = () => {
                     navigator.geolocation.getCurrentPosition((pos) => {
                       const lat = pos.coords.latitude;
                       const lng = pos.coords.longitude;
-                      setValue('latitude', lat as any, { shouldValidate: true, shouldDirty: true });
-                      setValue('longitude', lng as any, { shouldValidate: true, shouldDirty: true });
+                      setValue('latitude', lat as unknown as number, { shouldValidate: true, shouldDirty: true });
+                      setValue('longitude', lng as unknown as number, { shouldValidate: true, shouldDirty: true });
 
                       fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`, {
                         headers: { 'Accept-Language': 'fr' },
