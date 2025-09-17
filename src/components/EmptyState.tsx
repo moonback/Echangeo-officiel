@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 
 interface EmptyStateProps {
   icon?: React.ReactNode;
@@ -10,12 +11,21 @@ interface EmptyStateProps {
 
 const EmptyState: React.FC<EmptyStateProps> = ({ icon, title, description, action, className = '' }) => {
   return (
-    <div className={["bg-white border border-gray-200 rounded-2xl p-8 text-center", className].join(' ')}>
-      {icon && <div className="mx-auto mb-4 text-gray-400">{icon}</div>}
-      <h3 className="text-lg font-medium text-gray-900 mb-1">{title}</h3>
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: 'easeOut' }}
+      className={["glass-card p-8 text-center", className].join(' ')}
+    >
+      {icon && (
+        <div className="mx-auto mb-4 text-gray-400 icon-tap">
+          {icon}
+        </div>
+      )}
+      <h3 className="text-lg font-semibold text-gray-900 mb-1">{title}</h3>
       {description && <p className="text-gray-600 mb-4">{description}</p>}
       {action}
-    </div>
+    </motion.div>
   );
 };
 

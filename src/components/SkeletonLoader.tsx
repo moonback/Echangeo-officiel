@@ -14,15 +14,15 @@ export const ItemCardSkeleton: React.FC<SkeletonLoaderProps> = ({
       {Array.from({ length: count }).map((_, index) => (
         <div 
           key={index}
-          className={`bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse ${className}`}
+          className={`bg-white/80 backdrop-blur-sm rounded-2xl shadow-soft border border-gray-200/60 overflow-hidden ${className}`}
         >
-          <div className="aspect-video bg-gray-200" />
+          <div className="aspect-video shimmer" />
           <div className="p-4">
-            <div className="h-5 bg-gray-200 rounded mb-2" />
-            <div className="h-4 bg-gray-200 rounded mb-3 w-3/4" />
+            <div className="h-5 rounded mb-2 shimmer" />
+            <div className="h-4 rounded mb-3 w-3/4 shimmer" />
             <div className="flex justify-between">
-              <div className="h-3 bg-gray-200 rounded w-1/3" />
-              <div className="h-3 bg-gray-200 rounded w-1/4" />
+              <div className="h-3 rounded w-1/3 shimmer" />
+              <div className="h-3 rounded w-1/4 shimmer" />
             </div>
           </div>
         </div>
@@ -32,18 +32,18 @@ export const ItemCardSkeleton: React.FC<SkeletonLoaderProps> = ({
 };
 
 export const ProfileSkeleton: React.FC<SkeletonLoaderProps> = ({ className = '' }) => (
-  <div className={`animate-pulse ${className}`}>
+  <div className={`${className}`}>
     <div className="flex items-center space-x-4 mb-6">
-      <div className="w-16 h-16 bg-gray-200 rounded-full" />
+      <div className="w-16 h-16 rounded-full shimmer" />
       <div className="flex-1">
-        <div className="h-6 bg-gray-200 rounded mb-2 w-1/2" />
-        <div className="h-4 bg-gray-200 rounded w-3/4" />
+        <div className="h-6 rounded mb-2 w-1/2 shimmer" />
+        <div className="h-4 rounded w-3/4 shimmer" />
       </div>
     </div>
     <div className="space-y-3">
-      <div className="h-4 bg-gray-200 rounded" />
-      <div className="h-4 bg-gray-200 rounded w-2/3" />
-      <div className="h-4 bg-gray-200 rounded w-1/2" />
+      <div className="h-4 rounded shimmer" />
+      <div className="h-4 rounded w-2/3 shimmer" />
+      <div className="h-4 rounded w-1/2 shimmer" />
     </div>
   </div>
 );

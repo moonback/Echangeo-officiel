@@ -29,7 +29,7 @@ const SettingsPage: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-200"
+        className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-200 glass"
       >
         <div className="p-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">

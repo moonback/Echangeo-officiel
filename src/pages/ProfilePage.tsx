@@ -8,13 +8,16 @@ import { Star, MapPin, MessageCircle, Link as LinkIcon } from 'lucide-react';
 import Card from '../components/ui/Card';
 import EmptyState from '../components/EmptyState';
 import Button from '../components/ui/Button';
+import Badge from '../components/ui/Badge';
+import { fetchProfileReputation, fetchProfileBadges } from '../hooks/useRatings';
 
-type OwnedItem = { id: string; title: string; description?: string; created_at: string; is_available: boolean; category: string };
+type OwnedItem = { id: string; title: string; description?: string; created_at: string; is_available: boolean; category: string; latitude?: number; longitude?: number };
 type ReviewRow = { id: string; item_id: string; item_title: string; rater_name: string; score: number; comment?: string; created_at: string };
 
 const ProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { data: profile, isLoading } = useProfile(id);
+  const [userLoc, setUserLoc] = React.useState<{ lat: number; lng: number } | null>(null);
   // Client-managed items with server pagination & filters
   const [items, setItems] = React.useState<OwnedItem[]>([]);
   const [itemsPage, setItemsPage] = React.useState(0);
@@ -34,6 +37,49 @@ const ProfilePage: React.FC = () => {
   const reviewsPageSize = 10;
   const [reviewsHasMore, setReviewsHasMore] = React.useState(true);
   const [copied, setCopied] = React.useState(false);
+  const [reputation, setReputation] = React.useState<{ overall?: number; comm?: number; punct?: number; care?: number; count?: number }>({});
+  const [badges, setBadges] = React.useState<{ slug: string; label: string }[]>([]);
+
+  React.useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition((pos) => {
+      setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+    });
+  }, []);
+
+  React.useEffect(() => {
+    const loadReputation = async () => {
+      if (!id) return;
+      const stats = await fetchProfileReputation(id);
+      if (stats) {
+        setReputation({
+          overall: Number(stats.overall_score ?? 0),
+          comm: Number(stats.avg_communication ?? 0),
+          punct: Number(stats.avg_punctuality ?? 0),
+          care: Number(stats.avg_care ?? 0),
+          count: Number(stats.ratings_count ?? 0),
+        });
+      } else {
+        setReputation({});
+      }
+      const badgeRows = await fetchProfileBadges(id);
+      setBadges((badgeRows ?? []).map(b => ({ slug: b.badge_slug, label: b.badge_label })));
+    };
+    loadReputation();
+  }, [id]);
+
+  const distanceKm = React.useMemo(() => {
+    const lat = profile?.latitude as number | undefined;
+    const lng = profile?.longitude as number | undefined;
+    if (!userLoc || typeof lat !== 'number' || typeof lng !== 'number') return null;
+    const toRad = (v: number) => (v * Math.PI) / 180;
+    const R = 6371;
+    const dLat = toRad(lat - userLoc.lat);
+    const dLon = toRad(lng - userLoc.lng);
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(userLoc.lat)) * Math.cos(toRad(lat)) * Math.sin(dLon / 2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }, [userLoc, profile]);
 
   React.useEffect(() => {
     const loadRatingStats = async () => {
@@ -68,7 +114,7 @@ const ProfilePage: React.FC = () => {
       const to = from + itemsPageSize - 1;
       let query = supabase
         .from('items')
-        .select('id,title,description,created_at,is_available,category', { count: 'exact' })
+        .select('id,title,description,created_at,is_available,category,latitude,longitude', { count: 'exact' })
         .eq('owner_id', id)
         .order('created_at', { ascending: false })
         .range(from, to);
@@ -140,33 +186,71 @@ const ProfilePage: React.FC = () => {
   }, [id, reviewsPage]);
 
   return (
-    <div className="p-4 max-w-5xl mx-auto">
+    <div className="p-4 max-w-6xl mx-auto">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
       >
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">
-          {profile?.full_name || profile?.email || 'Profil utilisateur'}
-        </h1>
-        <div className="grid md:grid-cols-3 gap-4">
+        {/* Enhanced Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.5 }}
+          className="mb-8"
+        >
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 gradient-text">
+            {profile?.full_name || profile?.email || 'Profil utilisateur'}
+          </h1>
+          <p className="text-gray-600 text-lg">Découvrez le profil et les objets de ce membre de la communauté</p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-3 gap-6">
           <div className="md:col-span-3">
-            <Card className="p-0 overflow-hidden">
-              <div className="bg-gradient-to-br from-brand-50 to-white p-6 md:p-8">
+            <Card className="p-0 overflow-hidden glass-strong">
+              <div className="relative bg-gradient-to-br from-brand-50/80 via-white/60 to-purple-50/40 p-6 md:p-8">
+                {/* Background Decorations */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-brand-200/20 to-purple-200/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-blue-200/20 to-brand-200/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
+                
                 {isLoading ? (
                   <div className="text-gray-500 text-sm">Chargement…</div>
                 ) : profile ? (
-                  <div className="flex items-start md:items-center gap-4 md:gap-6 flex-col md:flex-row">
-                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
-                      {profile.avatar_url ? (
-                        <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-gray-400 text-xl">{(profile.full_name || profile.email || '?').slice(0,1).toUpperCase()}</span>
-                      )}
-                    </div>
+                  <div className="relative flex items-start md:items-center gap-6 md:gap-8 flex-col md:flex-row">
+                    {/* Enhanced Avatar */}
+                    <motion.div
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.2, duration: 0.5 }}
+                      className="relative"
+                    >
+                      {/* Glow Effect */}
+                      <div className="absolute -inset-3 rounded-full bg-gradient-to-r from-brand-400/30 via-purple-400/30 to-brand-600/30 blur-lg animate-pulse" />
+                      <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-brand-500/40 to-purple-500/40 blur-md animate-pulse" style={{ animationDelay: '0.5s' }} />
+                      
+                      <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full bg-white border-4 border-white shadow-2xl overflow-hidden">
+                        {profile.avatar_url ? (
+                          <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-brand-100 to-brand-200 flex items-center justify-center">
+                            <span className="text-brand-600 text-2xl font-bold">
+                              {(profile.full_name || profile.email || '?').slice(0,1).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
                     <div className="flex-1 min-w-0">
                       <h2 className="text-xl md:text-2xl font-semibold text-gray-900 truncate">{profile.full_name || profile.email}</h2>
-                      {profile.address && (
-                        <div className="mt-1 text-sm text-gray-600 flex items-center"><MapPin className="w-4 h-4 mr-1" /> {profile.address}</div>
+                      {(profile.address || distanceKm != null) && (
+                        <div className="mt-1 text-sm text-gray-600 flex items-center flex-wrap gap-2">
+                          {profile.address && <span className="inline-flex items-center"><MapPin className="w-4 h-4 mr-1" /> {profile.address}</span>}
+                          {distanceKm != null && (
+                            <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[11px]">
+                              {distanceKm.toFixed(1)} km
+                            </span>
+                          )}
+                        </div>
                       )}
                       {profile.bio && (
                         <p className="mt-2 text-gray-700 text-sm md:text-base max-w-prose">{profile.bio}</p>
@@ -203,6 +287,28 @@ const ProfilePage: React.FC = () => {
             </Card>
           </div>
           <div className="md:col-span-2">
+            {(reputation.count || badges.length > 0 || ratingStats.count) && (
+              <Card className="mb-4">
+                <div className="p-4 border-b border-gray-100 font-medium">Confiance & Réputation</div>
+                <div className="p-4 flex items-center gap-3 flex-wrap">
+                  {typeof reputation.overall === 'number' && reputation.count ? (
+                    <span className="px-3 py-1 rounded-full bg-yellow-50 text-yellow-800 border border-yellow-200 text-sm inline-flex items-center">
+                      <Star className="w-4 h-4 mr-1 text-yellow-600" /> Score global {reputation.overall.toFixed(1)} ({reputation.count})
+                    </span>
+                  ) : (
+                    <span className="text-sm text-gray-600">Aucune évaluation utilisateur pour le moment</span>
+                  )}
+                  {ratingStats.count ? (
+                    <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-sm inline-flex items-center">
+                      <Star className="w-4 h-4 mr-1 text-amber-600" /> Avis sur objets {ratingStats.average?.toFixed(1)} ({ratingStats.count})
+                    </span>
+                  ) : null}
+                  {badges.map((b) => (
+                    <Badge key={b.slug} variant="success" className="px-3 py-1">{b.label}</Badge>
+                  ))}
+                </div>
+              </Card>
+            )}
             <Card>
               <div className="p-4 border-b border-gray-100 font-medium flex items-center justify-between">
                 <span>Objets publiés</span>
@@ -240,19 +346,36 @@ const ProfilePage: React.FC = () => {
                       const ab = itemStatsMap[b.id]?.average ?? 0;
                       return ab - aa;
                     })
-                    .map((it) => (
-                    <Card key={it.id} className="p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="min-w-0 pr-3">
-                          <div className="text-gray-900 font-medium truncate">{it.title}</div>
-                          {it.description && (
-                            <div className="text-gray-600 text-sm line-clamp-2">{it.description}</div>
-                          )}
-                        </div>
-                        <Link to={`/items/${it.id}`} className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-sm">Voir</Link>
-                      </div>
-                    </Card>
-                  ))}
+                    .map((it) => {
+                      let dist: number | null = null;
+                      if (userLoc && typeof it.latitude === 'number' && typeof it.longitude === 'number') {
+                        const toRad = (v: number) => (v * Math.PI) / 180;
+                        const R = 6371;
+                        const dLat = toRad(it.latitude - userLoc.lat);
+                        const dLon = toRad(it.longitude - userLoc.lng);
+                        const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(userLoc.lat)) * Math.cos(toRad(it.latitude)) * Math.sin(dLon / 2) ** 2;
+                        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                        dist = R * c;
+                      }
+                      return (
+                        <Card key={it.id} className="p-4">
+                          <div className="flex items-start justify-between">
+                            <div className="min-w-0 pr-3">
+                              <div className="flex items-center gap-2">
+                                <div className="text-gray-900 font-medium truncate">{it.title}</div>
+                                {dist != null && (
+                                  <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[11px]">{dist.toFixed(1)} km</span>
+                                )}
+                              </div>
+                              {it.description && (
+                                <div className="text-gray-600 text-sm line-clamp-2">{it.description}</div>
+                              )}
+                            </div>
+                            <Link to={`/items/${it.id}`} className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-sm">Voir</Link>
+                          </div>
+                        </Card>
+                      );
+                    })}
                   {itemsHasMore && (
                     <div className="col-span-full flex justify-center pt-2">
                       <Button variant="ghost" className="border border-gray-300" onClick={() => setItemsPage((n) => n + 1)}>Voir plus</Button>

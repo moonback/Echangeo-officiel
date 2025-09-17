@@ -8,12 +8,16 @@ import {
   Calendar,
   MessageCircle,
   Share2,
-  Heart
+  Heart,
+  CheckCircle,
+  X,
+  AlertCircle
 } from 'lucide-react';
 import { useItem, useUpdateItem } from '../hooks/useItems';
 import { useUpsertItemRating } from '../hooks/useRatings';
 import { useCreateRequest, useRequests } from '../hooks/useRequests';
 import { getCategoryIcon, getCategoryLabel } from '../utils/categories';
+import { getOfferTypeIcon, getOfferTypeLabel } from '../utils/offerTypes';
 import { useAuthStore } from '../store/authStore';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
@@ -29,12 +33,18 @@ const ItemDetailPage: React.FC = () => {
   const createRequest = useCreateRequest();
   const [requestMessage, setRequestMessage] = useState('');
   const [showRequestForm, setShowRequestForm] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showRatingForm, setShowRatingForm] = useState(false);
   const [ratingScore, setRatingScore] = useState<number>(5);
   const [ratingComment, setRatingComment] = useState<string>('');
   const hasCompletedBorrow = !!(item && allRequests?.some(
     (r) => r.requester_id === user?.id && r.item_id === item.id && r.status === 'completed'
+  ));
+  
+  const hasPendingRequest = !!(item && allRequests?.some(
+    (r) => r.requester_id === user?.id && r.item_id === item.id && r.status === 'pending'
   ));
 
   if (isLoading) {
@@ -65,19 +75,34 @@ const ItemDetailPage: React.FC = () => {
   }
 
   const CategoryIcon = getCategoryIcon(item.category);
+  const OfferTypeIcon = getOfferTypeIcon(item.offer_type);
   const isOwner = user?.id === item.owner_id;
 
   const handleRequestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Effacer les messages précédents
+      setErrorMessage(null);
+      setShowSuccessMessage(false);
+      
       await createRequest.mutateAsync({
         item_id: item.id,
         message: requestMessage,
       });
       setShowRequestForm(false);
       setRequestMessage('');
+      setShowSuccessMessage(true);
+      // Masquer le message après 5 secondes
+      setTimeout(() => setShowSuccessMessage(false), 5000);
     } catch (error) {
       console.error('Error creating request:', error);
+      setErrorMessage(
+        item.offer_type === 'trade' 
+          ? 'Erreur lors de l\'envoi de la proposition d\'échange. Veuillez réessayer.'
+          : 'Erreur lors de l\'envoi de la demande d\'emprunt. Veuillez réessayer.'
+      );
+      // Masquer le message d'erreur après 5 secondes
+      setTimeout(() => setErrorMessage(null), 5000);
     }
   };
 
@@ -123,7 +148,7 @@ const ItemDetailPage: React.FC = () => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="aspect-square bg-gray-100 overflow-hidden mb-4">
+          <Card className="aspect-square bg-gray-100 overflow-hidden mb-4 glass">
             {item.images && item.images.length > 0 ? (
               <img
                 src={item.images[currentImageIndex]?.url || item.images[0].url}
@@ -143,7 +168,7 @@ const ItemDetailPage: React.FC = () => {
                 <button
                   key={image.id}
                   onClick={() => setCurrentImageIndex(index)}
-                  className={`aspect-square rounded-lg overflow-hidden ${
+                  className={`aspect-square rounded-lg overflow-hidden transition-transform hover:scale-[1.02] ${
                     currentImageIndex === index ? 'ring-2 ring-blue-500' : ''
                   }`}
                 >
@@ -167,7 +192,19 @@ const ItemDetailPage: React.FC = () => {
         >
           {/* Category & Status */}
           <div className="flex items-center justify-between">
-            <Badge variant="info"><CategoryIcon className="w-4 h-4 mr-2 inline" />{getCategoryLabel(item.category)}</Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant="info"><CategoryIcon className="w-4 h-4 mr-2 inline" />{getCategoryLabel(item.category)}</Badge>
+              <Badge 
+                className={`${
+                  item.offer_type === 'trade' 
+                    ? 'bg-orange-100 text-orange-700 border-orange-200' 
+                    : 'bg-blue-100 text-blue-700 border-blue-200'
+                }`}
+              >
+                <OfferTypeIcon className="w-4 h-4 mr-2 inline" />
+                {getOfferTypeLabel(item.offer_type)}
+              </Badge>
+            </div>
             <Badge variant={item.is_available ? 'success' : 'danger'}>
               {item.is_available ? 'Disponible' : 'Non disponible'}
             </Badge>
@@ -184,12 +221,22 @@ const ItemDetailPage: React.FC = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">{item.title}</h1>
             {item.description && (
-              <p className="text-gray-600 leading-relaxed">{item.description}</p>
+              <p className="text-gray-600 leading-relaxed mb-4">{item.description}</p>
+            )}
+            
+            {item.offer_type === 'trade' && item.desired_items && (
+              <div className="p-4 bg-orange-50 rounded-lg border-l-4 border-orange-300">
+                <h3 className="font-semibold text-orange-800 mb-2 flex items-center">
+                  <OfferTypeIcon className="w-5 h-5 mr-2" />
+                  Recherche en échange :
+                </h3>
+                <p className="text-orange-700 leading-relaxed">{item.desired_items}</p>
+              </div>
             )}
           </div>
 
           {/* Owner Info */}
-          <Card className="p-4 bg-gray-50">
+          <Card className="p-4 bg-gray-50 glass">
             <h3 className="font-semibold text-gray-900 mb-3">Propriétaire</h3>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -228,7 +275,7 @@ const ItemDetailPage: React.FC = () => {
 
           {/* Additional fields */}
           {(item.brand || item.model || item.estimated_value || (item.tags && item.tags.length) || item.available_from || item.available_to || item.location_hint) && (
-            <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+            <div className="bg-gray-50 rounded-xl p-4 space-y-3 glass">
               <h3 className="font-semibold text-gray-900">Informations supplémentaires</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 {item.brand && (
@@ -302,12 +349,91 @@ const ItemDetailPage: React.FC = () => {
             </div>
           )}
 
+          {/* Message de succès */}
+          {showSuccessMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mb-6"
+            >
+              <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-xl">
+                <div className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
+                  <div>
+                    <p className="font-medium text-green-800">
+                      {item.offer_type === 'trade' ? 'Proposition d\'échange envoyée !' : 'Demande d\'emprunt envoyée !'}
+                    </p>
+                    <p className="text-sm text-green-600">
+                      {item.offer_type === 'trade' 
+                        ? 'Le propriétaire va examiner votre proposition d\'échange.'
+                        : 'Le propriétaire va examiner votre demande d\'emprunt.'
+                      }
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowSuccessMessage(false)}
+                  className="text-green-600 hover:text-green-800 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Message d'erreur */}
+          {errorMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mb-6"
+            >
+              <div className="flex items-center justify-between p-4 bg-red-50 border border-red-200 rounded-xl">
+                <div className="flex items-center">
+                  <AlertCircle className="w-5 h-5 text-red-600 mr-3" />
+                  <div>
+                    <p className="font-medium text-red-800">Erreur d'envoi</p>
+                    <p className="text-sm text-red-600">{errorMessage}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setErrorMessage(null)}
+                  className="text-red-600 hover:text-red-800 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Message demande en cours */}
+          {!isOwner && item.is_available && hasPendingRequest && (
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+              <div className="flex items-center">
+                <CheckCircle className="w-5 h-5 text-blue-600 mr-3" />
+                <div>
+                  <p className="font-medium text-blue-800">
+                    {item.offer_type === 'trade' ? 'Proposition d\'échange en cours' : 'Demande d\'emprunt en cours'}
+                  </p>
+                  <p className="text-sm text-blue-600">
+                    Vous avez déjà envoyé une {item.offer_type === 'trade' ? 'proposition d\'échange' : 'demande d\'emprunt'} pour cet objet. 
+                    Le propriétaire va vous répondre bientôt.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Actions */}
-          {!isOwner && item.is_available && (
+          {!isOwner && item.is_available && !hasPendingRequest && (
             <div className="space-y-4">
               {!showRequestForm ? (
                 <div className="flex space-x-3">
-                  <Button className="flex-1" onClick={() => setShowRequestForm(true)}>Demander à emprunter</Button>
+                  <Button className="flex-1" onClick={() => setShowRequestForm(true)}>
+                    {item.offer_type === 'trade' ? 'Proposer un échange' : 'Demander à emprunter'}
+                  </Button>
                   <Link
                     to={`/profile/${item.owner_id}`}
                     className="flex items-center px-4 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
@@ -325,13 +451,19 @@ const ItemDetailPage: React.FC = () => {
                       id="message"
                       value={requestMessage}
                       onChange={(e) => setRequestMessage(e.target.value)}
-                      placeholder="Expliquez pourquoi vous souhaitez emprunter cet objet..."
+                      placeholder={
+                        item.offer_type === 'trade' 
+                          ? "Décrivez ce que vous proposez en échange..."
+                          : "Expliquez pourquoi vous souhaitez emprunter cet objet..."
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                       rows={3}
                     />
                   </div>
                   <div className="flex space-x-3">
-                    <Button type="submit" disabled={createRequest.isPending} className="flex-1 disabled:opacity-50">{createRequest.isPending ? 'Envoi...' : 'Envoyer la demande'}</Button>
+                    <Button type="submit" disabled={createRequest.isPending} className="flex-1 disabled:opacity-50">
+                      {createRequest.isPending ? 'Envoi...' : (item.offer_type === 'trade' ? 'Envoyer la proposition' : 'Envoyer la demande')}
+                    </Button>
                     <Button type="button" variant="ghost" className="border border-gray-300" onClick={() => setShowRequestForm(false)}>Annuler</Button>
                   </div>
                 </form>
@@ -424,16 +556,20 @@ const ItemDetailPage: React.FC = () => {
         </motion.div>
       </div>
       {/* Floating CTA for borrow request */}
-      {!isOwner && item.is_available && (
+      {!isOwner && item.is_available && !hasPendingRequest && (
         <div className="fixed inset-x-0 bottom-16 md:bottom-6 z-40 flex justify-center pointer-events-none">
           <div className="pointer-events-auto">
             {!showRequestForm ? (
               <button
                 onClick={() => setShowRequestForm(true)}
-                className="px-6 py-3 rounded-full shadow-soft bg-blue-600 text-white font-medium hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                aria-label="Demander à emprunter"
+                className={`px-6 py-3 rounded-full shadow-soft text-white font-medium focus-visible:outline-none focus-visible:ring-2 ${
+                  item.offer_type === 'trade' 
+                    ? 'bg-orange-600 hover:bg-orange-700 focus-visible:ring-orange-500' 
+                    : 'bg-blue-600 hover:bg-blue-700 focus-visible:ring-blue-500'
+                }`}
+                aria-label={item.offer_type === 'trade' ? 'Proposer un échange' : 'Demander à emprunter'}
               >
-                Demander à emprunter
+                {item.offer_type === 'trade' ? 'Proposer un échange' : 'Demander à emprunter'}
               </button>
             ) : null}
           </div>

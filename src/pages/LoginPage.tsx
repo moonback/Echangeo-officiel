@@ -59,71 +59,124 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-brand-50/30 via-white to-purple-50/20 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Decorations */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-20 left-20 w-96 h-96 bg-gradient-to-br from-brand-200/10 to-purple-200/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-20 right-20 w-80 h-80 bg-gradient-to-tl from-blue-200/10 to-brand-200/10 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-purple-200/10 to-brand-200/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+      </div>
+
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md"
+        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="relative bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 w-full max-w-md border border-white/20"
+        style={{
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.6)'
+        }}
       >
+        {/* Header */}
         <div className="text-center mb-8">
           <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2 }}
-            className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4"
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ delay: 0.2, duration: 0.6, type: "spring", stiffness: 200 }}
+            className="relative inline-flex items-center justify-center w-20 h-20 mb-6"
           >
-            <Package className="w-8 h-8 text-white" />
+            {/* Glow Effect */}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-brand-400 to-brand-600 opacity-20 blur-lg animate-pulse" />
+            <div className="relative w-16 h-16 bg-gradient-to-r from-brand-600 to-brand-700 rounded-2xl shadow-lg shadow-brand-500/25 flex items-center justify-center">
+              <Package className="w-8 h-8 text-white" />
+            </div>
           </motion.div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">TrocAll</h1>
-          <p className="text-gray-600">
+          
+          <motion.h1 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+            className="text-3xl font-bold text-gray-900 mb-3 gradient-text"
+          >
+            TrocAll
+          </motion.h1>
+          
+          <motion.p 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+            className="text-gray-600 leading-relaxed"
+          >
             {isSignup 
-              ? 'Créez votre compte pour commencer à échanger' 
-              : 'Connectez-vous à votre espace d\'échange'}
-          </p>
+              ? 'Créez votre compte pour rejoindre la communauté d\'échange' 
+              : 'Reconnectez-vous à votre espace communautaire'}
+          </motion.p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <motion.form 
+          onSubmit={handleSubmit(onSubmit)} 
+          className="space-y-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6, duration: 0.5 }}
+        >
           {infoMessage && (
-            <div className="rounded-md bg-green-50 border border-green-200 text-green-800 px-4 py-3 text-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="rounded-2xl bg-emerald-50/80 backdrop-blur-sm border border-emerald-200/50 text-emerald-800 px-4 py-3 text-sm"
+            >
               {infoMessage}
-            </div>
+            </motion.div>
           )}
+          
           {isSignup && (
-            <div>
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.7, duration: 0.4 }}
+            >
+              <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700 mb-2">
                 Nom complet
               </label>
               <input
                 {...register('fullName' as keyof (LoginForm | SignupForm))}
                 type="text"
                 id="fullName"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300/60 rounded-2xl bg-white/60 backdrop-blur-sm focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 focus:-translate-y-0.5 focus:shadow-lg transition-all duration-200"
                 placeholder="Votre nom complet"
               />
               {errors.fullName && (
-                <p className="text-red-500 text-xs mt-1">{errors.fullName.message}</p>
+                <p className="text-red-500 text-xs mt-2">{errors.fullName.message}</p>
               )}
-            </div>
+            </motion.div>
           )}
 
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.8, duration: 0.4 }}
+          >
+            <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
               Email
             </label>
             <input
               {...register('email')}
               type="email"
               id="email"
-              className="input"
+              className="w-full px-4 py-3 border border-gray-300/60 rounded-2xl bg-white/60 backdrop-blur-sm focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 focus:-translate-y-0.5 focus:shadow-lg transition-all duration-200"
               placeholder="votre@email.com"
             />
             {errors.email && (
-              <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+              <p className="text-red-500 text-xs mt-2">{errors.email.message}</p>
             )}
-          </div>
+          </motion.div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.9, duration: 0.4 }}
+          >
+            <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
               Mot de passe
             </label>
             <div className="relative">
@@ -131,62 +184,84 @@ const LoginPage: React.FC = () => {
                 {...register('password')}
                 type={showPassword ? 'text' : 'password'}
                 id="password"
-              className="input pr-10"
+                className="w-full px-4 py-3 pr-12 border border-gray-300/60 rounded-2xl bg-white/60 backdrop-blur-sm focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 focus:-translate-y-0.5 focus:shadow-lg transition-all duration-200"
                 placeholder="••••••••"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-brand-600 transition-colors duration-200"
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
             {errors.password && (
-              <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
+              <p className="text-red-500 text-xs mt-2">{errors.password.message}</p>
             )}
-          </div>
+          </motion.div>
 
           {isSignup && (
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 1.0, duration: 0.4 }}
+            >
+              <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-2">
                 Confirmer le mot de passe
               </label>
               <input
                 {...register('confirmPassword' as keyof (LoginForm | SignupForm))}
                 type="password"
                 id="confirmPassword"
-                className="input"
+                className="w-full px-4 py-3 border border-gray-300/60 rounded-2xl bg-white/60 backdrop-blur-sm focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 focus:-translate-y-0.5 focus:shadow-lg transition-all duration-200"
                 placeholder="••••••••"
               />
               {errors.confirmPassword && (
-                <p className="text-red-500 text-xs mt-1">{errors.confirmPassword.message}</p>
+                <p className="text-red-500 text-xs mt-2">{errors.confirmPassword.message}</p>
               )}
-            </div>
+            </motion.div>
           )}
 
           <motion.button
-            whileHover={{ scale: 1.02 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.1, duration: 0.5 }}
+            whileHover={{ scale: 1.02, y: -2 }}
             whileTap={{ scale: 0.98 }}
             type="submit"
             disabled={loading}
-            className="btn btn-primary w-full disabled:opacity-50"
+            className="w-full bg-gradient-to-r from-brand-600 to-brand-700 text-white font-semibold py-3 px-6 rounded-2xl shadow-lg shadow-brand-500/25 hover:from-brand-700 hover:to-brand-800 hover:shadow-xl hover:shadow-brand-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {loading ? 'Chargement...' : (isSignup ? 'Créer un compte' : 'Se connecter')}
+            {loading ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Chargement...
+              </>
+            ) : (
+              isSignup ? 'Créer un compte' : 'Se connecter'
+            )}
           </motion.button>
-        </form>
+        </motion.form>
 
-        <div className="mt-6 text-center">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2, duration: 0.5 }}
+          className="mt-8 text-center"
+        >
           <button
             type="button"
             onClick={() => setIsSignup(!isSignup)}
-            className="text-blue-600 hover:text-blue-700 font-medium"
+            className="text-brand-600 hover:text-brand-700 font-semibold transition-colors duration-200 relative group"
           >
-            {isSignup 
-              ? 'Déjà un compte ? Se connecter' 
-              : 'Pas encore de compte ? S\'inscrire'}
+            <span className="relative z-10">
+              {isSignup 
+                ? 'Déjà un compte ? Se connecter' 
+                : 'Pas encore de compte ? S\'inscrire'}
+            </span>
+            <div className="absolute inset-0 bg-brand-50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 -z-10 scale-110" />
           </button>
-        </div>
+        </motion.div>
       </motion.div>
     </div>
   );

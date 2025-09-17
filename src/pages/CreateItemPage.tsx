@@ -7,7 +7,8 @@ import { z } from 'zod';
 import { ArrowLeft, Upload, X } from 'lucide-react';
 import { useCreateItem } from '../hooks/useItems';
 import { categories } from '../utils/categories';
-import type { ItemCategory } from '../types';
+import { offerTypes } from '../utils/offerTypes';
+import type { ItemCategory, OfferType } from '../types';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
@@ -17,8 +18,10 @@ import Card from '../components/ui/Card';
 const createItemSchema = z.object({
   title: z.string().min(1, 'Le titre est requis').max(100, 'Le titre est trop long'),
   description: z.string().optional(),
-  category: z.enum(['tools', 'electronics', 'books', 'sports', 'kitchen', 'garden', 'toys', 'other'] as const),
+  category: z.enum(['tools', 'electronics', 'books', 'sports', 'kitchen', 'garden', 'toys', 'services', 'other'] as const),
   condition: z.enum(['excellent', 'good', 'fair', 'poor']),
+  offer_type: z.enum(['loan', 'trade']),
+  desired_items: z.string().max(500).optional(),
   brand: z.string().max(100).optional(),
   model: z.string().max(100).optional(),
   estimated_value: z
@@ -75,7 +78,7 @@ const CreateItemPage: React.FC = () => {
   const goPrev = () => setStep((s) => Math.max(1, s - 1));
   const goNext = async () => {
     let fieldsToValidate: (keyof CreateItemForm)[] = [];
-    if (step === 1) fieldsToValidate = ['title', 'category', 'condition'];
+    if (step === 1) fieldsToValidate = ['title', 'category', 'condition', 'offer_type'];
     const isValid = fieldsToValidate.length ? await trigger(fieldsToValidate as (keyof CreateItemForm)[]) : true;
     if (isValid) setStep((s) => Math.min(TOTAL_STEPS, s + 1));
   };
@@ -264,7 +267,7 @@ const CreateItemPage: React.FC = () => {
         className="space-y-6"
       >
         {/* Stepper */}
-        <div className="p-4 rounded-xl border border-gray-200 bg-white">
+        <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
           <div className="flex items-center justify-between">
             {steps.map((s, idx) => (
               <div key={s.id} className="flex-1 flex items-center">
@@ -281,11 +284,11 @@ const CreateItemPage: React.FC = () => {
         {/* Step 1: Informations */}
         {step === 1 && (
           <>
-            <div>
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
               <Input label="Titre *" placeholder="Ex: Perceuse électrique Bosch" {...register('title')} error={errors.title?.message} />
               <div className="text-xs text-gray-500 mt-1">{(watch('title')?.length || 0)}/100</div>
             </div>
-            <div>
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
               <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
                 Catégorie *
               </label>
@@ -301,7 +304,7 @@ const CreateItemPage: React.FC = () => {
                 <p className="text-red-500 text-xs mt-1">{errors.category.message}</p>
               )}
             </div>
-            <div>
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
               <label htmlFor="condition" className="block text-sm font-medium text-gray-700 mb-1">
                 État *
               </label>
@@ -317,6 +320,45 @@ const CreateItemPage: React.FC = () => {
                 <p className="text-red-500 text-xs mt-1">{errors.condition.message}</p>
               )}
             </div>
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+              <label htmlFor="offer_type" className="block text-sm font-medium text-gray-700 mb-1">
+                Type d'offre *
+              </label>
+              <Select {...register('offer_type')} id="offer_type">
+                <option value="">Choisissez le type d'offre</option>
+                {offerTypes.map((offerType) => (
+                  <option key={offerType.value} value={offerType.value}>
+                    {offerType.label}
+                  </option>
+                ))}
+              </Select>
+              <div className="text-xs text-gray-500 mt-1">
+                {watch('offer_type') === 'loan' && 'Prêt temporaire de votre objet'}
+                {watch('offer_type') === 'trade' && 'Échange définitif contre autre chose'}
+              </div>
+              {errors.offer_type && (
+                <p className="text-red-500 text-xs mt-1">{errors.offer_type.message}</p>
+              )}
+            </div>
+            {watch('offer_type') === 'trade' && (
+              <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+                <label htmlFor="desired_items" className="block text-sm font-medium text-gray-700 mb-1">
+                  Ce que vous recherchez en échange
+                </label>
+                <TextArea 
+                  {...register('desired_items')} 
+                  id="desired_items" 
+                  rows={3}
+                  placeholder="Décrivez ce que vous aimeriez recevoir en échange (ex: livre de cuisine, outil de jardinage, service de bricolage...)"
+                />
+                <div className="text-xs text-gray-500 mt-1">
+                  {(watch('desired_items')?.length || 0)}/500 caractères
+                </div>
+                {errors.desired_items && (
+                  <p className="text-red-500 text-xs mt-1">{errors.desired_items.message}</p>
+                )}
+              </div>
+            )}
           </>
         )}
 
@@ -324,13 +366,13 @@ const CreateItemPage: React.FC = () => {
         {step === 2 && (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
+              <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
                 <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-1">
                   Marque
                 </label>
                 <Input {...register('brand')} id="brand" />
               </div>
-              <div>
+              <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
                 <label htmlFor="model" className="block text-sm font-medium text-gray-700 mb-1">
                   Modèle
                 </label>
@@ -338,14 +380,14 @@ const CreateItemPage: React.FC = () => {
               </div>
             </div>
 
-            <div>
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
               <label htmlFor="estimated_value" className="block text-sm font-medium text-gray-700 mb-1">
                 Valeur estimée (€)
               </label>
               <Input {...register('estimated_value')} type="number" step="0.01" min="0" id="estimated_value" />
             </div>
 
-            <div>
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
               <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-1">
                 Tags (séparés par des virgules)
               </label>
@@ -382,7 +424,7 @@ const CreateItemPage: React.FC = () => {
               )}
             </div>
 
-            <div>
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
                 Description
               </label>
@@ -396,13 +438,13 @@ const CreateItemPage: React.FC = () => {
         {step === 3 && (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
+              <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
                 <label htmlFor="available_from" className="block text-sm font-medium text-gray-700 mb-1">
                   Disponible à partir du
                 </label>
                 <Input {...register('available_from')} type="date" id="available_from" />
               </div>
-              <div>
+              <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
                 <label htmlFor="available_to" className="block text-sm font-medium text-gray-700 mb-1">
                   Disponible jusqu'au
                 </label>
@@ -410,7 +452,7 @@ const CreateItemPage: React.FC = () => {
               </div>
             </div>
 
-            <div>
+            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
               <label htmlFor="location_hint" className="block text-sm font-medium text-gray-700 mb-1">
                 Indication de localisation (ex: étage, bâtiment, etc.)
               </label>
@@ -418,19 +460,19 @@ const CreateItemPage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
+              <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
                 <label htmlFor="latitude" className="block text-sm font-medium text-gray-700 mb-1">
                   Latitude
                 </label>
                 <Input {...register('latitude')} type="number" step="any" id="latitude" />
               </div>
-              <div>
+              <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
                 <label htmlFor="longitude" className="block text-sm font-medium text-gray-700 mb-1">
                   Longitude
                 </label>
                 <Input {...register('longitude')} type="number" step="any" id="longitude" />
               </div>
-              <div className="flex items-end">
+              <div className="flex items-end p-4 rounded-xl border border-gray-200 bg-white glass">
                 <Button
                   type="button"
                   variant="ghost"
@@ -474,7 +516,7 @@ const CreateItemPage: React.FC = () => {
 
         {/* Step 4: Photos */}
         {step === 4 && (
-          <Card className="p-4">
+          <Card className="p-4 glass">
             <div className="flex items-center justify-between mb-3">
               <label className="block text-sm font-medium text-gray-900">
                 Photos (au moins 1, max 8)

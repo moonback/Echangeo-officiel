@@ -31,7 +31,7 @@ const ProPage: React.FC = () => {
 
           <div className="mt-8 grid md:grid-cols-3 gap-4">
             {[{ Icon: Layers, title: 'Catalogue avancé', desc: 'Import CSV, variantes, tags illimités' }, { Icon: Zap, title: 'Visibilité locale', desc: 'Mise en avant auprès des voisins' }, { Icon: Shield, title: 'Confiance renforcée', desc: 'Badge vérifié et priorisation' }].map(({ Icon, title, desc }) => (
-              <Card key={title} className="p-5">
+              <Card key={title} className="p-5 glass">
                 <Icon className="w-6 h-6 text-brand-700" />
                 <p className="mt-2 font-medium text-gray-900">{title}</p>
                 <p className="text-sm text-gray-600">{desc}</p>
@@ -41,7 +41,7 @@ const ProPage: React.FC = () => {
         </motion.section>
 
         <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.05 }} className="mt-10">
-          <Card className="p-6 md:p-8">
+          <Card className="p-6 md:p-8 glass">
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <FeatureRow title="Statistiques détaillées" description="Suivez réservations, retours et taux de satisfaction." />
