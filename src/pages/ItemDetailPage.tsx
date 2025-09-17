@@ -191,7 +191,8 @@ const ItemDetailPage: React.FC = () => {
           {/* Owner Info */}
           <Card className="p-4 bg-gray-50">
             <h3 className="font-semibold text-gray-900 mb-3">Propriétaire</h3>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                 <User className="w-6 h-6 text-blue-600" />
               </div>
@@ -204,6 +205,10 @@ const ItemDetailPage: React.FC = () => {
                   <span>À proximité</span>
                 </div>
               </div>
+              </div>
+              <Link to={`/profile/${item.owner_id}`}>
+                <Button variant="secondary" size="sm">Voir le profil</Button>
+              </Link>
             </div>
           </Card>
 
