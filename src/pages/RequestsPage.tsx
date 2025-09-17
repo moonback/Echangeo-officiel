@@ -6,6 +6,9 @@ import { useRequests, useUpdateRequestStatus } from '../hooks/useRequests';
 import { useAuthStore } from '../store/authStore';
 import { useUpsertItemRating } from '../hooks/useRatings';
 import { supabase } from '../services/supabase';
+import Button from '../components/ui/Button';
+import Badge from '../components/ui/Badge';
+import EmptyState from '../components/EmptyState';
 
 const RequestsPage: React.FC = () => {
   const { user } = useAuthStore();
@@ -111,10 +114,7 @@ const RequestsPage: React.FC = () => {
           </h2>
           
           {receivedRequests.length === 0 ? (
-            <div className="bg-white rounded-xl p-8 text-center border border-gray-200">
-              <MessageCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Aucune demande reçue pour le moment</p>
-            </div>
+            <EmptyState icon={<MessageCircle className="w-12 h-12" />} title="Aucune demande reçue" description="Vous n'avez pas encore reçu de demande." />
           ) : (
             <div className="space-y-4">
               {receivedRequests.map((request) => (
@@ -154,20 +154,8 @@ const RequestsPage: React.FC = () => {
                     
                     {request.status === 'pending' && (
                       <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleStatusUpdate(request.id, 'approved')}
-                          className="flex items-center space-x-1 px-3 py-1 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
-                        >
-                          <Check size={16} />
-                          <span>Accepter</span>
-                        </button>
-                        <button
-                          onClick={() => handleStatusUpdate(request.id, 'rejected')}
-                          className="flex items-center space-x-1 px-3 py-1 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
-                        >
-                          <X size={16} />
-                          <span>Refuser</span>
-                        </button>
+                        <Button variant="secondary" size="sm" onClick={() => handleStatusUpdate(request.id, 'approved')} leftIcon={<Check size={16} />}>Accepter</Button>
+                        <Button variant="danger" size="sm" onClick={() => handleStatusUpdate(request.id, 'rejected')} leftIcon={<X size={16} />}>Refuser</Button>
                       </div>
                     )}
                   </div>
@@ -188,16 +176,12 @@ const RequestsPage: React.FC = () => {
           </h2>
           
           {myRequests.length === 0 ? (
-            <div className="bg-white rounded-xl p-8 text-center border border-gray-200">
-              <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Vous n'avez fait aucune demande pour le moment</p>
-              <Link
-                to="/items"
-                className="inline-block mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Parcourir les objets
-              </Link>
-            </div>
+            <EmptyState
+              icon={<Clock className="w-12 h-12" />}
+              title="Aucune demande"
+              description="Vous n'avez fait aucune demande pour le moment."
+              action={<Link to="/items"><Button>Parcourir les objets</Button></Link>}
+            />
           ) : (
             <div className="space-y-4">
               {myRequests.map((request) => (
@@ -232,12 +216,9 @@ const RequestsPage: React.FC = () => {
                     <span>{new Date(request.created_at).toLocaleDateString('fr-FR')}</span>
                     
                     {request.status === 'approved' && (
-                      <button
-                        onClick={() => handleStatusUpdate(request.id, 'completed')}
-                        className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
-                      >
+                      <Button variant="secondary" size="sm" onClick={() => handleStatusUpdate(request.id, 'completed')}>
                         Marquer comme terminé
-                      </button>
+                      </Button>
                     )}
                     {request.status === 'completed' && request.requester_id === user?.id && (
                       <div className="flex items-center gap-2">

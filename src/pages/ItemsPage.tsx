@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Filter } from 'lucide-react';
 import { useItems } from '../hooks/useItems';
@@ -10,8 +10,10 @@ import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import EmptyState from '../components/EmptyState';
+import { useLocation } from 'react-router-dom';
 
 const ItemsPage: React.FC = () => {
+  const location = useLocation();
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ItemCategory | undefined>();
   const [showFilters, setShowFilters] = useState(false);
@@ -38,6 +40,13 @@ const ItemsPage: React.FC = () => {
     isAvailable,
     tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : undefined,
   });
+
+  // Initialize search from URL and react to URL changes (from Topbar)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const q = params.get('search') || '';
+    setSearch(q);
+  }, [location.search]);
 
   return (
     <div className="p-4 max-w-7xl mx-auto">
