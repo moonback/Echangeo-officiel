@@ -14,6 +14,8 @@ export function useItems(filters?: {
   hasImages?: boolean;
   isAvailable?: boolean;
   tags?: string[];
+  favoritesOnly?: boolean;
+  userId?: string;
 }) {
   return useQuery({
     queryKey: ['items', filters],
@@ -28,8 +30,15 @@ export function useItems(filters?: {
           *,
           owner:profiles(*),
           ${selectImages}
-        `)
+          ${filters?.favoritesOnly ? `, favorites!inner(user_id)` : ''}
+        ` as any)
         .order('created_at', { ascending: false });
+
+      if (filters?.favoritesOnly) {
+        if (!filters?.userId) return [] as Item[];
+        // Restreindre aux favoris de l'utilisateur courant
+        query = query.eq('favorites.user_id', filters.userId);
+      }
 
       if (filters?.category) {
         query = query.eq('category', filters.category);
@@ -75,7 +84,11 @@ export function useItems(filters?: {
       const { data, error } = await query;
       if (error) throw error;
 
-      const items = (data as Item[]) ?? [];
+      // Nettoyer projection favorites
+      const items = ((data as any[]) ?? []).map((row) => {
+        const { favorites, ...rest } = row || {};
+        return rest as Item;
+      });
       if (items.length === 0) return items;
 
       // Fetch rating stats in batch via view item_rating_stats

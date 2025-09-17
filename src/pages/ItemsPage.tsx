@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Filter } from 'lucide-react';
 import { useItems } from '../hooks/useItems';
+import { useAuthStore } from '../store/authStore';
 import ItemCard from '../components/ItemCard';
 import { ItemCardSkeleton } from '../components/SkeletonLoader';
 import { categories, getCategoryIcon } from '../utils/categories';
@@ -26,6 +27,8 @@ const ItemsPage: React.FC = () => {
   const [hasImages, setHasImages] = useState(false);
   const [isAvailable, setIsAvailable] = useState(true);
   const [tags, setTags] = useState('');
+  const [favoritesOnly, setFavoritesOnly] = useState<boolean>(false);
+  const { user } = useAuthStore();
 
   const { data: items, isLoading } = useItems({ 
     category: selectedCategory, 
@@ -39,6 +42,8 @@ const ItemsPage: React.FC = () => {
     hasImages: hasImages || undefined,
     isAvailable,
     tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : undefined,
+    favoritesOnly: favoritesOnly || undefined,
+    userId: favoritesOnly ? user?.id : undefined,
   });
 
   // Initialize search from URL and react to URL changes (from Topbar)
@@ -74,6 +79,12 @@ const ItemsPage: React.FC = () => {
           <Filter size={20} />
           <span>Filtres</span>
         </button>
+        <div className="mt-3">
+          <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+            <input type="checkbox" checked={favoritesOnly} onChange={(e) => setFavoritesOnly(e.target.checked)} />
+            Mes favoris
+          </label>
+        </div>
       </motion.div>
 
       {/* Category Filters */}

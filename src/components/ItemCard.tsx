@@ -1,12 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { MapPin, User, Star } from 'lucide-react';
+import { MapPin, User, Star, Heart } from 'lucide-react';
 import type { Item } from '../types';
 import { getCategoryIcon, getCategoryLabel } from '../utils/categories';
 import { getOfferTypeIcon, getOfferTypeLabel } from '../utils/offerTypes';
 import Card from './ui/Card';
 import Badge from './ui/Badge';
+import { useFavorites, useIsItemFavorited } from '../hooks/useFavorites';
+import { useAuthStore } from '../store/authStore';
+import { useNavigate } from 'react-router-dom';
 
 interface ItemCardProps {
   item: Item;
@@ -28,6 +31,20 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation 
     return R * c;
   }, [userLocation, item.latitude, item.longitude]);
   
+  const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const { toggle } = useFavorites();
+  const { data: isFavorited = false, isLoading } = useIsItemFavorited(item.id);
+
+  const onToggleFavorite = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) { navigate('/login'); return; }
+    try {
+      await toggle(item.id);
+    } catch {}
+  };
+
   return (
     <motion.div 
       whileHover={{ y: -8, scale: 1.02 }} 
@@ -83,6 +100,23 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation 
                 <Badge variant="danger" className="shadow-lg">Indisponible</Badge>
               </div>
             )}
+
+            {/* Favorite Button */}
+            <div className="absolute top-3 right-3">
+              <button
+                onClick={onToggleFavorite}
+                aria-label={isFavorited ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+                aria-pressed={isFavorited}
+                className={`inline-flex items-center justify-center w-9 h-9 rounded-full border backdrop-blur-sm shadow-soft transition-all ${
+                  isFavorited
+                    ? 'bg-red-500 text-white border-red-400 hover:bg-red-600'
+                    : 'bg-white/90 text-gray-700 border-gray-200 hover:bg-white'
+                }`}
+                title="Favori"
+              >
+                <Heart size={18} className={isFavorited ? 'fill-current' : ''} />
+              </button>
+            </div>
             
             {/* Rating Overlay */}
             {typeof item.average_rating === 'number' && item.ratings_count ? (

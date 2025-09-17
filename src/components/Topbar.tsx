@@ -4,6 +4,7 @@ import { Package, Plus, Search, MessageCircle, User, LogOut, Menu, X, Users, Hel
 import { Link, useNavigate, useLocation, NavLink } from 'react-router-dom';
 import Button from './ui/Button';
 import { useAuthStore } from '../store/authStore';
+import { supabase } from '../services/supabase';
 
 // Hook personnalisé pour gérer la recherche
 const useSearch = () => {
@@ -58,6 +59,55 @@ const useMobileMenu = () => {
   }, [isOpen, close]);
 
   return { isOpen, toggle, close, open };
+};
+
+const FavoritesButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
+  const { user } = useAuthStore();
+  const [count, setCount] = useState<number | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const fetchCount = useCallback(async () => {
+    if (!user) { setCount(0); return; }
+    setLoading(true);
+    try {
+      const { count: c, error } = await supabase
+        .from('favorites')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+      if (error) throw error;
+      setCount(typeof c === 'number' ? c : 0);
+    } catch {
+      setCount(0);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => { fetchCount(); }, [fetchCount]);
+
+  // Optionnel: abonnement Realtime si activé
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase.channel('favorites-count')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'favorites', filter: `user_id=eq.${user.id}` }, () => {
+        fetchCount();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, fetchCount]);
+
+  return (
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-3 px-3 py-3 rounded-xl bg-white/70 hover:bg-white/90 text-gray-800 border border-gray-200/70 transition-colors backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+    >
+      <Star size={18} className="text-amber-600" />
+      <span className="text-sm font-medium">Favoris</span>
+      <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full border border-amber-200/60 bg-amber-50 text-amber-700">
+        {loading || count === null ? '…' : count}
+      </span>
+    </button>
+  );
 };
 
 const Topbar: React.FC = () => {
@@ -337,14 +387,7 @@ const Topbar: React.FC = () => {
                     <span className="text-sm font-medium">Mes objets</span>
                     <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full border border-emerald-200/60 bg-emerald-50 text-emerald-700">Nouveau</span>
                   </button>
-                  <button
-                    onClick={() => { closeMobile(); navigate('/items?favorites=1'); }}
-                    className="w-full flex items-center gap-3 px-3 py-3 rounded-xl bg-white/70 hover:bg-white/90 text-gray-800 border border-gray-200/70 transition-colors backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-                  >
-                    <Star size={18} className="text-amber-600" />
-                    <span className="text-sm font-medium">Favoris</span>
-                    <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full border border-amber-200/60 bg-amber-50 text-amber-700">3</span>
-                  </button>
+                  <FavoritesButton onClick={() => { closeMobile(); navigate('/items?favorites=1'); }} />
                   <button
                     onClick={() => { closeMobile(); navigate('/settings'); }}
                     className="w-full flex items-center gap-3 px-3 py-3 rounded-xl bg-white/70 hover:bg-white/90 text-gray-800 border border-gray-200/70 transition-colors backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-brand-500"

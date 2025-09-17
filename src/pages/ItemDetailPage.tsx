@@ -14,6 +14,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useItem, useUpdateItem } from '../hooks/useItems';
+import { useFavorites, useIsItemFavorited } from '../hooks/useFavorites';
 import { useUpsertItemRating } from '../hooks/useRatings';
 import { useCreateRequest, useRequests } from '../hooks/useRequests';
 import { getCategoryIcon, getCategoryLabel } from '../utils/categories';
@@ -27,6 +28,8 @@ const ItemDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuthStore();
   const { data: item, isLoading } = useItem(id!);
+  const { toggle } = useFavorites();
+  const { data: isFavorited = false } = useIsItemFavorited(id);
   const updateItem = useUpdateItem();
   const upsertRating = useUpsertItemRating();
   const { data: allRequests } = useRequests();
@@ -124,8 +127,14 @@ const ItemDetailPage: React.FC = () => {
           Détails de l'objet
         </h1>
         <div className="flex space-x-2">
-          <button className="p-2 text-gray-400 hover:text-gray-600">
-            <Heart size={20} />
+          <button
+            className={`p-2 rounded-lg transition-colors ${isFavorited ? 'text-red-600 bg-red-50' : 'text-gray-400 hover:text-gray-600'}`}
+            onClick={async () => { if (!id) return; if (!user) { window.location.href = '/login'; return; } await toggle(id); }}
+            aria-pressed={isFavorited}
+            aria-label={isFavorited ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+            title="Favori"
+          >
+            <Heart size={20} className={isFavorited ? 'fill-red-600' : ''} />
           </button>
           <button className="p-2 text-gray-400 hover:text-gray-600">
             <Share2 size={20} />
