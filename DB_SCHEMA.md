@@ -23,10 +23,12 @@ Champs:
 - `title text NOT NULL`, `description text`
 - `category text NOT NULL` ∈ {tools, electronics, books, sports, kitchen, garden, toys, other}
 - `condition text NOT NULL` ∈ {excellent, good, fair, poor}
+- Champs additionnels: `brand text`, `model text`, `estimated_value numeric`, `tags text[]`, `available_from date`, `available_to date`, `location_hint text`
+- Géoloc: `latitude double precision`, `longitude double precision`
 - `is_available boolean default true`
 - `created_at timestamptz default now()`, `updated_at timestamptz default now()`
 
-Indexes: `owner_id`, `category`, `is_available`
+Indexes: `owner_id`, `category`, `is_available`, `available_from`, `available_to`, `latitude`, `longitude`
 
 ### item_images
 Images liées à un item (URLs publiques Storage).
@@ -54,6 +56,19 @@ Champs:
 
 Indexes: `requester_id`, `item_id`
 
+### item_ratings
+Avis des utilisateurs sur un objet.
+
+Champs:
+- `id uuid PK default uuid_generate_v4()`
+- `item_id uuid NOT NULL` → FK `items(id)` on delete cascade
+- `rater_id uuid NOT NULL` → FK `profiles(id)` on delete cascade
+- `score smallint` (1..5) NOT NULL
+- `comment text`
+- `created_at timestamptz default now()`
+
+Contraintes/Indexes: `UNIQUE(item_id, rater_id)`, index sur `item_id`, `rater_id`
+
 ### messages
 Messages privés entre deux profils (facultativement liés à une `request`).
 
@@ -74,5 +89,11 @@ Indexes: `sender_id`, `receiver_id`
   - Lecture des `items` disponibles publique, création/modification par propriétaire
   - `requests`: accès restreint à `requester` et au propriétaire de l’`item`
   - `messages`: accès restreint à `sender` et `receiver`
+  - `item_ratings`: insert/update restreint à `auth.uid() = rater_id`, lecture publique agrégée
+
+### Storage (bucket `items`)
+- Lecture publique (select)
+- Écriture authentifiée (insert/update) ou stricte par dossier `/<userId>/...`
+- Exemples de policies dans README / réponses précédentes
 
 

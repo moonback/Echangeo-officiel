@@ -1,5 +1,37 @@
 ## Roadmap
 
+### MVP (fait / en cours)
+- Auth email avec confirmation
+- Création/édition d’objets (images, géoloc, champs étendus)
+- Listing + filtres avancés
+- Demandes d’emprunt (workflow basique)
+- Détail objet (distance, notes)
+- Thème UI responsive
+
+### V1
+- Avis complets: création d’avis post-transaction (modal), moyenne temps réel
+- RLS production: policies strictes (propriétaire, demandeur, rôles)
+- Upload multi-images avec réorganisation et suppression
+- Amélioration recherche (texte intégral, tri par distance)
+- Notifications email (demande reçue, acceptée, rappel)
+
+### V1.1 – Expérience
+- Pages profil enrichies (bio, coordonnées, évaluations)
+- Historique d’emprunts prêts/rendus
+- Badges de confiance (vérifié, top prêteur)
+
+### V2 – Réseau & Mobile
+- Messagerie temps réel (Supabase Realtime)
+- PWA / App mobile (capacitor/expo) avec cache offline
+- Suggestions basées sur tags et historiques
+
+### V3 – Communauté & Sécurité
+- Modération basique (report, blocage)
+- Tarifs/dépôts optionnels, gestion de caution
+- Programmes de communautés (groupes de quartier)
+
+## Roadmap
+
 ### MVP (actuel)
 - Auth email/password (Supabase)
 - Profils: affichage, hydratation du store

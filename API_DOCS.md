@@ -1,3 +1,85 @@
+## API Docs (Supabase)
+
+Les opérations utilisent le client Supabase depuis le frontend. Les exemples sont en TypeScript.
+
+### Auth
+- Signup: `supabase.auth.signUp({ email, password })` → email de confirmation requis
+- Signin: `supabase.auth.signInWithPassword({ email, password })`
+- Signout: `supabase.auth.signOut()`
+
+### Items
+- Liste filtrée:
+```ts
+const { data, error } = await supabase
+  .from('items')
+  .select(`*, owner:profiles(*), images:item_images(*), average_rating:avg(item_ratings(score)), ratings_count:item_ratings(count)`) 
+  .eq('is_available', true) // optionnel selon l’UI
+```
+
+- Détails:
+```ts
+const { data } = await supabase
+  .from('items')
+  .select(`*, owner:profiles(*), images:item_images(*), average_rating:avg(item_ratings(score)), ratings_count:item_ratings(count)`) 
+  .eq('id', id)
+  .single();
+```
+
+- Création:
+```ts
+const { data: item } = await supabase
+  .from('items')
+  .insert({ title, description, category, condition, owner_id, brand, model, estimated_value, tags, available_from, available_to, location_hint, latitude, longitude })
+  .select()
+  .single();
+```
+
+- Upload image (Storage):
+```ts
+await supabase.storage.from('items').upload(`${item.id}/${Date.now()}-${file.name}`, file);
+```
+
+- Mise à jour:
+```ts
+await supabase.from('items').update(partial).eq('id', id);
+```
+
+- Suppression:
+```ts
+await supabase.from('items').delete().eq('id', id);
+```
+
+### Requests
+- Liste combinée (demandeur OU propriétaire de l’item): deux requêtes fusionnées, filtres par jointure `items.owner_id`.
+- Création:
+```ts
+const { data } = await supabase
+  .from('requests')
+  .insert({ item_id, requester_id, message, status: 'pending' })
+  .select()
+  .single();
+```
+- Mise à jour statut:
+```ts
+await supabase.from('requests').update({ status, updated_at: new Date().toISOString() }).eq('id', id);
+```
+
+### Messages
+- Insert/Read sur `messages` entre deux profils (optionnellement liés à une `request`).
+
+### Ratings
+- Laisser/mettre à jour un avis:
+```ts
+await supabase.from('item_ratings').upsert({ item_id, rater_id, score, comment });
+```
+- Récupération des avis d’un item:
+```ts
+const { data } = await supabase.from('item_ratings').select('*').eq('item_id', id);
+```
+
+### Storage Policies (résumé)
+- Lecture publique sur bucket `items`, écriture authentifiée (ou par dossier user). Voir `DB_SCHEMA.md` pour le SQL.
+
 ## API Docs (via Supabase)
 
 Cette application ne possède pas d’API backend custom; elle consomme directement Supabase (Auth, Postgres, Storage) depuis le frontend. Les opérations ci-dessous décrivent les accès aux tables et aux services fournis par Supabase.
