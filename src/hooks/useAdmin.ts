@@ -11,9 +11,9 @@ import type {
   AdminAction,
   AdminDashboardData,
   AdminRole,
-  AdminPermissions,
-  ADMIN_PERMISSIONS
+  AdminPermissions
 } from '../types/admin';
+import { ADMIN_PERMISSIONS } from '../types/admin';
 
 // ID de l'administrateur principal
 const ADMIN_USER_ID = '3341d50d-778a-47fb-8668-6cbab95482d4';

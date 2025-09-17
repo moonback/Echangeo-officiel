@@ -22,6 +22,13 @@ import GamificationPage from './pages/GamificationPage';
 import { useAuthStore } from './store/authStore';
 import LandingPage from './pages/LandingPage';
 import ProPage from './pages/ProPage';
+import AdminGuard from './components/admin/AdminGuard';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import AdminUsersPage from './pages/admin/AdminUsersPage';
+import AdminItemsPage from './pages/admin/AdminItemsPage';
+import AdminCommunitiesPage from './pages/admin/AdminCommunitiesPage';
+import AdminReportsPage from './pages/admin/AdminReportsPage';
+import AdminLogsPage from './pages/admin/AdminLogsPage';
 
 function App() {
   const { user, loading } = useAuthStore();
@@ -68,6 +75,39 @@ function App() {
         <Route path="/help" element={<HelpPage />} />
         <Route path="/ai-features" element={<AIFeaturesPage />} />
         <Route path="/gamification" element={<GamificationPage />} />
+        
+        {/* Admin Routes */}
+        <Route path="/admin" element={
+          <AdminGuard>
+            <AdminDashboardPage />
+          </AdminGuard>
+        } />
+        <Route path="/admin/users" element={
+          <AdminGuard requiredPermission="canManageUsers">
+            <AdminUsersPage />
+          </AdminGuard>
+        } />
+        <Route path="/admin/items" element={
+          <AdminGuard requiredPermission="canManageItems">
+            <AdminItemsPage />
+          </AdminGuard>
+        } />
+        <Route path="/admin/communities" element={
+          <AdminGuard requiredPermission="canManageCommunities">
+            <AdminCommunitiesPage />
+          </AdminGuard>
+        } />
+        <Route path="/admin/reports" element={
+          <AdminGuard requiredPermission="canViewReports">
+            <AdminReportsPage />
+          </AdminGuard>
+        } />
+        <Route path="/admin/logs" element={
+          <AdminGuard requiredPermission="canViewSystemLogs">
+            <AdminLogsPage />
+          </AdminGuard>
+        } />
+        
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Shell>
