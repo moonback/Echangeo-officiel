@@ -1,131 +1,302 @@
-import React from 'react';
-import { Package, Plus, Search, MessageCircle, User, LogOut } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Package, Plus, Search, MessageCircle, User, LogOut, Menu, X } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Button from './ui/Button';
 import { useAuthStore } from '../store/authStore';
 
-const Topbar: React.FC = () => {
+// Hook personnalisé pour gérer la recherche
+const useSearch = () => {
+  const [query, setQuery] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
-  const [query, setQuery] = React.useState('');
-  const { signOut, user } = useAuthStore();
-  const [mobileOpen, setMobileOpen] = React.useState(false);
 
-  React.useEffect(() => {
-    // reset query on route change
+  const handleSearch = useCallback((searchQuery: string) => {
+    if (searchQuery.trim()) {
+      navigate(`/items?search=${encodeURIComponent(searchQuery)}`);
+    }
+  }, [navigate]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch(query);
+    }
+  }, [query, handleSearch]);
+
+  // Reset query on route change
+  useEffect(() => {
     setQuery('');
   }, [location.pathname]);
 
+  return { query, setQuery, handleKeyDown, handleSearch };
+};
+
+// Hook pour gérer l'état mobile
+const useMobileMenu = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggle = useCallback(() => setIsOpen(prev => !prev), []);
+  const close = useCallback(() => setIsOpen(false), []);
+  const open = useCallback(() => setIsOpen(true), []);
+
+  // Fermer le menu sur Escape
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') close();
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      // Empêcher le scroll du body
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, close]);
+
+  return { isOpen, toggle, close, open };
+};
+
+const Topbar: React.FC = () => {
+  const navigate = useNavigate();
+  const { signOut, user } = useAuthStore();
+  const { query, setQuery, handleKeyDown } = useSearch();
+  const { isOpen: mobileOpen, toggle: toggleMobile, close: closeMobile } = useMobileMenu();
+
+  // Mémoriser les actions pour éviter les re-renders
+  const handleSignOut = useCallback(async () => {
+    try {
+      await signOut();
+      closeMobile();
+      navigate('/');
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+      // Ici vous pourriez ajouter un toast d'erreur
+    }
+  }, [signOut, closeMobile, navigate]);
+
+  const handleCreateItem = useCallback(() => {
+    closeMobile();
+    navigate('/create');
+  }, [closeMobile, navigate]);
+
+  // Navigation links mémorisés
+  const navigationLinks = useMemo(() => [
+    { to: '/items', label: 'Objets' },
+    { to: '/neighbours', label: 'Voisins' },
+    { to: '/help', label: 'Aide' },
+    ...(user ? [] : [
+      { to: '/pro', label: 'Pro' },
+      { to: '/login', label: 'Créer un compte' }
+    ])
+  ], [user]);
+
+  const mobileNavigationLinks = useMemo(() => [
+    ...navigationLinks.slice(0, 3), // Objets, Voisins, Aide
+    { to: '/requests', label: 'Échanges' },
+    { to: '/me', label: 'Mon profil' },
+    ...navigationLinks.slice(3) // Pro et Créer un compte si pas connecté
+  ], [navigationLinks]);
+
   return (
-    <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 h-14 flex items-center gap-3">
-        <Link to="/" className="flex items-center gap-2 mr-2">
-          <Package className="w-5 h-5 text-brand-600" />
-          <span className="font-semibold text-gray-900">TrocAll</span>
-        </Link>
+    <>
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 h-14 flex items-center gap-3">
+          {/* Logo */}
+          <Link 
+            to="/" 
+            className="flex items-center gap-2 mr-2 hover:opacity-80 transition-opacity"
+            aria-label="Retour à l'accueil"
+          >
+            <Package className="w-5 h-5 text-brand-600" />
+            <span className="font-semibold text-gray-900">TrocAll</span>
+          </Link>
 
-        {/* Desktop nav links */}
-        <nav className="hidden md:flex items-center gap-4 text-sm text-gray-700">
-          <Link to="/items" className="px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors">Objets</Link>
-          <Link to="/neighbours" className="px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors">Voisins</Link>
-          <Link to="/help" className="px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors">Aide</Link>
-          {!user && (
-            <Link to="/pro" className="px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors">Pro</Link>
-          )}
-          {!user && (
-            <Link to="/login" className="px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors">Créer un compte</Link>
-          )}
-        </nav>
+          {/* Navigation desktop */}
+          <nav className="hidden md:flex items-center gap-1 text-sm text-gray-700">
+            {navigationLinks.map(({ to, label }) => (
+              <Link
+                key={to}
+                to={to}
+                className="px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
+              >
+                {label}
+              </Link>
+            ))}
+          </nav>
 
-        <div className="hidden md:flex items-center flex-1 max-w-xl">
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          {/* Barre de recherche desktop */}
+          <div className="hidden md:flex items-center flex-1 max-w-xl mx-4">
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Rechercher un objet…"
+                className="w-full pl-9 pr-4 h-10 rounded-xl border border-gray-300 
+                         focus:ring-2 focus:ring-brand-500 focus:border-transparent 
+                         transition-colors bg-white/80 backdrop-blur-sm
+                         placeholder:text-gray-500"
+                aria-label="Rechercher un objet"
+              />
+            </div>
+          </div>
+
+          {/* Actions desktop */}
+          <div className="hidden md:flex items-center gap-1 ml-auto">
+            <Button 
+              variant="primary" 
+              size="sm" 
+              onClick={() => navigate('/create')} 
+              leftIcon={<Plus size={16} />}
+              className="shadow-sm hover:shadow-md transition-shadow"
+            >
+              Publier
+            </Button>
+            
+            <Link 
+              to="/requests" 
+              className="p-2.5 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500" 
+              aria-label="Voir les échanges"
+            >
+              <MessageCircle size={18} />
+            </Link>
+            
+            <Link 
+              to="/me" 
+              className="p-2.5 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500" 
+              aria-label="Mon profil"
+            >
+              <User size={18} />
+            </Link>
+            
+            <button
+              onClick={handleSignOut}
+              className="p-2.5 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
+              title="Se déconnecter"
+              aria-label="Se déconnecter"
+            >
+              <LogOut size={18} />
+            </button>
+          </div>
+
+          {/* Bouton menu mobile */}
+          <button
+            className="md:hidden ml-auto p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
+            onClick={toggleMobile}
+            aria-label={mobileOpen ? "Fermer le menu" : "Ouvrir le menu"}
+            aria-expanded={mobileOpen}
+          >
+            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
+
+        {/* Barre de recherche mobile */}
+        <div className="md:hidden px-4 pb-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
             <input
+              type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') navigate(`/items?search=${encodeURIComponent(query)}`);
-              }}
+              onKeyDown={handleKeyDown}
               placeholder="Rechercher un objet…"
-              className="w-full pl-9 pr-3 h-10 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              className="w-full pl-9 pr-4 h-10 rounded-xl border border-gray-300 
+                       focus:ring-2 focus:ring-brand-500 focus:border-transparent 
+                       transition-colors bg-white/80 backdrop-blur-sm
+                       placeholder:text-gray-500"
+              aria-label="Rechercher un objet"
             />
           </div>
         </div>
+      </header>
 
-        {/* Mobile burger */}
-        <button
-          className="md:hidden ml-auto p-2 rounded-lg hover:bg-gray-100 text-gray-600"
-          onClick={() => setMobileOpen((o) => !o)}
-          aria-label="Ouvrir le menu"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
-        </button>
-
-        <div className="ml-auto hidden md:flex items-center gap-2">
-          <Button variant="primary" size="sm" onClick={() => navigate('/create')} leftIcon={<Plus size={16} />}>Publier</Button>
-          <Link to="/requests" className="p-2 rounded-lg hover:bg-gray-100 text-gray-600" aria-label="Échanges">
-            <MessageCircle size={18} />
-          </Link>
-          <Link to="/me" className="p-2 rounded-lg hover:bg-gray-100 text-gray-600" aria-label="Profil">
-            <User size={18} />
-          </Link>
-          <button
-            onClick={async () => {
-              try {
-                await signOut();
-                navigate('/');
-              } catch (e) {
-                console.error(e);
-              }
-            }}
-            className="p-2 rounded-lg hover:bg-gray-100 text-gray-600"
-            title="Se déconnecter"
-            aria-label="Se déconnecter"
-          >
-            <LogOut size={18} />
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile dropdown */}
-      {mobileOpen && (
-        <div className="md:hidden border-t border-gray-200 bg-white/95 backdrop-blur">
-          <div className="max-w-7xl mx-auto px-4 py-3 grid grid-cols-2 gap-3">
-            <Link to="/items" className="px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-800" onClick={() => setMobileOpen(false)}>Objets</Link>
-            <Link to="/neighbours" className="px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-800" onClick={() => setMobileOpen(false)}>Voisins</Link>
-            <Link to="/requests" className="px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-800" onClick={() => setMobileOpen(false)}>Échanges</Link>
-            <Link to="/me" className="px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-800" onClick={() => setMobileOpen(false)}>Mon profil</Link>
-            <Link to="/help" className="px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-800" onClick={() => setMobileOpen(false)}>Aide</Link>
-            {!user && (
-              <Link to="/pro" className="px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-800" onClick={() => setMobileOpen(false)}>Pro</Link>
-            )}
-            {!user && (
-              <Link to="/login" className="px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-800" onClick={() => setMobileOpen(false)}>Créer un compte</Link>
-            )}
-            <button
-              onClick={async () => {
-                try {
-                  await signOut();
-                  setMobileOpen(false);
-                  navigate('/');
-                } catch (e) {
-                  console.error(e);
-                }
-              }}
-              className="px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-800 text-left"
+      {/* Menu mobile avec AnimatePresence pour une meilleure gestion des animations */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <div className="md:hidden fixed inset-0 z-50">
+            {/* Backdrop avec animation */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              onClick={closeMobile}
+              aria-label="Fermer le menu"
+            />
+            
+            {/* Panel avec animation améliorée */}
+            <motion.aside
+              initial={{ x: -320, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -320, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="absolute left-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl border-r border-gray-200 flex flex-col"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Menu de navigation"
             >
-              Se déconnecter
-            </button>
-            <Button variant="primary" size="sm" onClick={() => { setMobileOpen(false); navigate('/create'); }} className="col-span-2">Publier</Button>
+              {/* Header du menu mobile */}
+              <div className="flex items-center justify-between p-4 border-b border-gray-100">
+                <div className="flex items-center gap-2">
+                  <Package className="w-5 h-5 text-brand-600" />
+                  <span className="font-semibold text-gray-900">TrocAll</span>
+                </div>
+                <button
+                  className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  onClick={closeMobile}
+                  aria-label="Fermer le menu"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Navigation mobile */}
+              <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+                {mobileNavigationLinks.map(({ to, label }) => (
+                  <Link
+                    key={to}
+                    to={to}
+                    className="block px-3 py-3 rounded-lg hover:bg-gray-100 text-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    onClick={closeMobile}
+                  >
+                    {label}
+                  </Link>
+                ))}
+              </nav>
+
+              {/* Actions du menu mobile */}
+              <div className="p-4 border-t border-gray-100 space-y-3 bg-gray-50/50">
+                <Button 
+                  variant="primary" 
+                  size="sm" 
+                  onClick={handleCreateItem}
+                  className="w-full shadow-sm"
+                  leftIcon={<Plus size={16} />}
+                >
+                  Publier un objet
+                </Button>
+                
+                <button
+                  onClick={handleSignOut}
+                  className="w-full px-4 py-3 rounded-lg bg-white hover:bg-gray-50 text-gray-800 text-left border border-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 flex items-center gap-2"
+                >
+                  <LogOut size={16} />
+                  Se déconnecter
+                </button>
+              </div>
+            </motion.aside>
           </div>
-        </div>
-      )}
-    </header>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 
 export default Topbar;
-
-
