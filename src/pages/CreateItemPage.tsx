@@ -48,6 +48,7 @@ const CreateItemPage: React.FC = () => {
     handleSubmit,
     formState: { errors },
     watch,
+    setValue,
   } = useForm<CreateItemForm>({
     resolver: zodResolver(createItemSchema),
   });
@@ -299,11 +300,23 @@ const CreateItemPage: React.FC = () => {
                 navigator.geolocation.getCurrentPosition((pos) => {
                   const lat = pos.coords.latitude;
                   const lng = pos.coords.longitude;
-                  // Note: react-hook-form register without setValue here, using DOM assignment
-                  const latInput = document.getElementById('latitude') as HTMLInputElement | null;
-                  const lngInput = document.getElementById('longitude') as HTMLInputElement | null;
-                  if (latInput) latInput.value = String(lat);
-                  if (lngInput) lngInput.value = String(lng);
+                  setValue('latitude', lat as any, { shouldValidate: true, shouldDirty: true });
+                  setValue('longitude', lng as any, { shouldValidate: true, shouldDirty: true });
+
+                  // Reverse geocode to human-readable address (OpenStreetMap Nominatim)
+                  fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}` , {
+                    headers: {
+                      'Accept-Language': 'fr',
+                    },
+                  })
+                    .then((r) => r.json())
+                    .then((json) => {
+                      const display = json?.display_name as string | undefined;
+                      if (display) {
+                        setValue('location_hint', display, { shouldValidate: true, shouldDirty: true });
+                      }
+                    })
+                    .catch(() => {});
                 });
               }}
             >
