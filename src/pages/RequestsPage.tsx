@@ -1,10 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Check, X, Clock, MessageCircle } from 'lucide-react';
+import { Check, X, Clock, MessageCircle, Star } from 'lucide-react';
 import { useRequests, useUpdateRequestStatus } from '../hooks/useRequests';
 import { useAuthStore } from '../store/authStore';
 import { useUpsertItemRating } from '../hooks/useRatings';
+import { supabase } from '../services/supabase';
 
 const RequestsPage: React.FC = () => {
   const { user } = useAuthStore();
@@ -14,6 +15,28 @@ const RequestsPage: React.FC = () => {
   const [openRatingFor, setOpenRatingFor] = React.useState<string | null>(null);
   const [ratingScore, setRatingScore] = React.useState<number>(5);
   const [ratingComment, setRatingComment] = React.useState<string>('');
+  const [ratingStatsMap, setRatingStatsMap] = React.useState<Record<string, { average_rating?: number; ratings_count?: number }>>({});
+
+  React.useEffect(() => {
+    const loadStats = async () => {
+      const ids = Array.from(new Set((requests ?? []).map(r => r.item_id).filter(Boolean))) as string[];
+      if (ids.length === 0) return;
+      const { data } = await supabase
+        .from('item_rating_stats')
+        .select('*')
+        .in('item_id', ids);
+      const map: Record<string, { average_rating?: number; ratings_count?: number }> = {};
+      for (const row of data ?? []) {
+        const item_id = (row as any).item_id as string;
+        map[item_id] = {
+          average_rating: (row as any).average_rating ?? undefined,
+          ratings_count: (row as any).ratings_count ?? undefined,
+        };
+      }
+      setRatingStatsMap(map);
+    };
+    loadStats();
+  }, [requests]);
 
   if (isLoading) {
     return (
@@ -107,6 +130,13 @@ const RequestsPage: React.FC = () => {
                       >
                         {request.item?.title}
                       </Link>
+                      {ratingStatsMap[request.item_id] && (
+                        <div className="mt-1 flex items-center text-xs text-gray-600">
+                          <Star className="w-4 h-4 text-yellow-500 mr-1" />
+                          <span className="font-medium">{ratingStatsMap[request.item_id].average_rating?.toFixed?.(1) ?? '—'}</span>
+                          <span className="ml-1">({ratingStatsMap[request.item_id].ratings_count ?? 0})</span>
+                        </div>
+                      )}
                     </div>
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(request.status)}`}>
                       {getStatusLabel(request.status)}
