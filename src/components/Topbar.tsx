@@ -1,12 +1,14 @@
 import React from 'react';
-import { Package, Plus, Search, MessageCircle, User } from 'lucide-react';
+import { Package, Plus, Search, MessageCircle, User, LogOut } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Button from './ui/Button';
+import { useAuthStore } from '../store/authStore';
 
 const Topbar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [query, setQuery] = React.useState('');
+  const { signOut } = useAuthStore();
 
   React.useEffect(() => {
     // reset query on route change
@@ -44,6 +46,21 @@ const Topbar: React.FC = () => {
           <Link to="/me" className="p-2 rounded-lg hover:bg-gray-100 text-gray-600" aria-label="Profil">
             <User size={18} />
           </Link>
+          <button
+            onClick={async () => {
+              try {
+                await signOut();
+                navigate('/');
+              } catch (e) {
+                console.error(e);
+              }
+            }}
+            className="p-2 rounded-lg hover:bg-gray-100 text-gray-600"
+            title="Se déconnecter"
+            aria-label="Se déconnecter"
+          >
+            <LogOut size={18} />
+          </button>
         </div>
       </div>
     </header>
