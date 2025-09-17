@@ -32,6 +32,11 @@ const MyProfilePage: React.FC = () => {
   const { data: transactions } = useTransactions(profile?.id);
   const [activeTab, setActiveTab] = useState<'profil' | 'transactions' | 'parametres'>('profil');
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+  const [itemsCount, setItemsCount] = useState<number>(0);
+  const [completedBorrows, setCompletedBorrows] = useState<number>(0);
+  const [averageItemRating, setAverageItemRating] = useState<number | null>(null);
+  const [ratingsCount, setRatingsCount] = useState<number>(0);
+  const [overallReputation, setOverallReputation] = useState<number | null>(null);
 
   const {
     register,
@@ -121,6 +126,56 @@ const MyProfilePage: React.FC = () => {
     setIsEditing(false);
   };
 
+  React.useEffect(() => {
+    const loadStats = async () => {
+      if (!profile?.id) return;
+      // Items count
+      {
+        const { count } = await supabase
+          .from('items')
+          .select('id', { count: 'exact', head: true })
+          .eq('owner_id', profile.id);
+        setItemsCount(count ?? 0);
+      }
+      // Completed borrows via view
+      {
+        const { data } = await supabase
+          .from('profile_activity_counts')
+          .select('completed_borrows')
+          .eq('profile_id', profile.id)
+          .maybeSingle();
+        setCompletedBorrows(((data as any)?.completed_borrows as number) ?? 0);
+      }
+      // Average item rating across this user's items (from item_ratings join)
+      {
+        const { data } = await supabase
+          .from('item_ratings')
+          .select('score, item:items!inner(owner_id)')
+          .eq('item.owner_id', profile.id);
+        if (data && data.length > 0) {
+          let total = 0;
+          for (const r of data as { score: number }[]) total += Number(r.score ?? 0);
+          setAverageItemRating(total / data.length);
+          setRatingsCount(data.length);
+        } else {
+          setAverageItemRating(null);
+          setRatingsCount(0);
+        }
+      }
+      // Overall user reputation from mutual ratings
+      {
+        const { data } = await supabase
+          .from('profile_reputation_stats')
+          .select('overall_score')
+          .eq('profile_id', profile.id)
+          .maybeSingle();
+        const overall = (data as any)?.overall_score;
+        setOverallReputation(typeof overall === 'number' ? overall : (overall != null ? Number(overall) : null));
+      }
+    };
+    loadStats();
+  }, [profile?.id]);
+
   return (
     <div className="p-4 max-w-7xl mx-auto">
       {/* Header modern */}
@@ -192,7 +247,7 @@ const MyProfilePage: React.FC = () => {
             </div>
           </div>
           <div className="px-6 pb-6 md:px-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {[{ icon: <Star className="w-4 h-4" />, label: 'Note moyenne', value: (profile as any)?.average_rating ? `${(profile as any).average_rating.toFixed(1)}/5` : '—' }, { icon: <Calendar className="w-4 h-4" />, label: 'Membre depuis', value: (profile as any)?.created_at ? new Date((profile as any).created_at).toLocaleDateString('fr-FR') : '—' }, { icon: <Shield className="w-4 h-4" />, label: 'Confiance', value: 'Vérifié' }].map((s) => (
+            {[{ icon: <Star className="w-4 h-4" />, label: 'Note moyenne', value: averageItemRating != null ? `${averageItemRating.toFixed(1)}/5 (${ratingsCount})` : '—' }, { icon: <Calendar className="w-4 h-4" />, label: 'Membre depuis', value: (profile as any)?.created_at ? new Date((profile as any).created_at).toLocaleDateString('fr-FR') : '—' }, { icon: <Shield className="w-4 h-4" />, label: 'Réputation', value: overallReputation != null ? `${overallReputation.toFixed(1)}/5` : '—' }].map((s) => (
               <div key={s.label} className="p-4 rounded-xl border border-gray-200 bg-white flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center">{s.icon}</div>
                 <div>
@@ -323,15 +378,15 @@ const MyProfilePage: React.FC = () => {
               <div className="grid grid-cols-3 gap-3 text-center">
                 <div className="p-3 rounded-xl bg-white/70 border border-gray-100">
                   <p className="text-xs text-gray-500">Objets</p>
-                  <p className="text-lg font-semibold text-gray-900">{(profile as any)?.items_count ?? 0}</p>
+                  <p className="text-lg font-semibold text-gray-900">{itemsCount}</p>
                 </div>
                 <div className="p-3 rounded-xl bg-white/70 border border-gray-100">
                   <p className="text-xs text-gray-500">Emprunts</p>
-                  <p className="text-lg font-semibold text-gray-900">{(profile as any)?.completed_borrows ?? 0}</p>
+                  <p className="text-lg font-semibold text-gray-900">{completedBorrows}</p>
                 </div>
                 <div className="p-3 rounded-xl bg-white/70 border border-gray-100">
                   <p className="text-xs text-gray-500">Note</p>
-                  <p className="text-lg font-semibold text-gray-900">{(profile as any)?.average_rating ? `${(profile as any).average_rating.toFixed(1)}` : '—'}</p>
+                  <p className="text-lg font-semibold text-gray-900">{averageItemRating != null ? averageItemRating.toFixed(1) : '—'}</p>
                 </div>
               </div>
             </Card>
