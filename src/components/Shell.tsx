@@ -2,7 +2,7 @@ import React from 'react';
 import Topbar from './Topbar';
 import BottomNavigation from './BottomNavigation';
 import { useMediaQuery } from '../hooks/useMediaQuery';
-import { Plus, MessageCircle, Settings } from 'lucide-react';
+import { Plus, MessageCircle, Settings, Trophy } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -15,9 +15,9 @@ const Shell: React.FC<ShellProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Topbar />
-      <main className={`min-h-[calc(100vh-56px)] ${isMobile ? 'pb-16' : ''}`}>
+      <main className={`flex-1 ${isMobile ? 'pb-16' : ''}`}>
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}
@@ -41,9 +41,17 @@ const Shell: React.FC<ShellProps> = ({ children }) => {
           <Plus size={22} />
         </button>
       )}
-      {/* Quick actions: chat and settings */}
+      {/* Quick actions: gamification, chat and settings */}
       {isMobile && (
         <div className="fixed right-4 bottom-[9.5rem] z-50 flex flex-col gap-2">
+          <button
+            onClick={() => navigate('/gamification')}
+            className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 text-white shadow-soft hover:opacity-95 transition-transform hover:scale-105 active:scale-95"
+            aria-label="Ouvrir la gamification"
+            title="Gamification"
+          >
+            <Trophy size={20} />
+          </button>
           <button
             onClick={() => navigate('/neighbours')}
             className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-white/90 backdrop-blur border border-gray-200 shadow-soft text-gray-700 hover:bg-white transition-transform hover:scale-105 active:scale-95"

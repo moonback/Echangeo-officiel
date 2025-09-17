@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Package, Plus, Search, MessageCircle, User, LogOut, Menu, X, Users, HelpCircle, Star, Settings } from 'lucide-react';
+import { Package, Plus, Search, MessageCircle, User, LogOut, Menu, X, Users, HelpCircle, Star, Settings, Sparkles, Trophy } from 'lucide-react';
 import { Link, useNavigate, useLocation, NavLink } from 'react-router-dom';
 import Button from './ui/Button';
 import { useAuthStore } from '../store/authStore';
 import { supabase } from '../services/supabase';
+import NotificationSystem from './NotificationSystem';
+import { useNotifications } from '../hooks/useNotifications';
 
 // Hook personnalisé pour gérer la recherche
 const useSearch = () => {
@@ -114,6 +116,9 @@ const Topbar: React.FC = () => {
   const navigate = useNavigate();
   const { signOut, user, profile } = useAuthStore();
   const [isOnline, setIsOnline] = useState<boolean>(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  
+  // Notifications
+  const { notifications, markAsRead, dismiss } = useNotifications();
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -149,6 +154,8 @@ const Topbar: React.FC = () => {
   const navigationLinks = useMemo(() => [
     { to: '/items', label: 'Objets' },
     { to: '/neighbours', label: 'Voisins' },
+    { to: '/gamification', label: 'Gamification' },
+    { to: '/ai-features', label: 'IA' },
     { to: '/help', label: 'Aide' },
     ...(user ? [] : [
       { to: '/pro', label: 'Pro' },
@@ -157,10 +164,10 @@ const Topbar: React.FC = () => {
   ], [user]);
 
   const mobileNavigationLinks = useMemo(() => [
-    ...navigationLinks.slice(0, 3), // Objets, Voisins, Aide
+    ...navigationLinks.slice(0, 5), // Objets, Voisins, Gamification, IA, Aide
     { to: '/requests', label: 'Échanges' },
     { to: '/me', label: 'Mon profil' },
-    ...navigationLinks.slice(3) // Pro et Créer un compte si pas connecté
+    ...navigationLinks.slice(5) // Pro et Créer un compte si pas connecté
   ], [navigationLinks]);
 
   return (
@@ -230,6 +237,22 @@ const Topbar: React.FC = () => {
             >
               <MessageCircle size={18} />
             </Link>
+            
+            <Link 
+              to="/gamification" 
+              className="p-2.5 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500" 
+              aria-label="Voir la gamification"
+              title="Gamification"
+            >
+              <Trophy size={18} />
+            </Link>
+            
+            {/* Système de notifications */}
+            <NotificationSystem
+              notifications={notifications}
+              onMarkAsRead={markAsRead}
+              onDismiss={dismiss}
+            />
             
             <Link 
               to="/me" 
@@ -339,6 +362,8 @@ const Topbar: React.FC = () => {
                   const Icon = (
                     to === '/items' ? Search :
                     to === '/neighbours' ? Users :
+                    to === '/gamification' ? Trophy :
+                    to === '/ai-features' ? Sparkles :
                     to === '/help' ? HelpCircle :
                     to === '/requests' ? MessageCircle :
                     to === '/me' ? User :

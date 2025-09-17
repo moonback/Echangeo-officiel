@@ -10,6 +10,8 @@ import EmptyState from '../components/EmptyState';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
 import { fetchProfileReputation, fetchProfileBadges } from '../hooks/useRatings';
+import { useGamificationStats, useUserLevel } from '../hooks/useGamification';
+import ReputationDisplay from '../components/ReputationDisplay';
 
 type OwnedItem = { id: string; title: string; description?: string; created_at: string; is_available: boolean; category: string; latitude?: number; longitude?: number };
 type ReviewRow = { id: string; item_id: string; item_title: string; rater_name: string; score: number; comment?: string; created_at: string };
@@ -39,6 +41,10 @@ const ProfilePage: React.FC = () => {
   const [copied, setCopied] = React.useState(false);
   const [reputation, setReputation] = React.useState<{ overall?: number; comm?: number; punct?: number; care?: number; count?: number }>({});
   const [badges, setBadges] = React.useState<{ slug: string; label: string }[]>([]);
+  
+  // Gamification hooks
+  const { data: gamificationStats } = useGamificationStats(id);
+  const { data: userLevel } = useUserLevel(id);
 
   React.useEffect(() => {
     if (!navigator.geolocation) return;
@@ -287,27 +293,56 @@ const ProfilePage: React.FC = () => {
             </Card>
           </div>
           <div className="md:col-span-2">
-            {(reputation.count || badges.length > 0 || ratingStats.count) && (
-              <Card className="mb-4">
-                <div className="p-4 border-b border-gray-100 font-medium">Confiance & Réputation</div>
-                <div className="p-4 flex items-center gap-3 flex-wrap">
-                  {typeof reputation.overall === 'number' && reputation.count ? (
-                    <span className="px-3 py-1 rounded-full bg-yellow-50 text-yellow-800 border border-yellow-200 text-sm inline-flex items-center">
-                      <Star className="w-4 h-4 mr-1 text-yellow-600" /> Score global {reputation.overall.toFixed(1)} ({reputation.count})
-                    </span>
-                  ) : (
-                    <span className="text-sm text-gray-600">Aucune évaluation utilisateur pour le moment</span>
-                  )}
-                  {ratingStats.count ? (
-                    <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-sm inline-flex items-center">
-                      <Star className="w-4 h-4 mr-1 text-amber-600" /> Avis sur objets {ratingStats.average?.toFixed(1)} ({ratingStats.count})
-                    </span>
-                  ) : null}
-                  {badges.map((b) => (
-                    <Badge key={b.slug} variant="success" className="px-3 py-1">{b.label}</Badge>
-                  ))}
-                </div>
-              </Card>
+            {/* Section Gamification et Réputation */}
+            {(gamificationStats || reputation.count || badges.length > 0 || ratingStats.count) && (
+              <div className="mb-4">
+                {gamificationStats ? (
+                  <ReputationDisplay
+                    reputation={{
+                      overall_score: gamificationStats.overall_score,
+                      ratings_count: gamificationStats.ratings_count,
+                      avg_communication: gamificationStats.overall_score,
+                      avg_punctuality: gamificationStats.overall_score,
+                      avg_care: gamificationStats.overall_score,
+                    }}
+                    badges={badges.map(b => ({
+                      badge_slug: b.slug,
+                      badge_label: b.label,
+                    }))}
+                    level={userLevel ? {
+                      level: userLevel.level,
+                      points: userLevel.points,
+                      title: userLevel.title,
+                    } : undefined}
+                    stats={{
+                      completed_lends: gamificationStats.completed_lends,
+                      completed_borrows: gamificationStats.completed_borrows,
+                      total_transactions: gamificationStats.total_transactions,
+                    }}
+                  />
+                ) : (
+                  <Card className="mb-4">
+                    <div className="p-4 border-b border-gray-100 font-medium">Confiance & Réputation</div>
+                    <div className="p-4 flex items-center gap-3 flex-wrap">
+                      {typeof reputation.overall === 'number' && reputation.count ? (
+                        <span className="px-3 py-1 rounded-full bg-yellow-50 text-yellow-800 border border-yellow-200 text-sm inline-flex items-center">
+                          <Star className="w-4 h-4 mr-1 text-yellow-600" /> Score global {reputation.overall.toFixed(1)} ({reputation.count})
+                        </span>
+                      ) : (
+                        <span className="text-sm text-gray-600">Aucune évaluation utilisateur pour le moment</span>
+                      )}
+                      {ratingStats.count ? (
+                        <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-sm inline-flex items-center">
+                          <Star className="w-4 h-4 mr-1 text-amber-600" /> Avis sur objets {ratingStats.average?.toFixed(1)} ({ratingStats.count})
+                        </span>
+                      ) : null}
+                      {badges.map((b) => (
+                        <Badge key={b.slug} variant="success" className="px-3 py-1">{b.label}</Badge>
+                      ))}
+                    </div>
+                  </Card>
+                )}
+              </div>
             )}
             <Card>
               <div className="p-4 border-b border-gray-100 font-medium flex items-center justify-between">

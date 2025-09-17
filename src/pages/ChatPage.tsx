@@ -4,6 +4,9 @@ import { motion } from 'framer-motion';
 import { useConversation, useSendMessage } from '../hooks/useMessages';
 import { useProfile } from '../hooks/useProfiles';
 import { useAuthStore } from '../store/authStore';
+import ChatAIAssistant from '../components/ChatAIAssistant';
+import MessageComposer from '../components/MessageComposer';
+import ConflictMediator from '../components/ConflictMediator';
 
 const ChatPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -20,6 +23,14 @@ const ChatPage: React.FC = () => {
     setContent('');
   };
 
+  const handleSuggestionSelect = (suggestion: string) => {
+    setContent(suggestion);
+  };
+
+  const handleMessageImprove = (improvedMessage: string) => {
+    setContent(improvedMessage);
+  };
+
   return (
     <div className="p-4 max-w-7xl mx-auto">
       <motion.div
@@ -30,7 +41,23 @@ const ChatPage: React.FC = () => {
           {otherProfile?.full_name || otherProfile?.email || 'Chat'}
         </h1>
 
-          <div className="bg-white rounded-xl border border-gray-200 flex flex-col h-[70vh] glass">
+        {/* Médiateur de conflit IA */}
+        <ConflictMediator
+          messages={messages || []}
+          onMediationSuggestion={handleSuggestionSelect}
+          className="mb-4"
+        />
+
+        {/* Assistant IA */}
+        <ChatAIAssistant
+          messages={messages || []}
+          onSuggestionSelect={handleSuggestionSelect}
+          currentMessage={content}
+          onMessageImprove={handleMessageImprove}
+          className="mb-4"
+        />
+
+        <div className="bg-white rounded-xl border border-gray-200 flex flex-col h-[70vh] glass">
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {isLoading && (
               <div className="text-gray-500 text-sm">Chargement…</div>
@@ -57,21 +84,19 @@ const ChatPage: React.FC = () => {
             })}
           </div>
 
-          <form onSubmit={onSend} className="border-t border-gray-200 p-3 flex gap-2 bg-white/60 backdrop-blur">
-            <input
+          <div className="border-t border-gray-200 p-3 bg-white/60 backdrop-blur">
+            <MessageComposer
               value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Écrire un message…"
-              className="flex-1 rounded-full border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={setContent}
+              onSend={async () => {
+                if (!id || !content.trim()) return;
+                await sendMessage.mutateAsync({ receiver_id: id, content });
+                setContent('');
+              }}
+              disabled={sendMessage.isPending}
+              context={`Conversation avec ${otherProfile?.full_name || 'un voisin'}`}
             />
-            <button
-              type="submit"
-              disabled={sendMessage.isPending || !content.trim()}
-              className="rounded-full bg-blue-600 text-white px-4 py-2 disabled:opacity-50"
-            >
-              Envoyer
-            </button>
-          </form>
+          </div>
         </div>
       </motion.div>
     </div>

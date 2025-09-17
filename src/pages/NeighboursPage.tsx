@@ -186,19 +186,62 @@ const NeighboursPage: React.FC = () => {
           ) : (
             <ul className="divide-y divide-gray-100">
               {neighbors?.map((p: any) => (
-                <li key={p.id} className="p-4 flex items-center justify-between">
+                <li key={p.id} className="p-4 flex items-center justify-between hover:bg-gray-50/80 transition-colors duration-200">
                   <div className="min-w-0 pr-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-9 h-9 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center">
-                        <User className="w-4 h-4" />
+                    <div className="flex items-center gap-3">
+                      <Link to={`/profile/${p.id}`} className="block">
+                        <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-brand-100 to-brand-200 border-2 border-white shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer">
+                          {p.avatar_url ? (
+                            <img
+                              src={p.avatar_url}
+                              alt={`Avatar de ${p.full_name || p.email || 'Voisin'}`}
+                              className="w-full h-full object-cover hover:scale-110 transition-transform duration-200"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <User className="w-5 h-5 text-brand-600" />
+                            </div>
+                          )}
+                          
+                          {/* Indicateur de profil complet */}
+                          {p.avatar_url && p.full_name && p.bio && (
+                            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 border-2 border-white rounded-full animate-pulse" 
+                                 title="Profil complet" />
+                          )}
+                          
+                          {/* Indicateur d'activité récente si pas de photo mais des objets */}
+                          {!p.avatar_url && p.items_count > 0 && (
+                            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-blue-500 border-2 border-white rounded-full" 
+                                 title="Utilisateur actif" />
+                          )}
+                        </div>
+                      </Link>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <div className="font-medium text-gray-900 truncate">{p.full_name || p.email}</div>
+                          {p.items_count > 0 && (
+                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium border ${
+                              p.items_count >= 5 
+                                ? 'bg-purple-100 text-purple-700 border-purple-200' 
+                                : 'bg-brand-100 text-brand-700 border-brand-200'
+                            }`}>
+                              {p.items_count >= 5 && '⭐ '}
+                              {p.items_count} objet{p.items_count > 1 ? 's' : ''}
+                            </span>
+                          )}
+                        </div>
+                        {p.bio && (
+                          <div className="text-xs text-gray-500 truncate mt-0.5 italic">
+                            "{p.bio}"
+                          </div>
+                        )}
                       </div>
-                      <div className="font-medium text-gray-900 truncate">{p.full_name || p.email}</div>
                     </div>
-                    <div className="mt-1 text-xs text-gray-600 flex items-center gap-2">
+                    <div className="mt-2 text-xs text-gray-600 flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-gray-500" />
                       <span className="truncate">{p.address || 'Adresse non renseignée'}</span>
                       {typeof p._distanceKm === 'number' && (
-                        <span className="ml-2 px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[11px]">
+                        <span className="ml-2 px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-medium">
                           {(p._distanceKm as number).toFixed(1)} km
                         </span>
                       )}
