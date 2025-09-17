@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Package, Plus, Search, MessageCircle, User, LogOut, Menu, X, Users, HelpCircle } from 'lucide-react';
+import { Package, Plus, Search, MessageCircle, User, LogOut, Menu, X, Users, HelpCircle, Star, Settings } from 'lucide-react';
 import { Link, useNavigate, useLocation, NavLink } from 'react-router-dom';
 import Button from './ui/Button';
 import { useAuthStore } from '../store/authStore';
@@ -63,6 +63,18 @@ const useMobileMenu = () => {
 const Topbar: React.FC = () => {
   const navigate = useNavigate();
   const { signOut, user, profile } = useAuthStore();
+  const [isOnline, setIsOnline] = useState<boolean>(typeof navigator !== 'undefined' ? navigator.onLine : true);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
   const { query, setQuery, handleKeyDown } = useSearch();
   const { isOpen: mobileOpen, toggle: toggleMobile, close: closeMobile } = useMobileMenu();
 
@@ -255,6 +267,10 @@ const Topbar: React.FC = () => {
                     <div className="text-white">
                       <div className="text-sm font-semibold leading-none">{profile?.full_name || 'Mon compte'}</div>
                       <div className="text-xs opacity-90">{profile?.email || user?.email || ''}</div>
+                      <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 text-[11px] text-white/90">
+                        <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                        {isOnline ? 'Connecté' : 'Hors ligne'}
+                      </div>
                     </div>
                   </div>
                   <button
@@ -308,6 +324,40 @@ const Topbar: React.FC = () => {
                   );
                 })}
               </nav>
+
+              {/* Raccourcis */}
+              <div className="px-3 pt-1 pb-2">
+                <div className="text-[12px] text-gray-500 mb-1.5 px-1">Raccourcis</div>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => { closeMobile(); navigate('/items'); }}
+                    className="w-full flex items-center gap-3 px-3 py-3 rounded-xl bg-white/70 hover:bg-white/90 text-gray-800 border border-gray-200/70 transition-colors backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  >
+                    <Package size={18} className="text-brand-600" />
+                    <span className="text-sm font-medium">Mes objets</span>
+                    <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full border border-emerald-200/60 bg-emerald-50 text-emerald-700">Nouveau</span>
+                  </button>
+                  <button
+                    onClick={() => { closeMobile(); navigate('/items?favorites=1'); }}
+                    className="w-full flex items-center gap-3 px-3 py-3 rounded-xl bg-white/70 hover:bg-white/90 text-gray-800 border border-gray-200/70 transition-colors backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  >
+                    <Star size={18} className="text-amber-600" />
+                    <span className="text-sm font-medium">Favoris</span>
+                    <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full border border-amber-200/60 bg-amber-50 text-amber-700">3</span>
+                  </button>
+                  <button
+                    onClick={() => { closeMobile(); navigate('/settings'); }}
+                    className="w-full flex items-center gap-3 px-3 py-3 rounded-xl bg-white/70 hover:bg-white/90 text-gray-800 border border-gray-200/70 transition-colors backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  >
+                    <Settings size={18} className="text-gray-600" />
+                    <span className="text-sm font-medium">Paramètres</span>
+                    <span className="ml-auto inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border border-emerald-200/60 bg-emerald-50 text-emerald-700">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      Actif
+                    </span>
+                  </button>
+                </div>
+              </div>
 
               {/* Actions du menu mobile */}
               <div className="p-4 border-t border-gray-100 space-y-3 bg-gray-50/60" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>

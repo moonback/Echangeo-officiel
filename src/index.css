@@ -40,6 +40,14 @@
       scroll-behavior: auto !important;
     }
   }
+  /* Thème forcé (classe apposée sur html) */
+  html.force-dark { color-scheme: dark; }
+  html.force-dark body {
+    background:
+      radial-gradient(1200px 700px at 10% -10%, rgba(29,134,255,0.10), transparent),
+      radial-gradient(900px 600px at 90% -10%, rgba(8,74,160,0.20), transparent),
+      linear-gradient(180deg, #0b1220 0%, #0f172a 100%);
+  }
 }
 
 @layer components {
