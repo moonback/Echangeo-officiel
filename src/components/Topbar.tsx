@@ -240,7 +240,7 @@ const Topbar: React.FC = () => {
             <link rel="stylesheet" href="/communities" />
             
             <Link 
-              to="/communities" 
+              to="/gamification" 
               className="p-2.5 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500" 
               aria-label="Voir les quartiers"
               title="Quartiers"
@@ -363,7 +363,7 @@ const Topbar: React.FC = () => {
                   const Icon = (
                     to === '/items' ? Search :
                     to === '/neighbours' ? Users :
-                    to === '/communities' ? Trophy :
+                    to === '/communities' ? Users :
                     to === '/gamification' ? Trophy :
                     to === '/ai-features' ? Sparkles :
                     to === '/help' ? HelpCircle :
