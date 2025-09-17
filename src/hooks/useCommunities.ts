@@ -21,9 +21,13 @@ export function useCommunities() {
     queryKey: ['communities'],
     queryFn: async (): Promise<CommunityOverview[]> => {
       const { data, error } = await supabase
-        .from('community_overview')
-        .select('*')
-        .order('total_members', { ascending: false });
+        .from('communities')
+        .select(`
+          *,
+          stats:community_stats(*)
+        `)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       return data || [];
@@ -43,27 +47,7 @@ export function useCommunity(communityId: string) {
         .from('communities')
         .select(`
           *,
-          stats:community_stats(*),
-          members:community_members(
-            *,
-            user:profiles(*)
-          ),
-          events:community_events(
-            *,
-            creator:profiles(*),
-            participants:event_participants(
-              *,
-              user:profiles(*)
-            )
-          ),
-          discussions:community_discussions(
-            *,
-            author:profiles(*),
-            replies:discussion_replies(
-              *,
-              author:profiles(*)
-            )
-          )
+          stats:community_stats(*)
         `)
         .eq('id', communityId)
         .eq('is_active', true)
@@ -293,22 +277,46 @@ export function useJoinCommunity() {
       userId: string; 
       role?: 'member' | 'moderator' | 'admin' 
     }) => {
-      const { data, error } = await supabase
+      // Vérifier d'abord si l'utilisateur est déjà membre
+      const { data: existingMember } = await supabase
         .from('community_members')
-        .upsert({
-          community_id: communityId,
-          user_id: userId,
-          role,
-          is_active: true,
-          joined_at: new Date().toISOString()
-        }, {
-          onConflict: 'community_id,user_id'
-        })
-        .select()
+        .select('id')
+        .eq('community_id', communityId)
+        .eq('user_id', userId)
         .single();
 
-      if (error) throw error;
-      return data;
+      if (existingMember) {
+        // Mettre à jour le membre existant
+        const { data, error } = await supabase
+          .from('community_members')
+          .update({
+            role,
+            is_active: true,
+            joined_at: new Date().toISOString()
+          })
+          .eq('id', existingMember.id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data;
+      } else {
+        // Créer un nouveau membre
+        const { data, error } = await supabase
+          .from('community_members')
+          .insert({
+            community_id: communityId,
+            user_id: userId,
+            role,
+            is_active: true,
+            joined_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data;
+      }
     },
     onSuccess: (data) => {
       // Invalider les caches concernés

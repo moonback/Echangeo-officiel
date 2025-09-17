@@ -5,6 +5,7 @@ import { Search, MapPin, Plus, Users, Calendar, TrendingUp } from 'lucide-react'
 import { useCommunities } from '../hooks/useCommunities';
 import { useAuthStore } from '../store/authStore';
 import CommunityCard from '../components/CommunityCard';
+import DebugCommunities from '../components/DebugCommunities';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import EmptyState from '../components/EmptyState';
@@ -63,6 +64,9 @@ const CommunitiesPage: React.FC = () => {
 
   return (
     <div className="p-4 max-w-7xl mx-auto">
+      {/* Debug temporaire */}
+      <DebugCommunities />
+      
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
