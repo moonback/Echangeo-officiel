@@ -73,9 +73,28 @@ export function useItems(filters?: {
       }
 
       const { data, error } = await query;
-
       if (error) throw error;
-      return data as Item[];
+
+      const items = (data as Item[]) ?? [];
+      if (items.length === 0) return items;
+
+      // Fetch rating stats in batch via view item_rating_stats
+      const ids = items.map((i) => i.id);
+      const { data: stats, error: statsError } = await supabase
+        .from('item_rating_stats')
+        .select('*')
+        .in('item_id', ids);
+      if (statsError) return items; // fail-soft: keep items without stats
+
+      const map = new Map<string, { average_rating?: number; ratings_count?: number }>();
+      for (const s of stats ?? []) {
+        map.set((s as any).item_id, {
+          average_rating: (s as any).average_rating ?? undefined,
+          ratings_count: (s as any).ratings_count ?? undefined,
+        });
+      }
+
+      return items.map((i) => ({ ...i, ...map.get(i.id) }));
     },
   });
 }
@@ -109,7 +128,21 @@ export function useItem(id: string) {
         .single();
 
       if (error) throw error;
-      return data as Item;
+      const item = data as Item;
+
+      // Attach rating stats
+      const { data: stats } = await supabase
+        .from('item_rating_stats')
+        .select('*')
+        .eq('item_id', id)
+        .maybeSingle();
+
+      if (stats) {
+        (item as any).average_rating = (stats as any).average_rating ?? undefined;
+        (item as any).ratings_count = (stats as any).ratings_count ?? undefined;
+      }
+
+      return item;
     },
     enabled: !!id,
   });
