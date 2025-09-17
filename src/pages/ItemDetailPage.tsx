@@ -256,18 +256,28 @@ const ItemDetailPage: React.FC = () => {
             <h3 className="font-semibold text-gray-900 mb-3">Propriétaire</h3>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <User className="w-6 h-6 text-blue-600" />
-              </div>
-              <div>
-                <p className="font-medium text-gray-900">
-                  {item.owner?.full_name || 'Anonyme'}
-                </p>
-                <div className="flex items-center text-sm text-gray-500">
-                  <MapPin className="w-4 h-4 mr-1" />
-                  <span>À proximité</span>
+                <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-brand-100 to-brand-200 border-2 border-white shadow-lg">
+                  {item.owner?.avatar_url ? (
+                    <img
+                      src={item.owner.avatar_url}
+                      alt={`Avatar de ${item.owner.full_name || 'Propriétaire'}`}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <User className="w-6 h-6 text-brand-600" />
+                    </div>
+                  )}
                 </div>
-              </div>
+                <div>
+                  <p className="font-medium text-gray-900">
+                    {item.owner?.full_name || 'Anonyme'}
+                  </p>
+                  <div className="flex items-center text-sm text-gray-500">
+                    <MapPin className="w-4 h-4 mr-1" />
+                    <span>À proximité</span>
+                  </div>
+                </div>
               </div>
               <Link to={`/profile/${item.owner_id}`}>
                 <Button variant="secondary" size="sm">Voir le profil</Button>
