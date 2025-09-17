@@ -8,6 +8,7 @@ import HomePage from './pages/HomePage';
 import ItemsPage from './pages/ItemsPage';
 import ItemDetailPage from './pages/ItemDetailPage';
 import CreateItemPage from './pages/CreateItemPage';
+import EditItemPage from './pages/EditItemPage';
 import RequestsPage from './pages/RequestsPage';
 import ChatPage from './pages/ChatPage';
 import NeighboursPage from './pages/NeighboursPage';
@@ -42,6 +43,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/items" element={<ItemsPage />} />
         <Route path="/items/:id" element={<ItemDetailPage />} />
+        <Route path="/items/:id/edit" element={<EditItemPage />} />
         <Route path="/create" element={<CreateItemPage />} />
         <Route path="/requests" element={<RequestsPage />} />
         <Route path="/chat/:id" element={<ChatPage />} />

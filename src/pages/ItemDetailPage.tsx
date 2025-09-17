@@ -92,6 +92,14 @@ const ItemDetailPage: React.FC = () => {
           <button className="p-2 text-gray-400 hover:text-gray-600">
             <Share2 size={20} />
           </button>
+          {isOwner && (
+            <Link
+              to={`/items/${id}/edit`}
+              className="px-3 py-1.5 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700"
+            >
+              Modifier
+            </Link>
+          )}
         </div>
       </motion.div>
 

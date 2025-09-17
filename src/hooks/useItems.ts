@@ -139,3 +139,60 @@ export function useCreateItem() {
     },
   });
 }
+
+export function useUpdateItem() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: {
+      id: string;
+      payload: Partial<{
+        title: string;
+        description?: string;
+        category: ItemCategory;
+        condition: string;
+        brand?: string;
+        model?: string;
+        estimated_value?: number;
+        tags?: string; // comma-separated from the form
+        available_from?: string;
+        available_to?: string;
+        location_hint?: string;
+        latitude?: number;
+        longitude?: number;
+        is_available?: boolean;
+      }>;
+    }) => {
+      const { id, payload } = params;
+
+      // Transform fields for DB
+      const update: Record<string, any> = { };
+      if (payload.title !== undefined) update.title = payload.title;
+      if (payload.description !== undefined) update.description = payload.description;
+      if (payload.category !== undefined) update.category = payload.category;
+      if (payload.condition !== undefined) update.condition = payload.condition;
+      if (payload.brand !== undefined) update.brand = payload.brand || null;
+      if (payload.model !== undefined) update.model = payload.model || null;
+      if (payload.estimated_value !== undefined) update.estimated_value = typeof payload.estimated_value === 'number' ? payload.estimated_value : null;
+      if (payload.tags !== undefined) update.tags = payload.tags ? payload.tags.split(',').map((t) => t.trim()).filter(Boolean) : [];
+      if (payload.available_from !== undefined) update.available_from = payload.available_from || null;
+      if (payload.available_to !== undefined) update.available_to = payload.available_to || null;
+      if (payload.location_hint !== undefined) update.location_hint = payload.location_hint || null;
+      if (payload.latitude !== undefined) update.latitude = typeof payload.latitude === 'number' ? payload.latitude : null;
+      if (payload.longitude !== undefined) update.longitude = typeof payload.longitude === 'number' ? payload.longitude : null;
+      if (payload.is_available !== undefined) update.is_available = payload.is_available;
+
+      const { error } = await supabase
+        .from('items')
+        .update(update)
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['items'] });
+      if (vars?.id) {
+        queryClient.invalidateQueries({ queryKey: ['item', vars.id] });
+      }
+    },
+  });
+}
