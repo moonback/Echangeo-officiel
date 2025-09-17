@@ -58,9 +58,27 @@ const CreateItemPage: React.FC = () => {
     formState: { errors },
     watch,
     setValue,
+    trigger,
   } = useForm<CreateItemForm>({
     resolver: zodResolver(createItemSchema),
   });
+
+  const [step, setStep] = useState(1);
+  const TOTAL_STEPS = 4;
+  const steps = [
+    { id: 1, label: 'Informations' },
+    { id: 2, label: 'Détails' },
+    { id: 3, label: 'Disponibilité' },
+    { id: 4, label: 'Photos' },
+  ];
+
+  const goPrev = () => setStep((s) => Math.max(1, s - 1));
+  const goNext = async () => {
+    let fieldsToValidate: (keyof CreateItemForm)[] = [];
+    if (step === 1) fieldsToValidate = ['title', 'category', 'condition'];
+    const isValid = fieldsToValidate.length ? await trigger(fieldsToValidate as any) : true;
+    if (isValid) setStep((s) => Math.min(TOTAL_STEPS, s + 1));
+  };
 
   // Autosave draft to localStorage
   React.useEffect(() => {
@@ -181,6 +199,11 @@ const CreateItemPage: React.FC = () => {
 
   const onSubmit = async (data: CreateItemForm) => {
     try {
+      if (selectedImages.length === 0) {
+        setStep(4);
+        setImagesError('Veuillez ajouter au moins une photo.');
+        return;
+      }
       await createItem.mutateAsync({
         ...data,
         images: selectedImages,
@@ -219,265 +242,295 @@ const CreateItemPage: React.FC = () => {
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-6"
       >
+        {/* Stepper */}
+        <div className="p-4 rounded-xl border border-gray-200 bg-white">
+          <div className="flex items-center justify-between">
+            {steps.map((s, idx) => (
+              <div key={s.id} className="flex-1 flex items-center">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step >= s.id ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}>{s.id}</div>
+                <div className="ml-3 text-sm font-medium text-gray-900 hidden sm:block">{s.label}</div>
+                {idx < steps.length - 1 && (
+                  <div className={`flex-1 h-1 mx-3 rounded ${step > s.id ? 'bg-blue-200' : 'bg-gray-200'}`} />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Step 1: Informations */}
+        {step === 1 && (
+          <>
+            <div>
+              <Input label="Titre *" placeholder="Ex: Perceuse électrique Bosch" {...register('title')} error={errors.title?.message} />
+              <div className="text-xs text-gray-500 mt-1">{(watch('title')?.length || 0)}/100</div>
+            </div>
+            <div>
+              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+                Catégorie *
+              </label>
+              <Select {...register('category')} id="category">
+                <option value="">Choisissez une catégorie</option>
+                {categories.map((category) => (
+                  <option key={category.value} value={category.value}>
+                    {category.label}
+                  </option>
+                ))}
+              </Select>
+              {errors.category && (
+                <p className="text-red-500 text-xs mt-1">{errors.category.message}</p>
+              )}
+            </div>
+            <div>
+              <label htmlFor="condition" className="block text-sm font-medium text-gray-700 mb-1">
+                État *
+              </label>
+              <Select {...register('condition')} id="condition">
+                <option value="">Choisissez l'état</option>
+                {conditions.map((condition) => (
+                  <option key={condition.value} value={condition.value}>
+                    {condition.label}
+                  </option>
+                ))}
+              </Select>
+              {errors.condition && (
+                <p className="text-red-500 text-xs mt-1">{errors.condition.message}</p>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* Step 2: Détails */}
+        {step === 2 && (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-1">
+                  Marque
+                </label>
+                <Input {...register('brand')} id="brand" />
+              </div>
+              <div>
+                <label htmlFor="model" className="block text-sm font-medium text-gray-700 mb-1">
+                  Modèle
+                </label>
+                <Input {...register('model')} id="model" />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="estimated_value" className="block text-sm font-medium text-gray-700 mb-1">
+                Valeur estimée (€)
+              </label>
+              <Input {...register('estimated_value')} type="number" step="0.01" min="0" id="estimated_value" />
+            </div>
+
+            <div>
+              <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-1">
+                Tags (séparés par des virgules)
+              </label>
+              <Input {...register('tags')} type="text" id="tags" placeholder="ex: perceuse, bosch, 18v" />
+              {watch('tags') && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {watch('tags')!.split(',').map(t => t.trim()).filter(Boolean).map((t) => (
+                    <span key={t} className="px-2 py-0.5 rounded-md text-xs bg-gray-200 text-gray-700">{t}</span>
+                  ))}
+                </div>
+              )}
+              {tagSuggestions.length > 0 && (
+                <div className="text-sm mt-3">
+                  <div className="text-gray-700 mb-2">Suggestions de tags:</div>
+                  <div className="flex flex-wrap gap-2">
+                    {tagSuggestions.map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => {
+                          const existing = (watch('tags') || '').split(',').map(s=>s.trim()).filter(Boolean);
+                          if (!existing.includes(t)) {
+                            const merged = [...existing, t].join(', ');
+                            setValue('tags', merged, { shouldDirty: true, shouldTouch: true });
+                          }
+                        }}
+                        className="px-2 py-1 rounded-md border border-gray-300 hover:bg-gray-50"
+                      >
+                        + {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                Description
+              </label>
+              <TextArea {...register('description')} id="description" rows={4} placeholder="Décrivez votre objet, son état, ses accessoires..." />
+              <div className="text-xs text-gray-500 mt-1">{(watch('description')?.length ?? 0)} caractères</div>
+            </div>
+          </>
+        )}
+
+        {/* Step 3: Disponibilité */}
+        {step === 3 && (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="available_from" className="block text-sm font-medium text-gray-700 mb-1">
+                  Disponible à partir du
+                </label>
+                <Input {...register('available_from')} type="date" id="available_from" />
+              </div>
+              <div>
+                <label htmlFor="available_to" className="block text-sm font-medium text-gray-700 mb-1">
+                  Disponible jusqu'au
+                </label>
+                <Input {...register('available_to')} type="date" id="available_to" />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="location_hint" className="block text-sm font-medium text-gray-700 mb-1">
+                Indication de localisation (ex: étage, bâtiment, etc.)
+              </label>
+              <Input {...register('location_hint')} id="location_hint" />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label htmlFor="latitude" className="block text-sm font-medium text-gray-700 mb-1">
+                  Latitude
+                </label>
+                <Input {...register('latitude')} type="number" step="any" id="latitude" />
+              </div>
+              <div>
+                <label htmlFor="longitude" className="block text-sm font-medium text-gray-700 mb-1">
+                  Longitude
+                </label>
+                <Input {...register('longitude')} type="number" step="any" id="longitude" />
+              </div>
+              <div className="flex items-end">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full border border-gray-300"
+                  onClick={() => {
+                    if (!navigator.geolocation) {
+                      console.warn('Geolocation non supportée');
+                      return;
+                    }
+                    setIsLocating(true);
+                    navigator.geolocation.getCurrentPosition((pos) => {
+                      const lat = pos.coords.latitude;
+                      const lng = pos.coords.longitude;
+                      setValue('latitude', lat as any, { shouldValidate: true, shouldDirty: true });
+                      setValue('longitude', lng as any, { shouldValidate: true, shouldDirty: true });
+
+                      fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`, {
+                        headers: { 'Accept-Language': 'fr' },
+                      })
+                        .then((r) => r.json())
+                        .then((json) => {
+                          const display = json?.display_name as string | undefined;
+                          if (display) {
+                            setValue('location_hint', display, { shouldValidate: true, shouldDirty: true });
+                          }
+                        })
+                        .catch((e) => console.warn('Reverse geocoding failed', e))
+                        .finally(() => setIsLocating(false));
+                    }, (err) => {
+                      console.warn('Geolocation error', err);
+                      setIsLocating(false);
+                    }, { enableHighAccuracy: true, timeout: 10000 });
+                  }}
+                >
+                  {isLocating ? 'Localisation…' : 'Utiliser ma position'}
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Step 4: Photos */}
+        {step === 4 && (
+          <Card className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <label className="block text-sm font-medium text-gray-900">
+                Photos (au moins 1, max 8)
+              </label>
+              <span className="text-xs text-gray-500">{selectedImages.length}/8</span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
+              {imagePreviews.map((preview, index) => (
+                <div key={index} className="relative aspect-square group">
+                  <img
+                    src={preview}
+                    alt={`Aperçu ${index + 1}`}
+                    className="w-full h-full object-cover rounded-lg border border-gray-200"
+                  />
+                  <div className="absolute top-2 left-2 flex gap-2">
+                    {index === 0 ? (
+                      <span className="px-2 py-0.5 text-xs rounded bg-blue-600 text-white shadow">Principale</span>
+                    ) : (
+                      <button type="button" onClick={() => setPrimaryImage(index)} className="px-2 py-0.5 text-xs rounded bg-white/95 border border-gray-300 hover:bg-white shadow-sm">Définir principale</button>
+                    )}
+                  </div>
+                  <div className="absolute bottom-2 left-2 right-2 flex justify-between opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button type="button" onClick={() => moveImage(index, -1)} className="px-2 py-1 text-xs rounded bg-white/95 border border-gray-300 hover:bg-white shadow-sm">◀</button>
+                    <button type="button" onClick={() => moveImage(index, 1)} className="px-2 py-1 text-xs rounded bg-white/95 border border-gray-300 hover:bg-white shadow-sm">▶</button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeImage(index)}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow"
+                    aria-label="Supprimer l'image"
+                    title="Supprimer"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ))}
+
+              {selectedImages.length < 8 && (
+                <label onDragOver={(e) => e.preventDefault()} onDrop={onDropImages} className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
+                  <div className="text-center">
+                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                    <span className="text-sm text-gray-600">Glisser-déposer ou cliquer</span>
+                    <div className="text-xs text-gray-400">PNG, JPG, GIF</div>
+                  </div>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                </label>
+              )}
+            </div>
+            {imagesError && <p className="text-xs text-red-600">{imagesError}</p>}
+          </Card>
+        )}
         
 
-        <div>
-          <Input label="Titre *" placeholder="Ex: Perceuse électrique Bosch" {...register('title')} error={errors.title?.message} />
-          <div className="text-xs text-gray-500 mt-1">{(watch('title')?.length || 0)}/100</div>
-        </div>
 
-        {/* Brand / Model */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-1">
-              Marque
-            </label>
-            <Input {...register('brand')} id="brand" />
-          </div>
-          <div>
-            <label htmlFor="model" className="block text-sm font-medium text-gray-700 mb-1">
-              Modèle
-            </label>
-            <Input {...register('model')} id="model" />
-          </div>
-        </div>
 
-        {/* Estimated value */}
-        <div>
-          <label htmlFor="estimated_value" className="block text-sm font-medium text-gray-700 mb-1">
-            Valeur estimée (€)
-          </label>
-          <Input {...register('estimated_value')} type="number" step="0.01" min="0" id="estimated_value" />
-        </div>
-
-        {/* Tags (comma-separated) */}
-        <div>
-          <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-1">
-            Tags (séparés par des virgules)
-          </label>
-          <Input {...register('tags')} type="text" id="tags" placeholder="ex: perceuse, bosch, 18v" />
-          {watch('tags') && (
-            <div className="mt-2 flex flex-wrap gap-2">
-              {watch('tags')!.split(',').map(t => t.trim()).filter(Boolean).map((t) => (
-                <span key={t} className="px-2 py-0.5 rounded-md text-xs bg-gray-200 text-gray-700">{t}</span>
-              ))}
-            </div>
-          )}
-          {tagSuggestions.length > 0 && (
-            <div className="text-sm mt-3">
-              <div className="text-gray-700 mb-2">Suggestions de tags:</div>
-              <div className="flex flex-wrap gap-2">
-                {tagSuggestions.map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => {
-                      const existing = (watch('tags') || '').split(',').map(s=>s.trim()).filter(Boolean);
-                      if (!existing.includes(t)) {
-                        const merged = [...existing, t].join(', ');
-                        setValue('tags', merged, { shouldDirty: true, shouldTouch: true });
-                      }
-                    }}
-                    className="px-2 py-1 rounded-md border border-gray-300 hover:bg-gray-50"
-                  >
-                    + {t}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Availability window */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="available_from" className="block text-sm font-medium text-gray-700 mb-1">
-              Disponible à partir du
-            </label>
-            <Input {...register('available_from')} type="date" id="available_from" />
-          </div>
-          <div>
-            <label htmlFor="available_to" className="block text-sm font-medium text-gray-700 mb-1">
-              Disponible jusqu'au
-            </label>
-            <Input {...register('available_to')} type="date" id="available_to" />
-          </div>
-        </div>
-
-        {/* Location hint */}
-        <div>
-          <label htmlFor="location_hint" className="block text-sm font-medium text-gray-700 mb-1">
-            Indication de localisation (ex: étage, bâtiment, etc.)
-          </label>
-          <Input {...register('location_hint')} id="location_hint" />
-        </div>
-
-        {/* Coordinates */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label htmlFor="latitude" className="block text-sm font-medium text-gray-700 mb-1">
-              Latitude
-            </label>
-            <Input {...register('latitude')} type="number" step="any" id="latitude" />
-          </div>
-          <div>
-            <label htmlFor="longitude" className="block text-sm font-medium text-gray-700 mb-1">
-              Longitude
-            </label>
-            <Input {...register('longitude')} type="number" step="any" id="longitude" />
-          </div>
-          <div className="flex items-end">
-            <Button
-              type="button"
-              variant="ghost"
-              className="w-full border border-gray-300"
-              onClick={() => {
-                if (!navigator.geolocation) {
-                  console.warn('Geolocation non supportée');
-                  return;
-                }
-                setIsLocating(true);
-                navigator.geolocation.getCurrentPosition((pos) => {
-                  const lat = pos.coords.latitude;
-                  const lng = pos.coords.longitude;
-                  setValue('latitude', lat as any, { shouldValidate: true, shouldDirty: true });
-                  setValue('longitude', lng as any, { shouldValidate: true, shouldDirty: true });
-
-                  fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`, {
-                    headers: { 'Accept-Language': 'fr' },
-                  })
-                    .then((r) => r.json())
-                    .then((json) => {
-                      const display = json?.display_name as string | undefined;
-                      if (display) {
-                        setValue('location_hint', display, { shouldValidate: true, shouldDirty: true });
-                      }
-                    })
-                    .catch((e) => console.warn('Reverse geocoding failed', e))
-                    .finally(() => setIsLocating(false));
-                }, (err) => {
-                  console.warn('Geolocation error', err);
-                  setIsLocating(false);
-                }, { enableHighAccuracy: true, timeout: 10000 });
-              }}
-            >
-              {isLocating ? 'Localisation…' : 'Utiliser ma position'}
-            </Button>
-          </div>
-        </div>
-
-        {/* Description */}
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-            Description
-          </label>
-          <TextArea {...register('description')} id="description" rows={4} placeholder="Décrivez votre objet, son état, ses accessoires..." />
-          <div className="text-xs text-gray-500 mt-1">{(watch('description')?.length ?? 0)} caractères</div>
-        </div>
-
-        {/* Category */}
-        <div>
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
-            Catégorie *
-          </label>
-          <Select {...register('category')} id="category">
-            <option value="">Choisissez une catégorie</option>
-            {categories.map((category) => (
-              <option key={category.value} value={category.value}>
-                {category.label}
-              </option>
-            ))}
-          </Select>
-          {errors.category && (
-            <p className="text-red-500 text-xs mt-1">{errors.category.message}</p>
-          )}
-        </div>
-
-        {/* Condition */}
-        <div>
-          <label htmlFor="condition" className="block text-sm font-medium text-gray-700 mb-1">
-            État *
-          </label>
-          <Select {...register('condition')} id="condition">
-            <option value="">Choisissez l'état</option>
-            {conditions.map((condition) => (
-              <option key={condition.value} value={condition.value}>
-                {condition.label}
-              </option>
-            ))}
-          </Select>
-          {errors.condition && (
-            <p className="text-red-500 text-xs mt-1">{errors.condition.message}</p>
-          )}
-        </div>
-
-        {/* Photos (optionnel, max 8) - en bas du formulaire */}
-        <Card className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <label className="block text-sm font-medium text-gray-900">
-              Photos (optionnel, max 8)
-            </label>
-            <span className="text-xs text-gray-500">{selectedImages.length}/8</span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
-            {imagePreviews.map((preview, index) => (
-              <div key={index} className="relative aspect-square group">
-                <img
-                  src={preview}
-                  alt={`Aperçu ${index + 1}`}
-                  className="w-full h-full object-cover rounded-lg border border-gray-200"
-                />
-                <div className="absolute top-2 left-2 flex gap-2">
-                  {index === 0 ? (
-                    <span className="px-2 py-0.5 text-xs rounded bg-blue-600 text-white shadow">Principale</span>
-                  ) : (
-                    <button type="button" onClick={() => setPrimaryImage(index)} className="px-2 py-0.5 text-xs rounded bg-white/95 border border-gray-300 hover:bg-white shadow-sm">Définir principale</button>
-                  )}
-                </div>
-                <div className="absolute bottom-2 left-2 right-2 flex justify-between opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button type="button" onClick={() => moveImage(index, -1)} className="px-2 py-1 text-xs rounded bg-white/95 border border-gray-300 hover:bg-white shadow-sm">◀</button>
-                  <button type="button" onClick={() => moveImage(index, 1)} className="px-2 py-1 text-xs rounded bg-white/95 border border-gray-300 hover:bg-white shadow-sm">▶</button>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => removeImage(index)}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow"
-                  aria-label="Supprimer l'image"
-                  title="Supprimer"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            ))}
-
-            {selectedImages.length < 8 && (
-              <label onDragOver={(e) => e.preventDefault()} onDrop={onDropImages} className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
-                <div className="text-center">
-                  <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <span className="text-sm text-gray-600">Glisser-déposer ou cliquer</span>
-                  <div className="text-xs text-gray-400">PNG, JPG, GIF</div>
-                </div>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
-              </label>
-            )}
-          </div>
-          {imagesError && <p className="text-xs text-red-600">{imagesError}</p>}
-        </Card>
-
-        {/* Submit Button */}
+        {/* Navigation */}
         <div className="flex flex-col gap-3 sm:flex-row sm:space-x-4">
-          <Button type="button" variant="ghost" onClick={() => navigate(-1)} className="flex-1 border border-gray-300">Annuler</Button>
-          <Button type="submit" disabled={createItem.isPending} className="flex-1 disabled:opacity-50">
-            {createItem.isPending ? 'Création...' : "Créer l'objet"}
-          </Button>
-          {uploadProgress && (
+          {step > 1 ? (
+            <Button type="button" variant="ghost" onClick={goPrev} className="flex-1 border border-gray-300">Précédent</Button>
+          ) : (
+            <Button type="button" variant="ghost" onClick={() => navigate(-1)} className="flex-1 border border-gray-300">Annuler</Button>
+          )}
+          {step < TOTAL_STEPS ? (
+            <Button type="button" onClick={goNext} className="flex-1">Suivant</Button>
+          ) : (
+            <Button type="submit" disabled={createItem.isPending || selectedImages.length === 0} className="flex-1 disabled:opacity-50">
+              {createItem.isPending ? 'Création...' : "Créer l'objet"}
+            </Button>
+          )}
+          {uploadProgress && step === TOTAL_STEPS && (
             <div className="text-xs text-gray-600">
               Upload {uploadProgress.current}/{uploadProgress.total} {uploadProgress.fileName ? `— ${uploadProgress.fileName}` : ''}
             </div>
