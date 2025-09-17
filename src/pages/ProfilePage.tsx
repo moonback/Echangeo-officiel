@@ -2,9 +2,11 @@ import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useProfile, useItemsByOwner, useBorrowHistory, useLendHistory } from '../hooks/useProfiles';
-import { Star } from 'lucide-react';
+import { Star, MapPin, Package, MessageCircle } from 'lucide-react';
 import Card from '../components/ui/Card';
 import EmptyState from '../components/EmptyState';
+import Button from '../components/ui/Button';
+import Badge from '../components/ui/Badge';
 
 const ProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -23,50 +25,67 @@ const ProfilePage: React.FC = () => {
           {profile?.full_name || profile?.email || 'Profil utilisateur'}
         </h1>
         <div className="grid md:grid-cols-3 gap-4">
-          <div className="md:col-span-1">
-            <Card className="p-4">
-              {isLoading ? (
-                <div className="text-gray-500 text-sm">Chargement…</div>
-              ) : profile ? (
-                <div className="space-y-2">
-                  {profile.avatar_url && (
-                    <img src={profile.avatar_url} alt="Avatar" className="w-24 h-24 rounded-full object-cover" />
-                  )}
-                  <div className="text-gray-900 font-medium">{profile.full_name || profile.email}</div>
-                  {profile.bio && <div className="text-gray-600 text-sm">{profile.bio}</div>}
-                  {profile.phone && <div className="text-gray-600 text-sm">📞 {profile.phone}</div>}
-                  {profile.address && <div className="text-gray-600 text-sm">📍 {profile.address}</div>}
-                  <div className="pt-2 text-sm text-gray-700">
-                    <div>Objets publiés: {(profile as unknown as { items_count?: number }).items_count ?? 0}</div>
-                    <div>Emprunts effectués: {(profile as unknown as { completed_borrows?: number }).completed_borrows ?? 0}</div>
+          <div className="md:col-span-3">
+            <Card className="p-0 overflow-hidden">
+              <div className="bg-gradient-to-br from-brand-50 to-white p-6 md:p-8">
+                {isLoading ? (
+                  <div className="text-gray-500 text-sm">Chargement…</div>
+                ) : profile ? (
+                  <div className="flex items-start md:items-center gap-4 md:gap-6 flex-col md:flex-row">
+                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
+                      {profile.avatar_url ? (
+                        <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-gray-400 text-xl">{(profile.full_name || profile.email || '?').slice(0,1).toUpperCase()}</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h2 className="text-xl md:text-2xl font-semibold text-gray-900 truncate">{profile.full_name || profile.email}</h2>
+                      {profile.address && (
+                        <div className="mt-1 text-sm text-gray-600 flex items-center"><MapPin className="w-4 h-4 mr-1" /> {profile.address}</div>
+                      )}
+                      {profile.bio && (
+                        <p className="mt-2 text-gray-700 text-sm md:text-base max-w-prose">{profile.bio}</p>
+                      )}
+                      <div className="mt-3 flex items-center gap-2 flex-wrap">
+                        <Badge variant="info" className="px-3 py-1"><Package className="w-3 h-3 mr-1" /> {(profile as any).items_count ?? 0} objets</Badge>
+                        <Badge variant="success" className="px-3 py-1">{(profile as any).completed_borrows ?? 0} emprunts</Badge>
+                      </div>
+                    </div>
+                    {id && (
+                      <Link to={`/chat/${id}`}>
+                        <Button variant="secondary" size="sm" leftIcon={<MessageCircle size={16} />}>Discuter</Button>
+                      </Link>
+                    )}
                   </div>
-                </div>
-              ) : (
-                <div className="text-gray-500 text-sm">Profil introuvable.</div>
-              )}
+                ) : (
+                  <div className="text-gray-500 text-sm">Profil introuvable.</div>
+                )}
+              </div>
             </Card>
           </div>
           <div className="md:col-span-2">
             <Card>
               <div className="p-4 border-b border-gray-100 font-medium">Objets publiés</div>
-              <ul className="divide-y divide-gray-100">
-                {items?.map((it) => (
-                  <li key={it.id} className="p-4 flex items-center justify-between">
-                    <div>
-                      <div className="text-gray-900 font-medium">{it.title}</div>
-                      {it.description && (
-                        <div className="text-gray-600 text-sm line-clamp-1">{it.description}</div>
-                      )}
-                    </div>
-                    <Link to={`/items/${it.id}`} className="px-3 py-1.5 rounded-lg bg-blue-600 text-white">Voir</Link>
-                  </li>
-                ))}
-                {items && items.length === 0 && (
-                  <li className="p-6">
-                    <EmptyState title="Aucun objet" description="Cet utilisateur n'a pas encore publié d'objet." />
-                  </li>
-                )}
-              </ul>
+              {items && items.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4">
+                  {items.map((it) => (
+                    <Card key={it.id} className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="min-w-0 pr-3">
+                          <div className="text-gray-900 font-medium truncate">{it.title}</div>
+                          {it.description && (
+                            <div className="text-gray-600 text-sm line-clamp-2">{it.description}</div>
+                          )}
+                        </div>
+                        <Link to={`/items/${it.id}`} className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-sm">Voir</Link>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-6"><EmptyState title="Aucun objet" description="Cet utilisateur n'a pas encore publié d'objet." /></div>
+              )}
             </Card>
 
             <Card className="mt-4">
