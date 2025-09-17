@@ -16,6 +16,7 @@ import MyProfilePage from './pages/MyProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import HelpPage from './pages/HelpPage';
 import AIFeaturesPage from './pages/AIFeaturesPage';
+import GamificationPage from './pages/GamificationPage';
 import { useAuthStore } from './store/authStore';
 import LandingPage from './pages/LandingPage';
 import ProPage from './pages/ProPage';
@@ -62,6 +63,7 @@ function App() {
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/help" element={<HelpPage />} />
         <Route path="/ai-features" element={<AIFeaturesPage />} />
+        <Route path="/gamification" element={<GamificationPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Shell>

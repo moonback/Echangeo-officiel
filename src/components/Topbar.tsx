@@ -5,6 +5,8 @@ import { Link, useNavigate, useLocation, NavLink } from 'react-router-dom';
 import Button from './ui/Button';
 import { useAuthStore } from '../store/authStore';
 import { supabase } from '../services/supabase';
+import NotificationSystem from './NotificationSystem';
+import { useNotifications } from '../hooks/useNotifications';
 
 // Hook personnalisé pour gérer la recherche
 const useSearch = () => {
@@ -114,6 +116,9 @@ const Topbar: React.FC = () => {
   const navigate = useNavigate();
   const { signOut, user, profile } = useAuthStore();
   const [isOnline, setIsOnline] = useState<boolean>(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  
+  // Notifications
+  const { notifications, markAsRead, dismiss } = useNotifications();
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -231,6 +236,13 @@ const Topbar: React.FC = () => {
             >
               <MessageCircle size={18} />
             </Link>
+            
+            {/* Système de notifications */}
+            <NotificationSystem
+              notifications={notifications}
+              onMarkAsRead={markAsRead}
+              onDismiss={dismiss}
+            />
             
             <Link 
               to="/me" 

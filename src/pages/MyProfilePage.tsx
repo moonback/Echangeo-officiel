@@ -3,14 +3,16 @@ import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { User, Edit3, Save, X, CheckCircle, Clock, XCircle, ArrowRight, Mail, Phone, MapPin, Shield, Star, Calendar } from 'lucide-react';
+import { User, Edit3, Save, X, CheckCircle, Clock, XCircle, ArrowRight, Mail, Phone, MapPin, Shield, Star, Calendar, Trophy, Award } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useTransactions } from '../hooks/useProfiles';
+import { useGamificationStats, useUserLevel, useUserBadges } from '../hooks/useGamification';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import TextArea from '../components/ui/TextArea';
 import Card from '../components/ui/Card';
 import EmptyState from '../components/EmptyState';
+import ReputationDisplay from '../components/ReputationDisplay';
 import { supabase } from '../services/supabase';
 
 const profileSchema = z.object({
@@ -28,9 +30,14 @@ const MyProfilePage: React.FC = () => {
   const { profile, updateProfile } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  
+  // Gamification hooks
+  const { data: gamificationStats } = useGamificationStats();
+  const { data: userLevel } = useUserLevel();
+  const { data: userBadges } = useUserBadges();
   const [avatarUploading, setAvatarUploading] = useState(false);
   const { data: transactions } = useTransactions(profile?.id);
-  const [activeTab, setActiveTab] = useState<'profil' | 'transactions' | 'parametres'>('profil');
+  const [activeTab, setActiveTab] = useState<'profil' | 'gamification' | 'transactions' | 'parametres'>('profil');
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const [itemsCount, setItemsCount] = useState<number>(0);
   const [completedBorrows, setCompletedBorrows] = useState<number>(0);
@@ -313,6 +320,7 @@ const MyProfilePage: React.FC = () => {
         <div className="flex gap-1 p-1.5 rounded-2xl bg-white/80 backdrop-blur-sm border border-gray-200/50 shadow-lg w-fit">
           {[
             { id: 'profil', label: 'Profil', icon: User },
+            { id: 'gamification', label: 'Gamification', icon: Trophy },
             { id: 'transactions', label: 'Transactions', icon: Calendar },
             { id: 'parametres', label: 'Paramètres', icon: Shield },
           ].map((tab: any) => (
@@ -446,6 +454,46 @@ const MyProfilePage: React.FC = () => {
               </div>
             </Card>
           </div>
+        </motion.div>
+      )}
+
+      {/* Tab content: Gamification */}
+      {activeTab === 'gamification' && (
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+          {gamificationStats ? (
+            <ReputationDisplay
+              reputation={{
+                overall_score: gamificationStats.overall_score,
+                ratings_count: gamificationStats.ratings_count,
+                avg_communication: gamificationStats.overall_score,
+                avg_punctuality: gamificationStats.overall_score,
+                avg_care: gamificationStats.overall_score,
+              }}
+              badges={userBadges?.map(ub => ({
+                badge_slug: ub.badge?.slug || '',
+                badge_label: ub.badge?.name || '',
+              })) || []}
+              level={userLevel ? {
+                level: userLevel.level,
+                points: userLevel.points,
+                title: userLevel.title,
+              } : undefined}
+              stats={{
+                completed_lends: gamificationStats.completed_lends,
+                completed_borrows: gamificationStats.completed_borrows,
+                total_transactions: gamificationStats.total_transactions,
+              }}
+            />
+          ) : (
+            <Card className="p-8 text-center">
+              <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Gamification</h3>
+              <p className="text-gray-600 mb-4">Commencez à utiliser la plateforme pour débloquer vos premiers badges et points !</p>
+              <Button onClick={() => setActiveTab('profil')}>
+                Compléter mon profil
+              </Button>
+            </Card>
+          )}
         </motion.div>
       )}
 
