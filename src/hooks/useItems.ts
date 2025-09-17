@@ -2,18 +2,33 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../services/supabase';
 import type { Item, ItemCategory } from '../types';
 
-export function useItems(filters?: { category?: ItemCategory; search?: string }) {
+export function useItems(filters?: {
+  category?: ItemCategory;
+  search?: string;
+  condition?: string;
+  brand?: string;
+  minValue?: number;
+  maxValue?: number;
+  availableFrom?: string;
+  availableTo?: string;
+  hasImages?: boolean;
+  isAvailable?: boolean;
+  tags?: string[];
+}) {
   return useQuery({
     queryKey: ['items', filters],
     queryFn: async () => {
+      const selectImages = filters?.hasImages
+        ? `images:item_images!inner(*)`
+        : `images:item_images(*)`;
+
       let query = supabase
         .from('items')
         .select(`
           *,
           owner:profiles(*),
-          images:item_images(*)
+          ${selectImages}
         `)
-        .eq('is_available', true)
         .order('created_at', { ascending: false });
 
       if (filters?.category) {
@@ -22,6 +37,39 @@ export function useItems(filters?: { category?: ItemCategory; search?: string })
 
       if (filters?.search) {
         query = query.ilike('title', `%${filters.search}%`);
+      }
+
+      if (filters?.condition) {
+        query = query.eq('condition', filters.condition);
+      }
+
+      if (filters?.brand) {
+        query = query.ilike('brand', `%${filters.brand}%`);
+      }
+
+      if (typeof filters?.minValue === 'number') {
+        query = query.gte('estimated_value', filters.minValue);
+      }
+
+      if (typeof filters?.maxValue === 'number') {
+        query = query.lte('estimated_value', filters.maxValue);
+      }
+
+      // Availability window overlap: available_from <= to && (available_to is null or available_to >= from)
+      if (filters?.availableFrom) {
+        query = query.or(`available_to.is.null,available_to.gte.${filters.availableFrom}`);
+      }
+      if (filters?.availableTo) {
+        query = query.lte('available_from', filters.availableTo);
+      }
+
+      if (typeof filters?.isAvailable === 'boolean') {
+        query = query.eq('is_available', filters.isAvailable);
+      }
+
+      if (filters?.tags && filters.tags.length > 0) {
+        // tags is text[]; use contains operator
+        query = query.contains('tags', filters.tags);
       }
 
       const { data, error } = await query;

@@ -11,10 +11,28 @@ const ItemsPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ItemCategory | undefined>();
   const [showFilters, setShowFilters] = useState(false);
+  const [condition, setCondition] = useState<string | undefined>();
+  const [brand, setBrand] = useState('');
+  const [minValue, setMinValue] = useState<string>('');
+  const [maxValue, setMaxValue] = useState<string>('');
+  const [availableFrom, setAvailableFrom] = useState('');
+  const [availableTo, setAvailableTo] = useState('');
+  const [hasImages, setHasImages] = useState(false);
+  const [isAvailable, setIsAvailable] = useState(true);
+  const [tags, setTags] = useState('');
 
   const { data: items, isLoading } = useItems({ 
     category: selectedCategory, 
-    search: search 
+    search: search,
+    condition,
+    brand: brand || undefined,
+    minValue: minValue !== '' ? Number(minValue) : undefined,
+    maxValue: maxValue !== '' ? Number(maxValue) : undefined,
+    availableFrom: availableFrom || undefined,
+    availableTo: availableTo || undefined,
+    hasImages: hasImages || undefined,
+    isAvailable,
+    tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : undefined,
   });
 
   return (
@@ -60,7 +78,7 @@ const ItemsPage: React.FC = () => {
         }}
         className="overflow-hidden mb-6"
       >
-        <div className="bg-white rounded-xl p-4 border border-gray-200">
+        <div className="bg-white rounded-xl p-4 border border-gray-200 space-y-4">
           <p className="text-sm font-medium text-gray-700 mb-3">Catégories</p>
           <div className="flex flex-wrap gap-2">
             <button
@@ -90,6 +108,49 @@ const ItemsPage: React.FC = () => {
                 </button>
               );
             })}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+            <div>
+              <label className="block text-sm text-gray-700 mb-1">État</label>
+              <select value={condition || ''} onChange={(e) => setCondition(e.target.value || undefined)} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                <option value="">Tous</option>
+                <option value="excellent">Excellent</option>
+                <option value="good">Bon</option>
+                <option value="fair">Correct</option>
+                <option value="poor">Usé</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 mb-1">Marque</label>
+              <input value={brand} onChange={(e) => setBrand(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="ex: Bosch" />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 mb-1">Tags</label>
+              <input value={tags} onChange={(e) => setTags(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="ex: perceuse, 18v" />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 mb-1">Valeur min (€)</label>
+              <input type="number" step="0.01" value={minValue} onChange={(e) => setMinValue(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 mb-1">Valeur max (€)</label>
+              <input type="number" step="0.01" value={maxValue} onChange={(e) => setMaxValue(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 mb-1">Disponible entre</label>
+              <div className="grid grid-cols-2 gap-2">
+                <input type="date" value={availableFrom} onChange={(e) => setAvailableFrom(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-lg" />
+                <input type="date" value={availableTo} onChange={(e) => setAvailableTo(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-lg" />
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <label className="text-sm text-gray-700">Avec photos</label>
+              <input type="checkbox" checked={hasImages} onChange={(e) => setHasImages(e.target.checked)} />
+            </div>
+            <div className="flex items-center space-x-3">
+              <label className="text-sm text-gray-700">Disponibles</label>
+              <input type="checkbox" checked={isAvailable} onChange={(e) => setIsAvailable(e.target.checked)} />
+            </div>
           </div>
         </div>
       </motion.div>
