@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Plus, Search, MessageCircle, TrendingUp, Shield, MapPin, Clock, Star, Lock } from 'lucide-react';
+import { Plus, Search, MessageCircle, TrendingUp } from 'lucide-react';
 import { useItems } from '../hooks/useItems';
 import { useRequests } from '../hooks/useRequests';
 import ItemCard from '../components/ItemCard';
@@ -64,50 +64,7 @@ const HomePage: React.FC = () => {
         </Card>
       </motion.section>
 
-      {/* Comment ça marche */}
-      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[{
-          title: '1. Ajoutez vos objets',
-          desc: 'Indiquez une description, des photos et la disponibilité.',
-          Icon: Plus
-        }, {
-          title: '2. Trouvez près de chez vous',
-          desc: 'Cherchez par catégorie, tags, distance et période.',
-          Icon: MapPin
-        }, {
-          title: '3. Échangez en toute sérénité',
-          desc: 'Discutez, convenez d’un créneau et validez la demande.',
-          Icon: MessageCircle
-        }].map(({ title, desc, Icon }) => (
-          <div key={title} className="card p-5">
-            <div className="w-10 h-10 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center mb-3">
-              <Icon className="w-5 h-5" />
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-1">{title}</h3>
-            <p className="text-sm text-gray-600">{desc}</p>
-          </div>
-        ))}
-      </motion.section>
-
-      {/* Points forts */}
-      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        <Card className="p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Pourquoi TrocAll ?</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[{
-            Icon: Shield,
-            title: 'Confiance locale',
-            desc: 'Profils publics et messagerie intégrée.'
-          }, { Icon: Clock, title: 'Rapide', desc: 'Trouver et réserver en quelques clics.' }, { Icon: Star, title: 'Économique', desc: 'Évitez d’acheter ce que vous pouvez emprunter.' }, { Icon: Lock, title: 'Vos données', desc: 'Sécurisées par Supabase.' }].map(({ Icon, title, desc }) => (
-            <div key={title} className="p-4 border border-gray-200 rounded-2xl">
-              <Icon className="w-5 h-5 text-brand-700 mb-2" />
-              <p className="font-medium text-gray-900">{title}</p>
-              <p className="text-sm text-gray-600">{desc}</p>
-            </div>
-          ))}
-        </div>
-        </Card>
-      </motion.section>
+     
 
       {/* Stats */}
       <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
