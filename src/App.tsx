@@ -1,8 +1,7 @@
-import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Shell from './components/Shell';
-import AuthGuard from './components/AuthGuard';
+// import AuthGuard from './components/AuthGuard';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import ItemsPage from './pages/ItemsPage';
@@ -17,6 +16,8 @@ import MyProfilePage from './pages/MyProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import HelpPage from './pages/HelpPage';
 import { useAuthStore } from './store/authStore';
+import LandingPage from './pages/LandingPage';
+import ProPage from './pages/ProPage';
 
 function App() {
   const { user, loading } = useAuthStore();
@@ -34,7 +35,14 @@ function App() {
   }
 
   if (!user) {
-    return <LoginPage />;
+    return (
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/pro" element={<ProPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    );
   }
 
   return (
