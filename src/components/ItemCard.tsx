@@ -149,12 +149,15 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation 
             {/* Footer */}
             <div className="flex items-center justify-between">
               <div className="flex items-center text-sm text-gray-500">
-                <Link 
-                  to={`/profile/${item.owner_id}`}
-                  onClick={(e) => e.stopPropagation()} // Éviter de déclencher le clic sur la carte
-                  className="block mr-2"
+                <div 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    navigate(`/profile/${item.owner_id}`);
+                  }}
+                  className="block mr-2 cursor-pointer"
                 >
-                  <div className="relative w-7 h-7 rounded-full overflow-hidden bg-gradient-to-br from-brand-400 to-brand-600 border border-white shadow-md hover:shadow-lg hover:scale-110 transition-all duration-200 cursor-pointer">
+                  <div className="relative w-7 h-7 rounded-full overflow-hidden bg-gradient-to-br from-brand-400 to-brand-600 border border-white shadow-md hover:shadow-lg hover:scale-110 transition-all duration-200">
                     {item.owner?.avatar_url ? (
                       <img
                         src={item.owner.avatar_url}
@@ -173,14 +176,17 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation 
                            title="Profil vérifié" />
                     )}
                   </div>
-                </Link>
-                <Link 
-                  to={`/profile/${item.owner_id}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className="font-medium hover:text-brand-600 transition-colors duration-200"
+                </div>
+                <span 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    navigate(`/profile/${item.owner_id}`);
+                  }}
+                  className="font-medium hover:text-brand-600 transition-colors duration-200 cursor-pointer"
                 >
                   {item.owner?.full_name || 'Anonyme'}
-                </Link>
+                </span>
               </div>
               
               <div className="flex items-center text-sm text-gray-500 bg-gray-50/80 rounded-full px-2.5 py-1">
