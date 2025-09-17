@@ -10,7 +10,7 @@ import {
   Share2,
   Heart
 } from 'lucide-react';
-import { useItem } from '../hooks/useItems';
+import { useItem, useUpdateItem } from '../hooks/useItems';
 import { useCreateRequest } from '../hooks/useRequests';
 import { getCategoryIcon, getCategoryLabel } from '../utils/categories';
 import { useAuthStore } from '../store/authStore';
@@ -19,6 +19,7 @@ const ItemDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuthStore();
   const { data: item, isLoading } = useItem(id!);
+  const updateItem = useUpdateItem();
   const createRequest = useCreateRequest();
   const [requestMessage, setRequestMessage] = useState('');
   const [showRequestForm, setShowRequestForm] = useState(false);
@@ -339,9 +340,26 @@ const ItemDetailPage: React.FC = () => {
 
           {isOwner && (
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-              <p className="text-blue-800">
-                C'est votre objet ! Vous pouvez le modifier depuis votre profil.
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="text-blue-800">C'est votre objet.</p>
+                <div className="flex items-center gap-3">
+                  <Link
+                    to={`/items/${id}/edit`}
+                    className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  >
+                    Modifier
+                  </Link>
+                  <button
+                    onClick={async () => {
+                      if (!id) return;
+                      await updateItem.mutateAsync({ id, payload: { is_available: !item.is_available } });
+                    }}
+                    className={`px-3 py-2 rounded-lg text-white ${item.is_available ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-600 hover:bg-green-700'}`}
+                  >
+                    {item.is_available ? 'Désactiver / Cacher' : 'Réactiver'}
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </motion.div>

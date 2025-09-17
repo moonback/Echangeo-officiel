@@ -80,6 +80,20 @@ export function useItems(filters?: {
   });
 }
 
+export function useDeleteItem() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('items').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['items'] });
+    },
+  });
+}
+
 export function useItem(id: string) {
   return useQuery({
     queryKey: ['item', id],

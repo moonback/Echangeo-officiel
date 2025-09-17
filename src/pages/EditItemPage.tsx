@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useItem, useUpdateItem } from '../hooks/useItems';
+import { useItem, useUpdateItem, useDeleteItem } from '../hooks/useItems';
 import { categories } from '../utils/categories';
 
 const schema = z.object({
@@ -32,6 +32,7 @@ const EditItemPage: React.FC = () => {
   const navigate = useNavigate();
   const { data: item, isLoading } = useItem(id!);
   const updateItem = useUpdateItem();
+  const deleteItem = useDeleteItem();
 
   const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -198,6 +199,19 @@ const EditItemPage: React.FC = () => {
           <button type="button" onClick={() => navigate(-1)} className="px-6 py-3 border border-gray-300 rounded-xl">Annuler</button>
           <button type="submit" disabled={updateItem.isPending} className="px-6 py-3 bg-blue-600 text-white rounded-xl">
             {updateItem.isPending ? 'Enregistrement...' : 'Enregistrer'}
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              if (!id) return;
+              const confirmed = window.confirm('Supprimer définitivement cet objet ?');
+              if (!confirmed) return;
+              await deleteItem.mutateAsync(id);
+              navigate('/items');
+            }}
+            className="px-6 py-3 bg-red-600 text-white rounded-xl"
+          >
+            Supprimer
           </button>
         </div>
       </form>
