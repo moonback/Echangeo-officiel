@@ -48,6 +48,9 @@ const CreateItemPage: React.FC = () => {
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [imagesError, setImagesError] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number; fileName?: string } | null>(null);
+  const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
+  const [isLocating, setIsLocating] = useState(false);
 
   const {
     register,
@@ -58,6 +61,57 @@ const CreateItemPage: React.FC = () => {
   } = useForm<CreateItemForm>({
     resolver: zodResolver(createItemSchema),
   });
+
+  // Autosave draft to localStorage
+  React.useEffect(() => {
+    const sub = watch((values) => {
+      try {
+        localStorage.setItem('create_item_draft', JSON.stringify(values));
+      } catch {}
+    });
+    return () => sub.unsubscribe();
+  }, [watch]);
+
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem('create_item_draft');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        // Only set known fields
+        const fields: (keyof CreateItemForm)[] = ['title','description','category','condition','brand','model','estimated_value','tags','available_from','available_to','location_hint','latitude','longitude'];
+        fields.forEach((k) => {
+          if (parsed[k] !== undefined) setValue(k, parsed[k]);
+        });
+      }
+    } catch {}
+  }, [setValue]);
+
+  // Suggestions de tags depuis marque/modèle + catégorie
+  React.useEffect(() => {
+    const CATEGORY_SUGGESTIONS: Record<ItemCategory, string[]> = {
+      tools: ['bricolage', 'outil', 'manuel', 'électrique', 'atelier'],
+      electronics: ['électronique', 'audio', 'vidéo', 'smart', 'usb'],
+      books: ['livre', 'roman', 'bd', 'éducation', 'enfant'],
+      sports: ['sport', 'fitness', 'extérieur', 'ballon', 'vélo'],
+      kitchen: ['cuisine', 'ustensile', 'mixeur', 'cuisson', 'baking'],
+      garden: ['jardin', 'extérieur', 'plante', 'arrosage', 'tonte'],
+      toys: ['jouet', 'enfant', 'jeu', 'puzzle', 'éducatif'],
+      other: ['divers', 'maison', 'pratique'],
+    };
+
+    const brand = watch('brand')?.trim();
+    const model = watch('model')?.trim();
+    const category = watch('category') as ItemCategory | undefined;
+
+    const suggestions = new Set<string>();
+    if (brand) suggestions.add(brand.toLowerCase());
+    if (model) suggestions.add(model.toLowerCase());
+    if (brand && model) suggestions.add(`${brand} ${model}`.toLowerCase());
+    if (category) {
+      CATEGORY_SUGGESTIONS[category].forEach((t) => suggestions.add(t));
+    }
+    setTagSuggestions(Array.from(suggestions).slice(0, 8));
+  }, [watch('brand'), watch('model'), watch('category')]);
 
   const acceptFiles = (files: File[]) => {
     const MAX_FILES = 8;
@@ -130,7 +184,9 @@ const CreateItemPage: React.FC = () => {
       await createItem.mutateAsync({
         ...data,
         images: selectedImages,
+        onProgress: (current, total, fileName) => setUploadProgress({ current, total, fileName }),
       });
+      localStorage.removeItem('create_item_draft');
       navigate('/items');
     } catch (error) {
       console.error('Error creating item:', error);
@@ -261,6 +317,29 @@ const CreateItemPage: React.FC = () => {
               ))}
             </div>
           )}
+          {tagSuggestions.length > 0 && (
+            <div className="text-sm mt-3">
+              <div className="text-gray-700 mb-2">Suggestions de tags:</div>
+              <div className="flex flex-wrap gap-2">
+                {tagSuggestions.map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => {
+                      const existing = (watch('tags') || '').split(',').map(s=>s.trim()).filter(Boolean);
+                      if (!existing.includes(t)) {
+                        const merged = [...existing, t].join(', ');
+                        setValue('tags', merged, { shouldDirty: true, shouldTouch: true });
+                      }
+                    }}
+                    className="px-2 py-1 rounded-md border border-gray-300 hover:bg-gray-50"
+                  >
+                    + {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Availability window */}
@@ -307,18 +386,19 @@ const CreateItemPage: React.FC = () => {
               variant="ghost"
               className="w-full border border-gray-300"
               onClick={() => {
-                if (!navigator.geolocation) return;
+                if (!navigator.geolocation) {
+                  console.warn('Geolocation non supportée');
+                  return;
+                }
+                setIsLocating(true);
                 navigator.geolocation.getCurrentPosition((pos) => {
                   const lat = pos.coords.latitude;
                   const lng = pos.coords.longitude;
                   setValue('latitude', lat as any, { shouldValidate: true, shouldDirty: true });
                   setValue('longitude', lng as any, { shouldValidate: true, shouldDirty: true });
 
-                  // Reverse geocode to human-readable address (OpenStreetMap Nominatim)
-                  fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}` , {
-                    headers: {
-                      'Accept-Language': 'fr',
-                    },
+                  fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`, {
+                    headers: { 'Accept-Language': 'fr' },
                   })
                     .then((r) => r.json())
                     .then((json) => {
@@ -327,11 +407,15 @@ const CreateItemPage: React.FC = () => {
                         setValue('location_hint', display, { shouldValidate: true, shouldDirty: true });
                       }
                     })
-                    .catch(() => {});
-                });
+                    .catch((e) => console.warn('Reverse geocoding failed', e))
+                    .finally(() => setIsLocating(false));
+                }, (err) => {
+                  console.warn('Geolocation error', err);
+                  setIsLocating(false);
+                }, { enableHighAccuracy: true, timeout: 10000 });
               }}
             >
-              Utiliser ma position
+              {isLocating ? 'Localisation…' : 'Utiliser ma position'}
             </Button>
           </div>
         </div>
@@ -342,7 +426,7 @@ const CreateItemPage: React.FC = () => {
             Description
           </label>
           <TextArea {...register('description')} id="description" rows={4} placeholder="Décrivez votre objet, son état, ses accessoires..." />
-          <div className="text-xs text-gray-500 mt-1">{(watch('description')?.length || 0)} caractères</div>
+          <div className="text-xs text-gray-500 mt-1">{(watch('description')?.length ?? 0)} caractères</div>
         </div>
 
         {/* Category */}
@@ -382,12 +466,18 @@ const CreateItemPage: React.FC = () => {
         </div>
 
         {/* Submit Button */}
-        <div className="flex space-x-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:space-x-4">
           <Button type="button" variant="ghost" onClick={() => navigate(-1)} className="flex-1 border border-gray-300">Annuler</Button>
           <Button type="submit" disabled={createItem.isPending} className="flex-1 disabled:opacity-50">
             {createItem.isPending ? 'Création...' : "Créer l'objet"}
           </Button>
+          {uploadProgress && (
+            <div className="text-xs text-gray-600">
+              Upload {uploadProgress.current}/{uploadProgress.total} {uploadProgress.fileName ? `— ${uploadProgress.fileName}` : ''}
+            </div>
+          )}
         </div>
+
       </motion.form>
     </div>
   );
