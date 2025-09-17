@@ -15,6 +15,9 @@ import { useUpsertItemRating } from '../hooks/useRatings';
 import { useCreateRequest, useRequests } from '../hooks/useRequests';
 import { getCategoryIcon, getCategoryLabel } from '../utils/categories';
 import { useAuthStore } from '../store/authStore';
+import Button from '../components/ui/Button';
+import Badge from '../components/ui/Badge';
+import Card from '../components/ui/Card';
 
 const ItemDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -120,7 +123,7 @@ const ItemDetailPage: React.FC = () => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
         >
-          <div className="aspect-square bg-gray-100 rounded-xl overflow-hidden mb-4">
+          <Card className="aspect-square bg-gray-100 overflow-hidden mb-4">
             {item.images && item.images.length > 0 ? (
               <img
                 src={item.images[currentImageIndex]?.url || item.images[0].url}
@@ -132,7 +135,7 @@ const ItemDetailPage: React.FC = () => {
                 <CategoryIcon className="w-16 h-16 text-gray-400" />
               </div>
             )}
-          </div>
+          </Card>
           
           {item.images && item.images.length > 1 && (
             <div className="grid grid-cols-4 gap-2">
@@ -164,17 +167,10 @@ const ItemDetailPage: React.FC = () => {
         >
           {/* Category & Status */}
           <div className="flex items-center justify-between">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-              <CategoryIcon className="w-4 h-4 mr-2" />
-              {getCategoryLabel(item.category)}
-            </span>
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              item.is_available 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-red-100 text-red-800'
-            }`}>
+            <Badge variant="info"><CategoryIcon className="w-4 h-4 mr-2 inline" />{getCategoryLabel(item.category)}</Badge>
+            <Badge variant={item.is_available ? 'success' : 'danger'}>
               {item.is_available ? 'Disponible' : 'Non disponible'}
-            </span>
+            </Badge>
           </div>
 
           {typeof (item as any).average_rating === 'number' && (item as any).ratings_count ? (
@@ -193,9 +189,10 @@ const ItemDetailPage: React.FC = () => {
           </div>
 
           {/* Owner Info */}
-          <div className="bg-gray-50 rounded-xl p-4">
+          <Card className="p-4 bg-gray-50">
             <h3 className="font-semibold text-gray-900 mb-3">Propriétaire</h3>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                 <User className="w-6 h-6 text-blue-600" />
               </div>
@@ -208,8 +205,12 @@ const ItemDetailPage: React.FC = () => {
                   <span>À proximité</span>
                 </div>
               </div>
+              </div>
+              <Link to={`/profile/${item.owner_id}`}>
+                <Button variant="secondary" size="sm">Voir le profil</Button>
+              </Link>
             </div>
-          </div>
+          </Card>
 
           {/* Metadata */}
           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -306,12 +307,7 @@ const ItemDetailPage: React.FC = () => {
             <div className="space-y-4">
               {!showRequestForm ? (
                 <div className="flex space-x-3">
-                  <button
-                    onClick={() => setShowRequestForm(true)}
-                    className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition-colors"
-                  >
-                    Demander à emprunter
-                  </button>
+                  <Button className="flex-1" onClick={() => setShowRequestForm(true)}>Demander à emprunter</Button>
                   <Link
                     to={`/profile/${item.owner_id}`}
                     className="flex items-center px-4 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
@@ -330,25 +326,13 @@ const ItemDetailPage: React.FC = () => {
                       value={requestMessage}
                       onChange={(e) => setRequestMessage(e.target.value)}
                       placeholder="Expliquez pourquoi vous souhaitez emprunter cet objet..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                       rows={3}
                     />
                   </div>
                   <div className="flex space-x-3">
-                    <button
-                      type="submit"
-                      disabled={createRequest.isPending}
-                      className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
-                    >
-                      {createRequest.isPending ? 'Envoi...' : 'Envoyer la demande'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowRequestForm(false)}
-                      className="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      Annuler
-                    </button>
+                    <Button type="submit" disabled={createRequest.isPending} className="flex-1 disabled:opacity-50">{createRequest.isPending ? 'Envoi...' : 'Envoyer la demande'}</Button>
+                    <Button type="button" variant="ghost" className="border border-gray-300" onClick={() => setShowRequestForm(false)}>Annuler</Button>
                   </div>
                 </form>
               )}
@@ -356,7 +340,7 @@ const ItemDetailPage: React.FC = () => {
           )}
 
           {isOwner && (
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+            <Card className="p-4 bg-blue-50 border border-blue-200">
               <div className="flex items-center justify-between">
                 <p className="text-blue-800">C'est votre objet.</p>
                 <div className="flex items-center gap-3">
@@ -366,18 +350,18 @@ const ItemDetailPage: React.FC = () => {
                   >
                     Modifier
                   </Link>
-                  <button
+                  <Button
+                    variant={item.is_available ? 'secondary' : 'primary'}
                     onClick={async () => {
                       if (!id) return;
                       await updateItem.mutateAsync({ id, payload: { is_available: !item.is_available } });
                     }}
-                    className={`px-3 py-2 rounded-lg text-white ${item.is_available ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-600 hover:bg-green-700'}`}
                   >
                     {item.is_available ? 'Désactiver / Cacher' : 'Réactiver'}
-                  </button>
+                  </Button>
                 </div>
               </div>
-            </div>
+            </Card>
           )}
 
           {/* Rating Form (emprunteurs uniquement, demande terminée) */}

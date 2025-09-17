@@ -167,6 +167,7 @@ export function useCreateItem() {
       latitude?: number;
       longitude?: number;
       images: File[];
+      onProgress?: (current: number, total: number, fileName: string) => void;
     }) => {
       const user = await supabase.auth.getUser();
       if (!user.data.user) throw new Error('Not authenticated');
@@ -212,6 +213,10 @@ export function useCreateItem() {
             .upload(fileName, file);
 
           if (uploadError) throw uploadError;
+
+          if (typeof data.onProgress === 'function') {
+            data.onProgress(i + 1, data.images.length, file.name);
+          }
 
           const { data: { publicUrl } } = supabase.storage
             .from('items')

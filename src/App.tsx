@@ -1,7 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import Layout from './components/Layout';
+import Shell from './components/Shell';
 import AuthGuard from './components/AuthGuard';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
@@ -38,7 +38,7 @@ function App() {
   }
 
   return (
-    <Layout>
+    <Shell>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/items" element={<ItemsPage />} />
@@ -54,7 +54,7 @@ function App() {
         <Route path="/help" element={<HelpPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </Layout>
+    </Shell>
   );
 }
 
