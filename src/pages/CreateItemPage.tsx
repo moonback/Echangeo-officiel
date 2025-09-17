@@ -47,6 +47,7 @@ const CreateItemPage: React.FC = () => {
   const createItem = useCreateItem();
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [imagesError, setImagesError] = useState<string | null>(null);
 
   const {
     register,
@@ -58,16 +59,61 @@ const CreateItemPage: React.FC = () => {
     resolver: zodResolver(createItemSchema),
   });
 
+  const acceptFiles = (files: File[]) => {
+    const MAX_FILES = 8;
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+    const valid: File[] = [];
+    for (const f of files) {
+      if (!f.type.startsWith('image/')) {
+        setImagesError('Seules les images sont autorisées.');
+        continue;
+      }
+      if (f.size > MAX_SIZE) {
+        setImagesError('Taille maximale par image: 5 Mo.');
+        continue;
+      }
+      valid.push(f);
+    }
+    if (valid.length === 0) return;
+    const merged = [...selectedImages, ...valid].slice(0, MAX_FILES);
+    setSelectedImages(merged);
+    setImagePreviews(merged.map((f) => URL.createObjectURL(f)));
+    setImagesError(null);
+  };
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
+    acceptFiles(files);
+  };
 
-    const newImages = [...selectedImages, ...files].slice(0, 5); // Max 5 images
-    setSelectedImages(newImages);
+  const onDropImages: React.DragEventHandler<HTMLLabelElement> = (e) => {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files || []);
+    acceptFiles(files);
+  };
 
-    // Create preview URLs
-    const newPreviews = newImages.map(file => URL.createObjectURL(file));
-    setImagePreviews(newPreviews);
+  const moveImage = (index: number, direction: -1 | 1) => {
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= selectedImages.length) return;
+    const imgs = [...selectedImages];
+    const prevs = [...imagePreviews];
+    [imgs[index], imgs[newIndex]] = [imgs[newIndex], imgs[index]];
+    [prevs[index], prevs[newIndex]] = [prevs[newIndex], prevs[index]];
+    setSelectedImages(imgs);
+    setImagePreviews(prevs);
+  };
+
+  const setPrimaryImage = (index: number) => {
+    if (index === 0) return;
+    const imgs = [...selectedImages];
+    const prevs = [...imagePreviews];
+    const [img] = imgs.splice(index, 1);
+    const [prev] = prevs.splice(index, 1);
+    imgs.unshift(img);
+    prevs.unshift(prev);
+    setSelectedImages(imgs);
+    setImagePreviews(prevs);
   };
 
   const removeImage = (index: number) => {
@@ -121,7 +167,7 @@ const CreateItemPage: React.FC = () => {
           {/* Images */}
           <div>
           <label className="block text-sm font-medium text-gray-700 mb-3">
-            Photos (optionnel, max 5)
+            Photos (optionnel, max 8)
           </label>
           
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
@@ -132,6 +178,17 @@ const CreateItemPage: React.FC = () => {
                   alt={`Aperçu ${index + 1}`}
                   className="w-full h-full object-cover rounded-lg border border-gray-200"
                 />
+                <div className="absolute top-2 left-2 flex gap-2">
+                  {index === 0 ? (
+                    <span className="px-2 py-0.5 text-xs rounded bg-blue-600 text-white">Principale</span>
+                  ) : (
+                    <button type="button" onClick={() => setPrimaryImage(index)} className="px-2 py-0.5 text-xs rounded bg-white/90 border border-gray-300 hover:bg-white">Définir principale</button>
+                  )}
+                </div>
+                <div className="absolute bottom-2 left-2 right-2 flex justify-between">
+                  <button type="button" onClick={() => moveImage(index, -1)} className="px-2 py-1 text-xs rounded bg-white/90 border border-gray-300 hover:bg-white">◀</button>
+                  <button type="button" onClick={() => moveImage(index, 1)} className="px-2 py-1 text-xs rounded bg-white/90 border border-gray-300 hover:bg-white">▶</button>
+                </div>
                 <button
                   type="button"
                   onClick={() => removeImage(index)}
@@ -142,11 +199,11 @@ const CreateItemPage: React.FC = () => {
               </div>
             ))}
             
-            {selectedImages.length < 5 && (
-              <label className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
+            {selectedImages.length < 8 && (
+              <label onDragOver={(e) => e.preventDefault()} onDrop={onDropImages} className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
                 <div className="text-center">
                   <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <span className="text-sm text-gray-600">Ajouter</span>
+                  <span className="text-sm text-gray-600">Glisser-déposer ou cliquer</span>
                 </div>
                 <input
                   type="file"
@@ -158,10 +215,14 @@ const CreateItemPage: React.FC = () => {
               </label>
             )}
           </div>
+          {imagesError && <p className="text-xs text-red-600">{imagesError}</p>}
           </div>
         </Card>
 
-        <Input label="Titre *" placeholder="Ex: Perceuse électrique Bosch" {...register('title')} error={errors.title?.message} />
+        <div>
+          <Input label="Titre *" placeholder="Ex: Perceuse électrique Bosch" {...register('title')} error={errors.title?.message} />
+          <div className="text-xs text-gray-500 mt-1">{(watch('title')?.length || 0)}/100</div>
+        </div>
 
         {/* Brand / Model */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -193,6 +254,13 @@ const CreateItemPage: React.FC = () => {
             Tags (séparés par des virgules)
           </label>
           <Input {...register('tags')} type="text" id="tags" placeholder="ex: perceuse, bosch, 18v" />
+          {watch('tags') && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {watch('tags')!.split(',').map(t => t.trim()).filter(Boolean).map((t) => (
+                <span key={t} className="px-2 py-0.5 rounded-md text-xs bg-gray-200 text-gray-700">{t}</span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Availability window */}
@@ -274,6 +342,7 @@ const CreateItemPage: React.FC = () => {
             Description
           </label>
           <TextArea {...register('description')} id="description" rows={4} placeholder="Décrivez votre objet, son état, ses accessoires..." />
+          <div className="text-xs text-gray-500 mt-1">{(watch('description')?.length || 0)} caractères</div>
         </div>
 
         {/* Category */}
