@@ -11,6 +11,7 @@ import EditItemPage from './pages/EditItemPage';
 import RequestsPage from './pages/RequestsPage';
 import ChatPage from './pages/ChatPage';
 import NeighboursPage from './pages/NeighboursPage';
+import CommunitiesPage from './pages/CommunitiesPage';
 import ProfilePage from './pages/ProfilePage';
 import MyProfilePage from './pages/MyProfilePage';
 import SettingsPage from './pages/SettingsPage';
@@ -58,6 +59,7 @@ function App() {
         <Route path="/requests" element={<RequestsPage />} />
         <Route path="/chat/:id" element={<ChatPage />} />
         <Route path="/neighbours" element={<NeighboursPage />} />
+        <Route path="/communities" element={<CommunitiesPage />} />
         <Route path="/profile/:id" element={<ProfilePage />} />
         <Route path="/me" element={<MyProfilePage />} />
         <Route path="/settings" element={<SettingsPage />} />

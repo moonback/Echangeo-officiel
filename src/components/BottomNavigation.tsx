@@ -1,19 +1,20 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Search, MessageCircle, User } from 'lucide-react';
+import { Home, Search, Users, MessageCircle, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const BottomNavigation: React.FC = () => {
   const navItems = [
     { to: '/', icon: Home, label: 'Accueil' },
     { to: '/items', icon: Search, label: 'Rechercher' },
+    { to: '/communities', icon: Users, label: 'Communautés' },
     { to: '/requests', icon: MessageCircle, label: 'Échanges' },
     { to: '/me', icon: User, label: 'Profil' },
   ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-gray-200 z-50">
-      <div className="grid grid-cols-4">
+      <div className="grid grid-cols-5">
         {navItems.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
