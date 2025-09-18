@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Package, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
 const loginSchema = z.object({
@@ -86,19 +86,16 @@ const LoginPage: React.FC = () => {
           >
             {/* Glow Effect */}
             <div className="absolute inset-0 rounded-full bg-gradient-to-r from-brand-400 to-brand-600 opacity-20 blur-lg animate-pulse" />
-            <div className="relative w-16 h-16 bg-gradient-to-r from-brand-600 to-brand-700 rounded-2xl shadow-lg shadow-brand-500/25 flex items-center justify-center">
-              <Package className="w-8 h-8 text-white" />
+            <div className="relative w-30 h-30 bg-white rounded-2xl shadow-lg shadow-brand-500/25 flex items-center justify-center p-2">
+              <img 
+                src="/logo.png" 
+                alt="Échangeo Logo" 
+                className="w-full h-full object-contain"
+              />
             </div>
           </motion.div>
           
-          <motion.h1 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-            className="text-3xl font-bold text-gray-900 mb-3 gradient-text"
-          >
-            Échangeo
-          </motion.h1>
+          
           
           <motion.p 
             initial={{ opacity: 0, y: 10 }}
