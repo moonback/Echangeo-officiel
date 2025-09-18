@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
+import DonationSection from '../components/DonationSection';
 
 const LandingPage: React.FC = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -374,6 +375,9 @@ const LandingPage: React.FC = () => {
             </div>
           </div>
         </motion.section>
+
+        {/* Donation Section */}
+        <DonationSection />
 
         {/* CTA Section */}
         <motion.section 

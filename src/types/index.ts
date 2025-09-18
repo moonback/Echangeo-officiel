@@ -102,7 +102,7 @@ export type ItemCategory =
 
 export type ItemCondition = 'excellent' | 'good' | 'fair' | 'poor';
 
-export type OfferType = 'loan' | 'trade';
+export type OfferType = 'loan' | 'trade' | 'donation';
 
 export type RequestStatus = 'pending' | 'approved' | 'rejected' | 'completed';
 

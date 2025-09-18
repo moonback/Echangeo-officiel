@@ -24,9 +24,13 @@ import type { NeighborhoodSuggestion } from '../types';
 const createItemSchema = z.object({
   title: z.string().min(1, 'Le titre est requis').max(100, 'Le titre est trop long'),
   description: z.string().optional(),
-  category: z.enum(['tools', 'electronics', 'books', 'sports', 'kitchen', 'garden', 'toys', 'services', 'other'] as const),
+  category: z.enum([
+    'tools', 'electronics', 'books', 'sports', 'kitchen', 'garden', 'toys',
+    'fashion', 'furniture', 'music', 'baby', 'art', 'beauty', 'auto', 'office',
+    'services', 'other'
+  ] as const),
   condition: z.enum(['excellent', 'good', 'fair', 'poor']),
-  offer_type: z.enum(['loan', 'trade']),
+  offer_type: z.enum(['loan', 'trade', 'donation']),
   desired_items: z.string().max(500).optional(),
   brand: z.string().max(100).optional(),
   model: z.string().max(100).optional(),
@@ -741,6 +745,7 @@ const CreateItemPage: React.FC = () => {
               <div className="text-xs text-gray-500 mt-1">
                 {watch('offer_type') === 'loan' && 'Prêt temporaire de votre objet'}
                 {watch('offer_type') === 'trade' && 'Échange définitif contre autre chose'}
+                {watch('offer_type') === 'donation' && 'Don gratuit à un voisin'}
               </div>
               {errors.offer_type && (
                 <p className="text-red-500 text-xs mt-1">{errors.offer_type.message}</p>

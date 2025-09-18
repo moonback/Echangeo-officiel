@@ -48,9 +48,9 @@ export interface Database {
           owner_id: string;
           title: string;
           description?: string;
-          category: string;
+          category: 'tools' | 'electronics' | 'books' | 'sports' | 'kitchen' | 'garden' | 'toys' | 'fashion' | 'furniture' | 'music' | 'baby' | 'art' | 'beauty' | 'auto' | 'office' | 'services' | 'other';
           condition: string;
-          offer_type: string;
+          offer_type: 'loan' | 'trade' | 'donation';
           desired_items?: string;
           brand?: string;
           model?: string;
@@ -70,9 +70,9 @@ export interface Database {
           owner_id: string;
           title: string;
           description?: string;
-          category: string;
+          category: 'tools' | 'electronics' | 'books' | 'sports' | 'kitchen' | 'garden' | 'toys' | 'fashion' | 'furniture' | 'music' | 'baby' | 'art' | 'beauty' | 'auto' | 'office' | 'services' | 'other';
           condition: string;
-          offer_type?: string;
+          offer_type?: 'loan' | 'trade' | 'donation';
           desired_items?: string;
           brand?: string;
           model?: string;
@@ -92,9 +92,9 @@ export interface Database {
           owner_id?: string;
           title?: string;
           description?: string;
-          category?: string;
+          category?: 'tools' | 'electronics' | 'books' | 'sports' | 'kitchen' | 'garden' | 'toys' | 'fashion' | 'furniture' | 'music' | 'baby' | 'art' | 'beauty' | 'auto' | 'office' | 'services' | 'other';
           condition?: string;
-          offer_type?: string;
+          offer_type?: 'loan' | 'trade' | 'donation';
           desired_items?: string;
           brand?: string;
           model?: string;
@@ -373,7 +373,7 @@ export interface Database {
           title: string;
           content?: string;
           author_id?: string;
-          category: string;
+          category: 'tools' | 'electronics' | 'books' | 'sports' | 'kitchen' | 'garden' | 'toys' | 'fashion' | 'furniture' | 'music' | 'baby' | 'art' | 'beauty' | 'auto' | 'office' | 'services' | 'other';
           is_pinned: boolean;
           is_locked: boolean;
           created_at: string;
@@ -385,7 +385,7 @@ export interface Database {
           title: string;
           content?: string;
           author_id?: string;
-          category?: string;
+          category?: 'tools' | 'electronics' | 'books' | 'sports' | 'kitchen' | 'garden' | 'toys' | 'fashion' | 'furniture' | 'music' | 'baby' | 'art' | 'beauty' | 'auto' | 'office' | 'services' | 'other';
           is_pinned?: boolean;
           is_locked?: boolean;
           created_at?: string;
@@ -397,7 +397,7 @@ export interface Database {
           title?: string;
           content?: string;
           author_id?: string;
-          category?: string;
+          category?: 'tools' | 'electronics' | 'books' | 'sports' | 'kitchen' | 'garden' | 'toys' | 'fashion' | 'furniture' | 'music' | 'baby' | 'art' | 'beauty' | 'auto' | 'office' | 'services' | 'other';
           is_pinned?: boolean;
           is_locked?: boolean;
           created_at?: string;
