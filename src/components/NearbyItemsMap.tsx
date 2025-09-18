@@ -54,6 +54,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
   showSidebar = true
 }) => {
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
+  const [userLocationInfo, setUserLocationInfo] = useState<{ neighborhood: string; city: string } | null>(null);
   const [showOnlyWithImages, setShowOnlyWithImages] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedCommunity, setSelectedCommunity] = useState<Community | null>(null);
@@ -81,6 +82,28 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
   const { data: communities } = useCommunities();
   const { data: communityItems, isLoading: communityItemsLoading } = useCommunityItems(selectedCommunity?.id || '');
 
+  // Fonction pour obtenir les informations de localisation
+  const getLocationInfo = async (lat: number, lng: number) => {
+    try {
+      // Utiliser l'API de géocodage inversé (exemple avec Nominatim)
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1&accept-language=fr`
+      );
+      const data = await response.json();
+      
+      if (data.address) {
+        const neighborhood = data.address.suburb || data.address.neighbourhood || data.address.quarter || 'Quartier non identifié';
+        const city = data.address.city || data.address.town || data.address.village || data.address.municipality || 'Ville non identifiée';
+        
+        setUserLocationInfo({ neighborhood, city });
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération des informations de localisation:', error);
+      // Fallback avec des valeurs par défaut
+      setUserLocationInfo({ neighborhood: 'Quartier non identifié', city: 'Ville non identifiée' });
+    }
+  };
+
   // Géolocalisation de l'utilisateur
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -89,8 +112,11 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
 
     const getLocation = () => {
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        async (pos) => {
+          const location = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          setUserLoc(location);
+          // Obtenir les informations de localisation
+          await getLocationInfo(location.lat, location.lng);
         },
         (error) => {
           console.error('Erreur de géolocalisation:', error);
@@ -552,14 +578,69 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
         <div className={`relative overflow-hidden ${className.includes('h-full') ? 'flex-1' : ''} ${className.includes('w-full') ? 'w-full' : ''}`}>
           
           {/* Éléments flottants au-dessus de la carte */}
-          <div className="absolute top-4 right-4 z-30">
-            {/* Contrôles flottants */}
-            {showControls && (
+          <div className="absolute top-4 left-4 right-4 z-30">
+            <div className="flex items-center justify-between">
+              {/* Localisation flottante */}
               <motion.div 
-                initial={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="flex items-center gap-2"
+                className="bg-white/95 backdrop-blur-xl rounded-2xl px-4 py-3 shadow-2xl border border-gray-200/50"
               >
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className="p-2 bg-gradient-to-r from-brand-500 to-blue-500 rounded-xl shadow-lg">
+                      <Navigation className="w-5 h-5 text-white" />
+                    </div>
+                    {userLoc && (
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
+                    )}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-lg font-bold text-gray-900">
+                        {selectedCommunity ? selectedCommunity.name : 
+                         userLocationInfo ? userLocationInfo.neighborhood : 'Position actuelle'}
+                      </h3>
+                      {(selectedCommunity || userLocationInfo) && (
+                        <Badge variant="info" size="sm" className="animate-pulse">
+                          <MapPin size={10} className="mr-1" />
+                          Quartier
+                        </Badge>
+                      )}
+                    </div>
+                    {selectedCommunity ? (
+                      <motion.p 
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-sm text-gray-600 flex items-center gap-1"
+                      >
+                        <MapPin size={12} />
+                        {selectedCommunity.city} • {selectedCommunity.stats?.total_items || 0} objets disponibles
+                      </motion.p>
+                    ) : (
+                      <motion.p 
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-sm text-gray-600 flex items-center gap-1"
+                      >
+                        <Navigation size={12} />
+                        {userLocationInfo ? 
+                          `${userLocationInfo.city} • Géolocalisation active` : 
+                          userLoc ? 'Détection du quartier...' : 'Activation de la géolocalisation...'
+                        }
+                      </motion.p>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+              
+              {/* Contrôles flottants */}
+              {showControls && (
+                <motion.div 
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="flex items-center gap-2"
+                >
                   {/* Bouton retour aux quartiers */}
                   {selectedCommunity && (
                     <Button
@@ -615,8 +696,9 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
                       )}
                     </Button>
                   )}
-              </motion.div>
-            )}
+                </motion.div>
+              )}
+            </div>
           </div>
           {(isLoading || (viewMode === 'items' && communityItemsLoading)) ? (
             <div 
@@ -721,7 +803,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="absolute top-20 right-4 bg-white/95 backdrop-blur-xl rounded-2xl px-3 py-3 shadow-2xl border border-gray-200/50 max-w-xs z-10"
+              className="absolute top-24 right-4 bg-white/95 backdrop-blur-xl rounded-2xl px-3 py-3 shadow-2xl border border-gray-200/50 max-w-xs z-10"
             >
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-sm font-bold text-gray-800 flex items-center gap-2">
@@ -820,7 +902,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
             <motion.div 
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="absolute top-20 right-4 z-10"
+              className="absolute top-24 right-4 z-10"
             >
               <Button
                 onClick={() => setShowLegend(true)}
