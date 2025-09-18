@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, RefreshCw, Filter, Eye, EyeOff, Maximize2, Minimize2, Users, ArrowLeft } from 'lucide-react';
+import { MapPin, RefreshCw, Eye, EyeOff, Users, ArrowLeft } from 'lucide-react';
 import { useItems } from '../hooks/useItems';
 import { useCommunities, useCommunityItems } from '../hooks/useCommunities';
-import { useAuthStore } from '../store/authStore';
 import MapboxMap from './MapboxMap';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import Badge from './ui/Badge';
 import EmptyState from './EmptyState';
-import type { Item, Community } from '../types';
+import type { Community } from '../types';
 
 interface NearbyItemsMapProps {
   className?: string;
@@ -38,9 +37,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
   showCommunities = true,
   onCommunityClick
 }) => {
-  const { user } = useAuthStore();
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
-  const [isExpanded, setIsExpanded] = useState(false);
   const [showOnlyWithImages, setShowOnlyWithImages] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
@@ -52,7 +49,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
     hasImages: showOnlyWithImages || undefined
   });
 
-  const { data: communities, isLoading: communitiesLoading } = useCommunities();
+  const { data: communities } = useCommunities();
   const { data: communityItems, isLoading: communityItemsLoading } = useCommunityItems(selectedCommunity?.id || '');
 
   // Géolocalisation de l'utilisateur
@@ -148,7 +145,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
         type: 'item' as const,
         owner: item.owner?.full_name || item.owner?.email || 'Propriétaire anonyme',
         condition: item.condition,
-        price: item.price,
+        price: item.estimated_value,
         distance: distance,
         createdAt: item.created_at,
         data: item
@@ -216,7 +213,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
       animate={{ opacity: 1, y: 0 }}
       className={className}
     >
-      <Card className={`p-0 glass ${isExpanded ? 'fixed inset-4 z-50' : ''} ${className.includes('h-full') ? 'h-full flex flex-col' : ''} ${className.includes('w-full') ? 'w-full' : ''}`}>
+      <Card className={`p-0 glass ${className.includes('h-full') ? 'h-full flex flex-col' : ''} ${className.includes('w-full') ? 'w-full' : ''}`}>
         {/* Header */}
         <div className="p-4 border-b border-gray-200/50">
           <div className="flex items-center justify-between mb-3">
@@ -278,17 +275,6 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
                     className={isRefreshing ? 'animate-spin' : ''} 
                   />
                   Actualiser
-                </Button>
-
-                {/* Bouton d'expansion */}
-                <Button
-                  onClick={() => setIsExpanded(!isExpanded)}
-                  variant="ghost"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  {isExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-                  {isExpanded ? 'Réduire' : 'Agrandir'}
                 </Button>
               </div>
             )}
