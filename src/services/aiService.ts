@@ -20,6 +20,15 @@ export interface AIAnalysisResult {
   categorySuggestions?: string[];
 }
 
+export interface CommunitySuggestion {
+  name: string;
+  description: string;
+  city: string;
+  postal_code?: string;
+  radius_km: number;
+  confidence: number;
+}
+
 interface GeminiResponse {
   candidates: Array<{
     content: {
@@ -434,4 +443,92 @@ export const generateImprovementSuggestions = (analysis: AIAnalysisResult): stri
   }
   
   return suggestions;
+};
+
+/**
+ * Suggère un quartier basé sur une adresse
+ */
+export const suggestCommunityFromAddress = async (address: string): Promise<CommunitySuggestion | null> => {
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error('Clé API Gemini manquante');
+  }
+
+  try {
+    const prompt = `
+Tu es un assistant spécialisé dans la création de quartiers/communautés pour une application de troc entre voisins.
+
+Basé sur cette adresse: "${address}"
+
+Génère une suggestion de quartier/communauté appropriée avec ces informations:
+- Nom du quartier (ex: "Centre-ville", "Quartier des Arts", "Résidence Les Pins")
+- Description courte (ex: "Communauté du centre historique", "Quartier résidentiel avec espaces verts")
+- Ville (extraire de l'adresse)
+- Code postal (si disponible dans l'adresse)
+- Rayon en km (entre 2 et 8 km selon la densité)
+
+Réponds UNIQUEMENT avec un JSON valide dans ce format exact:
+{
+  "name": "Nom du quartier",
+  "description": "Description courte",
+  "city": "Ville",
+  "postal_code": "Code postal ou null",
+  "radius_km": 5,
+  "confidence": 0.8
+}
+
+Si l'adresse n'est pas claire ou incomplète, réponds avec null.
+`;
+
+    const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          maxOutputTokens: 200,
+          temperature: 0.3,
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erreur API Gemini: ${response.status}`);
+    }
+
+    const result: GeminiResponse = await response.json();
+    const content = result.candidates[0]?.content?.parts[0]?.text;
+
+    if (!content) {
+      throw new Error('Réponse vide de l\'API Gemini');
+    }
+
+    // Parser le JSON retourné par Gemini
+    try {
+      const suggestion = JSON.parse(content.trim());
+      
+      // Validation des champs requis
+      if (!suggestion.name || !suggestion.description || !suggestion.city) {
+        return null;
+      }
+
+      return {
+        name: suggestion.name,
+        description: suggestion.description,
+        city: suggestion.city,
+        postal_code: suggestion.postal_code || undefined,
+        radius_km: Math.max(2, Math.min(8, suggestion.radius_km || 5)),
+        confidence: Math.max(0, Math.min(1, suggestion.confidence || 0.7))
+      };
+    } catch (parseError) {
+      console.error('Erreur parsing JSON:', parseError);
+      return null;
+    }
+  } catch (error) {
+    console.error('Erreur suggestion quartier:', error);
+    throw error;
+  }
 };

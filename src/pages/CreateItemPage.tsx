@@ -6,11 +6,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ArrowLeft, Upload, X, Sparkles, AlertCircle, CheckCircle } from 'lucide-react';
 import { useCreateItem } from '../hooks/useItems';
-import { useNearbyCommunities } from '../hooks/useCommunities';
+import { useNearbyCommunities, useCreateSmartCommunity } from '../hooks/useCommunities';
+import { useAuthStore } from '../store/authStore';
 import { categories } from '../utils/categories';
 import { offerTypes } from '../utils/offerTypes';
 import type { ItemCategory, OfferType } from '../types';
-import type { AIAnalysisResult } from '../services/aiService';
+import type { AIAnalysisResult, CommunitySuggestion } from '../services/aiService';
+import { suggestCommunityFromAddress } from '../services/aiService';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
@@ -52,6 +54,7 @@ const conditions = [
 const CreateItemPage: React.FC = () => {
   const navigate = useNavigate();
   const createItem = useCreateItem();
+  const { user } = useAuthStore();
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [imagesError, setImagesError] = useState<string | null>(null);
@@ -65,6 +68,8 @@ const CreateItemPage: React.FC = () => {
   const [addressSuggestions, setAddressSuggestions] = useState<Array<{ label: string; lat: number; lon: number }>>([]);
   const [isSearchingAddress, setIsSearchingAddress] = useState(false);
   const [addressDropdownOpen, setAddressDropdownOpen] = useState(false);
+  const [aiCommunitySuggestion, setAiCommunitySuggestion] = useState<CommunitySuggestion | null>(null);
+  const [isSuggestingCommunity, setIsSuggestingCommunity] = useState(false);
 
   // Récupérer les quartiers proches si la position est disponible
   const { data: nearbyCommunities, isLoading: communitiesLoading } = useNearbyCommunities(
@@ -72,6 +77,9 @@ const CreateItemPage: React.FC = () => {
     userLocation?.lng || 0,
     10 // 10km de rayon
   );
+
+  // Hook pour créer une communauté intelligente
+  const createSmartCommunity = useCreateSmartCommunity();
 
   // Recherche d'adresse (debounce)
   React.useEffect(() => {
@@ -123,6 +131,31 @@ const CreateItemPage: React.FC = () => {
   } = useForm<CreateItemForm>({
     resolver: zodResolver(createItemSchema),
   });
+
+  // Suggérer un quartier quand une adresse est sélectionnée
+  React.useEffect(() => {
+    const locationHint = watch('location_hint');
+    if (!locationHint || locationHint.length < 10) {
+      setAiCommunitySuggestion(null);
+      return;
+    }
+
+    const suggestCommunity = async () => {
+      try {
+        setIsSuggestingCommunity(true);
+        const suggestion = await suggestCommunityFromAddress(locationHint);
+        setAiCommunitySuggestion(suggestion);
+      } catch (error) {
+        console.error('Erreur suggestion quartier IA:', error);
+        setAiCommunitySuggestion(null);
+      } finally {
+        setIsSuggestingCommunity(false);
+      }
+    };
+
+    const timeout = setTimeout(suggestCommunity, 1000); // Debounce 1 seconde
+    return () => clearTimeout(timeout);
+  }, [watch('location_hint')]);
 
   const [step, setStep] = useState(1);
   const TOTAL_STEPS = 4;
@@ -257,6 +290,35 @@ const CreateItemPage: React.FC = () => {
     }
 
     setAiAnalysisApplied(true);
+  };
+
+  // Créer le quartier suggéré par l'IA
+  const createSuggestedCommunity = async () => {
+    if (!aiCommunitySuggestion) return;
+
+    try {
+      const userId = user?.id;
+      if (!userId) {
+        alert('Vous devez être connecté pour créer un quartier');
+        return;
+      }
+
+      const result = await createSmartCommunity.mutateAsync({
+        suggestion: aiCommunitySuggestion,
+        userId,
+        latitude: userLocation?.lat,
+        longitude: userLocation?.lng,
+      });
+
+      if (result) {
+        setSelectedCommunity(result.id);
+        setAiCommunitySuggestion(null);
+        alert(`Quartier "${result.name}" créé avec succès !`);
+      }
+    } catch (error) {
+      console.error('Erreur création quartier:', error);
+      alert('Erreur lors de la création du quartier');
+    }
   };
 
   // Obtenir la géolocalisation de l'utilisateur
@@ -816,6 +878,51 @@ const CreateItemPage: React.FC = () => {
                 <p className="text-sm text-blue-800">
                   📍 Position détectée : {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
                 </p>
+              </div>
+            )}
+
+            {/* Suggestion de quartier par IA */}
+            {isSuggestingCommunity && (
+              <div className="mb-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-purple-600 animate-pulse" />
+                  <span className="text-sm text-purple-800">IA analyse l'adresse pour suggérer un quartier...</span>
+                </div>
+              </div>
+            )}
+
+            {aiCommunitySuggestion && (
+              <div className="mb-3 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Sparkles className="w-4 h-4 text-purple-600" />
+                      <span className="text-sm font-medium text-purple-800">Suggestion IA</span>
+                      <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+                        {Math.round(aiCommunitySuggestion.confidence * 100)}% confiance
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="font-medium text-gray-900">{aiCommunitySuggestion.name}</p>
+                      <p className="text-sm text-gray-600">{aiCommunitySuggestion.description}</p>
+                      <p className="text-xs text-gray-500">
+                        {aiCommunitySuggestion.city}
+                        {aiCommunitySuggestion.postal_code && ` • ${aiCommunitySuggestion.postal_code}`}
+                        {` • Rayon: ${aiCommunitySuggestion.radius_km}km`}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="primary"
+                    size="sm"
+                    onClick={createSuggestedCommunity}
+                    disabled={createSmartCommunity.isPending}
+                    className="ml-3 bg-purple-600 hover:bg-purple-700"
+                  >
+                    {createSmartCommunity.isPending ? 'Création...' : 'Créer ce quartier'}
+                  </Button>
+                </div>
               </div>
             )}
 

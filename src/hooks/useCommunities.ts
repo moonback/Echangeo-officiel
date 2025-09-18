@@ -565,3 +565,89 @@ export function useCreateCommunity() {
     },
   });
 }
+
+/**
+ * Hook pour vérifier si une communauté existe déjà par nom et ville
+ */
+export function useCheckCommunityExists() {
+  return useMutation({
+    mutationFn: async ({ name, city }: { name: string; city: string }) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any)
+        .from('communities')
+        .select('id, name, city')
+        .eq('name', name)
+        .eq('city', city)
+        .eq('is_active', true)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        throw error;
+      }
+      
+      return data || null;
+    },
+  });
+}
+
+/**
+ * Hook pour créer une communauté intelligente basée sur une suggestion IA
+ */
+export function useCreateSmartCommunity() {
+  const queryClient = useQueryClient();
+  const createCommunity = useCreateCommunity();
+
+  return useMutation({
+    mutationFn: async ({
+      suggestion,
+      userId,
+      latitude,
+      longitude
+    }: {
+      suggestion: {
+        name: string;
+        description: string;
+        city: string;
+        postal_code?: string;
+        radius_km: number;
+      };
+      userId: string;
+      latitude?: number;
+      longitude?: number;
+    }) => {
+      // Vérifier d'abord si la communauté existe déjà
+      const { data: existingCommunity } = await (supabase as any)
+        .from('communities')
+        .select('id, name, city')
+        .eq('name', suggestion.name)
+        .eq('city', suggestion.city)
+        .eq('is_active', true)
+        .single();
+
+      if (existingCommunity) {
+        return existingCommunity;
+      }
+
+      // Créer la nouvelle communauté
+      const communityData = {
+        name: suggestion.name,
+        description: suggestion.description,
+        city: suggestion.city,
+        postal_code: suggestion.postal_code,
+        center_latitude: latitude,
+        center_longitude: longitude,
+        radius_km: suggestion.radius_km,
+        created_by: userId,
+      };
+
+      return await createCommunity.mutateAsync(communityData);
+    },
+    onSuccess: (data: { id: string; created_by: string } | null) => {
+      if (data) {
+        queryClient.invalidateQueries({ queryKey: ['communities'] });
+        queryClient.invalidateQueries({ queryKey: ['userCommunities', data.created_by] });
+        queryClient.invalidateQueries({ queryKey: ['nearbyCommunities'] });
+      }
+    },
+  });
+}
