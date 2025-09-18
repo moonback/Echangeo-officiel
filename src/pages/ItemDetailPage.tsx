@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   ArrowLeft, 
-  ArrowRight,
+
   MapPin, 
   User, 
   Calendar,
@@ -54,6 +54,7 @@ const ItemDetailPage: React.FC = () => {
   const [ratingComment, setRatingComment] = useState<string>('');
   const { generateMessage, isGenerating } = useRequestMessageGenerator();
   const { data: currentUserProfile } = useProfile(user?.id);
+  const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const hasCompletedBorrow = !!(item && allRequests?.some(
     (r) => r.requester_id === user?.id && r.item_id === item.id && r.status === 'completed'
   ));
@@ -71,6 +72,23 @@ const ItemDetailPage: React.FC = () => {
     if (!item?.images || item.images.length === 0) return;
     setCurrentImageIndex((prev) => (prev + 1) % item.images!.length);
   }, [item?.images]);
+
+  // Obtenir la position de l'utilisateur
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.log('Erreur géolocalisation:', error);
+        }
+      );
+    }
+  }, []);
 
   // Gestion des événements clavier pour la lightbox
   useEffect(() => {
@@ -676,79 +694,100 @@ const ItemDetailPage: React.FC = () => {
                  <div className="sm:col-span-2 lg:col-span-3 xl:col-span-4">
                    <span className="text-gray-500 block mb-3">Position</span>
                    <div className="space-y-3">
-                     {/* Carte Mapbox interactive */}
+                     {/* Carte Mapbox interactive - hauteur augmentée */}
                      <div className="relative rounded-lg overflow-hidden border border-gray-200 shadow-lg bg-gray-100">
-                       <div className="w-full h-64 bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center relative">
-                         {/* Carte Mapbox intégrée avec style amélioré */}
-                         <iframe
-                           src={`https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+ff0000(${item.longitude},${item.latitude})/${item.longitude},${item.latitude},14,0/800x400@2x?access_token=${import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw'}`}
-                           width="100%"
-                           height="100%"
-                           style={{ border: 0 }}
-                           allowFullScreen
-                           loading="lazy"
-                           referrerPolicy="no-referrer-when-downgrade"
-                           className="w-full h-full rounded-lg"
-                           title="Position de l'objet"
-                         />
+                       <div className="w-full h-96 bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center relative">
+                         {/* Carte Mapbox avec deux marqueurs */}
+                           <iframe
+                             src={(() => {
+                               if (userLocation) {
+                                 // Carte avec deux marqueurs : utilisateur (bleu) et objet (rouge)
+                                 const centerLng = (userLocation.lng + item.longitude) / 2;
+                                 const centerLat = (userLocation.lat + item.latitude) / 2;
+                                 const pins = `pin-s+3b82f6(${userLocation.lng},${userLocation.lat}),pin-s+ff0000(${item.longitude},${item.latitude})`;
+                                 return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${pins}/${centerLng},${centerLat},13,0/800x600@2x?access_token=${import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw'}`;
+                               } else {
+                                 // Carte avec seulement le marqueur de l'objet
+                                 return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+ff0000(${item.longitude},${item.latitude})/${item.longitude},${item.latitude},15,0/800x600@2x?access_token=${import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw'}`;
+                               }
+                             })()}
+                             width="100%"
+                             height="100%"
+                             style={{ border: 0 }}
+                             allowFullScreen
+                             loading="lazy"
+                             referrerPolicy="no-referrer-when-downgrade"
+                             className="w-full h-full rounded-lg"
+                             title="Position de l'objet et de l'utilisateur"
+                           />
                          
-                         {/* Overlay avec informations */}
+                         {/* Overlay avec légende */}
                          <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border border-gray-200">
-                           <div className="flex items-center gap-2">
-                             <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                             <span className="text-sm font-medium text-gray-800">Position de l'objet</span>
+                           <div className="flex items-center gap-3">
+                             {userLocation && (
+                               <div className="flex items-center gap-1">
+                                 <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                 <span className="text-xs font-medium text-gray-800">Vous</span>
+                               </div>
+                             )}
+                             <div className="flex items-center gap-1">
+                               <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                               <span className="text-xs font-medium text-gray-800">Objet</span>
+                             </div>
                            </div>
                          </div>
                          
                          {/* Coordonnées en overlay */}
-                         <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border border-gray-200">
+                         {/* <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border border-gray-200">
                            <div className="text-xs font-mono text-gray-600">
                              <div className="font-semibold text-gray-800 mb-1">Coordonnées</div>
-                             <div>Lat: {item.latitude?.toFixed(6)}</div>
-                             <div>Lng: {item.longitude?.toFixed(6)}</div>
+                             {userLocation && (
+                               <div className="mb-1">
+                                 <div className="text-blue-600 font-medium">Votre position:</div>
+                                 <div>Lat: {userLocation.lat.toFixed(6)}</div>
+                                 <div>Lng: {userLocation.lng.toFixed(6)}</div>
+                               </div>
+                             )}
+                             <div>
+                               <div className="text-red-600 font-medium">Position objet:</div>
+                               <div>Lat: {item.latitude?.toFixed(6)}</div>
+                               <div>Lng: {item.longitude?.toFixed(6)}</div>
+                             </div>
                            </div>
-                         </div>
+                         </div> */}
                          
-                         {/* Bouton plein écran */}
-                         <button
-                           onClick={() => window.open(`https://www.mapbox.com/maps?q=${item.latitude},${item.longitude}`, '_blank')}
-                           className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm rounded-lg p-2 shadow-lg border border-gray-200 hover:bg-white transition-colors duration-200"
-                           title="Ouvrir en plein écran"
-                         >
-                           <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                           </svg>
-                         </button>
+                         {/* Boutons d'action */}
+                         <div className="absolute top-3 right-3 flex gap-2">
+                           {userLocation && (
+                             <div className="bg-white/95 backdrop-blur-sm rounded-lg px-2 py-1 shadow-lg border border-gray-200">
+                               <div className="text-xs font-medium text-gray-800">
+                                 Distance: {(() => {
+                                   const R = 6371; // Rayon de la Terre en km
+                                   const dLat = (item.latitude - userLocation.lat) * Math.PI / 180;
+                                   const dLng = (item.longitude - userLocation.lng) * Math.PI / 180;
+                                   const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                                     Math.cos(userLocation.lat * Math.PI / 180) * Math.cos(item.latitude * Math.PI / 180) *
+                                     Math.sin(dLng/2) * Math.sin(dLng/2);
+                                   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                                   return (R * c).toFixed(1);
+                                 })()} km
+                               </div>
+                             </div>
+                           )}
+                           <button
+                             onClick={() => window.open(`https://www.mapbox.com/maps?q=${item.latitude},${item.longitude}`, '_blank')}
+                             className="bg-white/95 backdrop-blur-sm rounded-lg p-2 shadow-lg border border-gray-200 hover:bg-white transition-colors duration-200"
+                             title="Ouvrir en plein écran"
+                           >
+                             <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                             </svg>
+                           </button>
+                         </div>
                        </div>
                      </div>
                      
-                     {/* Boutons d'action améliorés */}
-                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                       <a
-                         href={`https://www.mapbox.com/maps?q=${item.latitude},${item.longitude}`}
-                         target="_blank" 
-                         rel="noreferrer"
-                         className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg"
-                       >
-                         <MapPin className="w-4 h-4" />
-                         Ouvrir dans Mapbox
-                       </a>
-                       <button
-                         onClick={() => {
-                           if (navigator.geolocation) {
-                             navigator.geolocation.getCurrentPosition((position) => {
-                               const userLat = position.coords.latitude;
-                               const userLng = position.coords.longitude;
-                               window.open(`https://www.mapbox.com/directions/${userLng},${userLat};${item.longitude},${item.latitude}`, '_blank');
-                             });
-                           }
-                         }}
-                         className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-md hover:shadow-lg"
-                       >
-                         <ArrowRight className="w-4 h-4" />
-                         Calculer l'itinéraire
-                       </button>
-                     </div>
+                     
                    </div>
                  </div>
                )}
