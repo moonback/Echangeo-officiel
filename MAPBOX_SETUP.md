@@ -33,7 +33,7 @@ Créez/modifiez le fichier `.env.local` :
 
 ```env
 # Mapbox (optionnel)
-VITE_MAPBOX_ACCESS_TOKEN=pk.eyJ1IjoieW91cnVzZXJuYW1lIiwiYSI6ImNsZXhhbXBsZSJ9.yourtokenhere
+VITE_MAPBOX_TOKEN=pk.eyJ1IjoieW91cnVzZXJuYW1lIiwiYSI6ImNsZXhhbXBsZSJ9.yourtokenhere
 ```
 
 ### 3. Réactiver Mapbox

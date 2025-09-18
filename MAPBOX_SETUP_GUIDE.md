@@ -40,7 +40,7 @@ VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
 
 # Mapbox (optionnel - pour les cartes interactives)
-VITE_MAPBOX_ACCESS_TOKEN=pk.eyJ1IjoieW91cnVzZXJuYW1lIiwiYSI6ImNsZXhhbXBsZSJ9.yourtokenhere
+VITE_MAPBOX_TOKEN=pk.eyJ1IjoieW91cnVzZXJuYW1lIiwiYSI6ImNsZXhhbXBsZSJ9.yourtokenhere
 ```
 
 ### 3. Redémarrer le serveur
@@ -101,7 +101,7 @@ npm run dev
 
 Pour activer les cartes interactives, ajoutez votre clé Mapbox dans le fichier .env.local :
 
-VITE_MAPBOX_ACCESS_TOKEN=pk.eyJ1...
+VITE_MAPBOX_TOKEN=pk.eyJ1...
 
 Obtenez une clé gratuite sur mapbox.com
 ```

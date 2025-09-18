@@ -112,7 +112,7 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
 VITE_MISTRAL_API_KEY=your-mistral-key
 
 # Mapbox (optionnel)
-VITE_MAPBOX_ACCESS_TOKEN=your-mapbox-token
+VITE_MAPBOX_TOKEN=your-mapbox-token
 ```
 
 ### 5. Lancer le projet

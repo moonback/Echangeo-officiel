@@ -24,7 +24,7 @@ interface MapboxMapProps {
 }
 
 const MapboxMap: React.FC<MapboxMapProps> = ({
-  accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || import.meta.env.VITE_MAPBOX_TOKEN,
+  accessToken = import.meta.env.VITE_MAPBOX_TOKEN || import.meta.env.VITE_MAPBOX_TOKEN,
   center,
   zoom = 11,
   height = 360,
@@ -40,7 +40,7 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
 
   React.useEffect(() => {
     if (!accessToken) {
-      console.warn('Token Mapbox manquant. Ajoutez VITE_MAPBOX_ACCESS_TOKEN dans votre .env.local');
+      console.warn('Token Mapbox manquant. Ajoutez VITE_MAPBOX_TOKEN dans votre .env.local');
       return;
     }
     if (!mapContainerRef.current) return;
@@ -212,7 +212,7 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
           Pour activer les cartes interactives, ajoutez votre clé Mapbox dans le fichier <code className="bg-yellow-100 px-1 rounded">.env.local</code> :
         </p>
         <code className="block mt-2 p-2 bg-yellow-100 rounded text-xs">
-          VITE_MAPBOX_ACCESS_TOKEN=pk.eyJ1...
+          VITE_MAPBOX_TOKEN=pk.eyJ1...
         </code>
         <p className="text-xs mt-2 text-yellow-700">
           Obtenez une clé gratuite sur <a href="https://mapbox.com" target="_blank" rel="noopener noreferrer" className="underline">mapbox.com</a>

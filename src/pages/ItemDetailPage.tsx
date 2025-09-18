@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   ArrowLeft, 
+  ArrowRight,
   MapPin, 
   User, 
   Calendar,
@@ -669,21 +670,59 @@ const ItemDetailPage: React.FC = () => {
                   </p>
                 </div>
               )}
-              {(item.latitude !== undefined && item.longitude !== undefined) && (
-                <div className="sm:col-span-2 lg:col-span-3 xl:col-span-4">
-                  <span className="text-gray-500 block mb-1">Position</span>
-                  <p className="font-medium text-gray-900">
-                    {item.latitude?.toFixed(6)}, {item.longitude?.toFixed(6)}{' '}
-                    <a
-                      className="text-blue-600 hover:text-blue-700 ml-2"
-                      href={`https://www.google.com/maps?q=${item.latitude},${item.longitude}`}
-                      target="_blank" rel="noreferrer"
-                    >
-                      Ouvrir la carte
-                    </a>
-                  </p>
-                </div>
-              )}
+               {(item.latitude !== undefined && item.longitude !== undefined) && (
+                 <div className="sm:col-span-2 lg:col-span-3 xl:col-span-4">
+                   <span className="text-gray-500 block mb-3">Position</span>
+                   <div className="space-y-3">
+                     {/* Carte Mapbox intégrée */}
+                     <div className="relative rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                       <iframe
+                         src={`https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+ff0000(${item.longitude},${item.latitude})/${item.longitude},${item.latitude},15,0/600x300@2x?access_token=${import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw'}`}
+                         width="100%"
+                         height="200"
+                         style={{ border: 0 }}
+                         allowFullScreen
+                         loading="lazy"
+                         referrerPolicy="no-referrer-when-downgrade"
+                         className="w-full h-48"
+                         title="Position de l'objet"
+                       />
+                       {/* Overlay avec coordonnées */}
+                       <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm rounded-lg px-2 py-1 text-xs font-mono text-gray-600 border border-gray-200">
+                         {item.latitude?.toFixed(6)}, {item.longitude?.toFixed(6)}
+                       </div>
+                     </div>
+                     
+                     {/* Boutons d'action */}
+                     <div className="flex gap-2">
+                       <a
+                         href={`https://www.mapbox.com/maps?q=${item.latitude},${item.longitude}`}
+                         target="_blank" 
+                         rel="noreferrer"
+                         className="inline-flex items-center gap-2 px-3 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition-colors duration-200"
+                       >
+                         <MapPin className="w-4 h-4" />
+                         Ouvrir dans Mapbox
+                       </a>
+                       <button
+                         onClick={() => {
+                           if (navigator.geolocation) {
+                             navigator.geolocation.getCurrentPosition((position) => {
+                               const userLat = position.coords.latitude;
+                               const userLng = position.coords.longitude;
+                               window.open(`https://www.mapbox.com/directions/${userLng},${userLat};${item.longitude},${item.latitude}`, '_blank');
+                             });
+                           }
+                         }}
+                         className="inline-flex items-center gap-2 px-3 py-2 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition-colors duration-200"
+                       >
+                         <ArrowRight className="w-4 h-4" />
+                         Itinéraire
+                       </button>
+                     </div>
+                   </div>
+                 </div>
+               )}
               {item.tags && item.tags.length > 0 && (
                 <div className="sm:col-span-2 lg:col-span-3 xl:col-span-4">
                   <span className="text-gray-500 block mb-1">Tags</span>
