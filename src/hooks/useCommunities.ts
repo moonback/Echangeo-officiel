@@ -6,7 +6,8 @@ import type {
   CommunityEvent, 
   CommunityDiscussion,
   NearbyCommunity,
-  CommunityOverview
+  CommunityOverview,
+  Item
 } from '../types';
 
 // Note: Utilisation de (supabase as any) pour les tables de communautés
@@ -52,6 +53,14 @@ export function useCommunity(communityId: string) {
           members:community_members(
             *,
             user:profiles(*)
+          ),
+          events:community_events(
+            *,
+            creator:profiles(*)
+          ),
+          discussions:community_discussions(
+            *,
+            author:profiles(*)
           )
         `)
         .eq('id', communityId)
@@ -512,6 +521,62 @@ export function useReplyToDiscussion() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['communityDiscussions'] });
     },
+  });
+}
+
+/**
+ * Hook pour récupérer les objets d'une communauté
+ */
+export function useCommunityItems(communityId: string) {
+  return useQuery({
+    queryKey: ['communityItems', communityId],
+    queryFn: async (): Promise<Item[]> => {
+      // Récupérer d'abord les coordonnées de la communauté
+      const { data: community, error: communityError } = await supabase
+        .from('communities')
+        .select('center_latitude, center_longitude, radius_km')
+        .eq('id', communityId)
+        .single();
+
+      if (communityError) throw communityError;
+      if (!community?.center_latitude || !community?.center_longitude) {
+        return [];
+      }
+
+      // Récupérer les objets dans le rayon de la communauté
+      const { data, error } = await supabase
+        .from('items')
+        .select(`
+          *,
+          owner:profiles!items_owner_id_fkey(*),
+          images:item_images(*)
+        `)
+        .eq('is_available', true)
+        .eq('suspended_by_admin', false)
+        .not('latitude', 'is', null)
+        .not('longitude', 'is', null)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Filtrer les objets qui sont dans le rayon de la communauté
+      const itemsInRadius = (data || []).filter((item: any) => {
+        if (!item.latitude || !item.longitude) return false;
+        
+        const distance = calculateDistance(
+          community.center_latitude,
+          community.center_longitude,
+          item.latitude,
+          item.longitude
+        );
+        
+        return distance <= community.radius_km;
+      });
+
+      return itemsInRadius as Item[];
+    },
+    enabled: !!communityId,
+    staleTime: 1000 * 60 * 3, // 3 minutes
   });
 }
 

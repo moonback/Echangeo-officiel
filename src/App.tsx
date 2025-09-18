@@ -15,6 +15,7 @@ import MessagesPage from './pages/MessagesPage';
 import NeighboursPage from './pages/NeighboursPage';
 import CommunitiesPage from './pages/CommunitiesPage';
 import CommunityDetailPage from './pages/CommunityDetailPage';
+import CreateCommunityPage from './pages/CreateCommunityPage';
 import ProfilePage from './pages/ProfilePage';
 import MyProfilePage from './pages/MyProfilePage';
 import SettingsPage from './pages/SettingsPage';
@@ -108,6 +109,7 @@ function App() {
             <Route path="/chat/:id" element={<ChatPage />} />
             <Route path="/neighbours" element={<NeighboursPage />} />
             <Route path="/communities" element={<CommunitiesPage />} />
+            <Route path="/communities/create" element={<CreateCommunityPage />} />
             <Route path="/communities/:id" element={<CommunityDetailPage />} />
             <Route path="/profile/:id" element={<ProfilePage />} />
             <Route path="/me" element={<MyProfilePage />} />
