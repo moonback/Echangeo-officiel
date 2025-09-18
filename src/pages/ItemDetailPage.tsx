@@ -92,6 +92,18 @@ const ItemDetailPage: React.FC = () => {
   const OfferTypeIcon = getOfferTypeIcon(item.offer_type);
   const isOwner = user?.id === item.owner_id;
 
+  // Gestion des événements clavier pour la lightbox
+  useEffect(() => {
+    if (!isLightboxOpen || !item?.images) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsLightboxOpen(false);
+      if (e.key === 'ArrowLeft') goPrevImage();
+      if (e.key === 'ArrowRight') goNextImage();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isLightboxOpen, item?.images]);
+
   const goPrevImage = () => {
     if (!item?.images || item.images.length === 0) return;
     setCurrentImageIndex((prev) => (prev - 1 + item.images.length) % item.images.length);
@@ -101,17 +113,6 @@ const ItemDetailPage: React.FC = () => {
     if (!item?.images || item.images.length === 0) return;
     setCurrentImageIndex((prev) => (prev + 1) % item.images.length);
   };
-
-  useEffect(() => {
-    if (!isLightboxOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsLightboxOpen(false);
-      if (e.key === 'ArrowLeft') goPrevImage();
-      if (e.key === 'ArrowRight') goNextImage();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [isLightboxOpen, item?.images?.length]);
 
   const handleRequestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -360,81 +361,6 @@ const ItemDetailPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Additional fields */}
-          {(item.brand || item.model || item.estimated_value || (item.tags && item.tags.length) || item.available_from || item.available_to || item.location_hint) && (
-            <div className="bg-white/70 rounded-xl p-4 space-y-3 glass-card">
-              <h3 className="font-semibold text-gray-900">Informations supplémentaires</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                {item.brand && (
-                  <div>
-                    <span className="text-gray-500">Marque :</span>
-                    <p className="font-medium text-gray-900">{item.brand}</p>
-                  </div>
-                )}
-                {item.model && (
-                  <div>
-                    <span className="text-gray-500">Modèle :</span>
-                    <p className="font-medium text-gray-900">{item.model}</p>
-                  </div>
-                )}
-                {typeof item.estimated_value === 'number' && !isNaN(item.estimated_value) && (
-                  <div>
-                    <span className="text-gray-500">Valeur estimée :</span>
-                    <p className="font-medium text-gray-900">{item.estimated_value.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</p>
-                  </div>
-                )}
-                {(item.available_from || item.available_to) && (
-                  <div className="sm:col-span-2">
-                    <span className="text-gray-500">Période de disponibilité :</span>
-                    <p className="font-medium text-gray-900 flex items-center">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      <span>
-                        {item.available_from ? new Date(item.available_from).toLocaleDateString('fr-FR') : '—'}
-                        {' '}→{' '}
-                        {item.available_to ? new Date(item.available_to).toLocaleDateString('fr-FR') : '—'}
-                      </span>
-                    </p>
-                  </div>
-                )}
-                {item.location_hint && (
-                  <div className="sm:col-span-2">
-                    <span className="text-gray-500">Indication de localisation :</span>
-                    <p className="font-medium text-gray-900 flex items-center">
-                      <MapPin className="w-4 h-4 mr-2" />
-                      {item.location_hint}
-                    </p>
-                  </div>
-                )}
-                {(item.latitude !== undefined && item.longitude !== undefined) && (
-                  <div className="sm:col-span-2">
-                    <span className="text-gray-500">Position :</span>
-                    <p className="font-medium text-gray-900">
-                      {item.latitude?.toFixed(6)}, {item.longitude?.toFixed(6)}{' '}
-                      <a
-                        className="text-blue-600 hover:text-blue-700 ml-2"
-                        href={`https://www.google.com/maps?q=${item.latitude},${item.longitude}`}
-                        target="_blank" rel="noreferrer"
-                      >
-                        Ouvrir la carte
-                      </a>
-                    </p>
-                  </div>
-                )}
-                {item.tags && item.tags.length > 0 && (
-                  <div className="sm:col-span-2">
-                    <span className="text-gray-500">Tags :</span>
-                    <div className="mt-1 flex flex-wrap gap-2">
-                      {item.tags.map((t) => (
-                        <span key={t} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
 
           {/* Message de succès */}
           {showSuccessMessage && (
@@ -691,6 +617,89 @@ const ItemDetailPage: React.FC = () => {
           )}
         </motion.div>
       </div>
+
+      {/* Informations supplémentaires - Pleine largeur */}
+      {(item.brand || item.model || item.estimated_value || (item.tags && item.tags.length) || item.available_from || item.available_to || item.location_hint) && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mt-8"
+        >
+          <div className="bg-white/70 rounded-xl p-6 space-y-4 glass-card">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Informations supplémentaires</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 text-sm">
+              {item.brand && (
+                <div>
+                  <span className="text-gray-500 block mb-1">Marque</span>
+                  <p className="font-medium text-gray-900">{item.brand}</p>
+                </div>
+              )}
+              {item.model && (
+                <div>
+                  <span className="text-gray-500 block mb-1">Modèle</span>
+                  <p className="font-medium text-gray-900">{item.model}</p>
+                </div>
+              )}
+              {typeof item.estimated_value === 'number' && !isNaN(item.estimated_value) && (
+                <div>
+                  <span className="text-gray-500 block mb-1">Valeur estimée</span>
+                  <p className="font-medium text-gray-900">{item.estimated_value.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</p>
+                </div>
+              )}
+              {(item.available_from || item.available_to) && (
+                <div className="sm:col-span-2 lg:col-span-3 xl:col-span-4">
+                  <span className="text-gray-500 block mb-1">Période de disponibilité</span>
+                  <p className="font-medium text-gray-900 flex items-center">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    <span>
+                      {item.available_from ? new Date(item.available_from).toLocaleDateString('fr-FR') : '—'}
+                      {' '}→{' '}
+                      {item.available_to ? new Date(item.available_to).toLocaleDateString('fr-FR') : '—'}
+                    </span>
+                  </p>
+                </div>
+              )}
+              {item.location_hint && (
+                <div className="sm:col-span-2 lg:col-span-3 xl:col-span-4">
+                  <span className="text-gray-500 block mb-1">Indication de localisation</span>
+                  <p className="font-medium text-gray-900 flex items-center">
+                    <MapPin className="w-4 h-4 mr-2" />
+                    {item.location_hint}
+                  </p>
+                </div>
+              )}
+              {(item.latitude !== undefined && item.longitude !== undefined) && (
+                <div className="sm:col-span-2 lg:col-span-3 xl:col-span-4">
+                  <span className="text-gray-500 block mb-1">Position</span>
+                  <p className="font-medium text-gray-900">
+                    {item.latitude?.toFixed(6)}, {item.longitude?.toFixed(6)}{' '}
+                    <a
+                      className="text-blue-600 hover:text-blue-700 ml-2"
+                      href={`https://www.google.com/maps?q=${item.latitude},${item.longitude}`}
+                      target="_blank" rel="noreferrer"
+                    >
+                      Ouvrir la carte
+                    </a>
+                  </p>
+                </div>
+              )}
+              {item.tags && item.tags.length > 0 && (
+                <div className="sm:col-span-2 lg:col-span-3 xl:col-span-4">
+                  <span className="text-gray-500 block mb-1">Tags</span>
+                  <div className="flex flex-wrap gap-2">
+                    {item.tags.map((t) => (
+                      <span key={t} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      )}
       {/* Floating CTA for borrow request */}
       {!isOwner && item.is_available && !hasPendingRequest && (
         <div className="fixed inset-x-0 bottom-16 md:bottom-6 z-40 flex justify-center pointer-events-none">
