@@ -12,7 +12,7 @@ const HomePage: React.FC = () => {
         className="w-full h-full"
       >
         <NearbyItemsMap
-          title="TrocAll - Quartiers et objets"
+          title="Quartiers et objets"
           height={800}
           zoom={11}
           autoFit={true}
