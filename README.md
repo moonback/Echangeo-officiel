@@ -1,223 +1,553 @@
-# TrocAll 🌱
+# TrocAll 🌱 - La plateforme communautaire pour des échanges locaux et durables
 
-**Plateforme communautaire de partage et d'emprunt d'objets entre voisins**
+![TrocAll Logo](https://your-image-url/logo.png) <!-- TODO: Ajouter un logo ou une capture d'écran ici -->
 
-TrocAll révolutionne la consommation en permettant aux voisins de partager, emprunter et échanger des objets du quotidien. Économisez de l'argent, désencombrez votre espace et créez du lien social dans votre quartier grâce à une plateforme moderne intégrant l'IA et la géolocalisation.
+## ✨ Présentation
 
-## 🚀 Stack Technique
+**TrocAll** est une plateforme communautaire innovante dédiée au **partage, à l'emprunt et à l'échange d'objets du quotidien entre voisins**. Notre mission est de révolutionner la consommation en favorisant l'économie circulaire, le désencombrement et le renforcement des liens sociaux au sein des quartiers. Grâce à l'intégration de l'**Intelligence Artificielle** et de la **géolocalisation**, TrocAll rend le partage d'objets plus simple, plus intelligent et plus convivial que jamais.
 
-### Frontend
-- **React 18** avec TypeScript pour une interface moderne et type-safe
-- **Vite** comme bundler ultra-rapide
-- **Tailwind CSS** pour un design system cohérent et responsive
-- **Framer Motion** pour des animations fluides
-- **React Router** pour la navigation SPA
-- **TanStack Query** pour la gestion d'état serveur
-- **Zustand** pour l'état global client
-- **React Hook Form** + **Zod** pour la validation des formulaires
-- **Lucide React** pour les icônes
+### Pourquoi TrocAll ?
 
-### Backend & Services
-- **Supabase** comme Backend-as-a-Service (PostgreSQL + Auth + Storage + Realtime)
-- **Gemini AI** pour l'analyse d'images et suggestions de chat
-- **Mapbox** pour la géolocalisation et cartes interactives
+*   **Économisez de l'argent :** Accédez à une multitude d'objets sans dépenser.
+*   **Réduisez votre empreinte écologique :** Donnez une seconde vie aux objets et participez à une consommation plus responsable.
+*   **Désencombrez votre espace :** Débarrassez-vous facilement de ce dont vous n'avez plus besoin.
+*   **Créez du lien social :** Rencontrez vos voisins et construisez une communauté d'entraide.
 
-### Outils de Développement
-- **ESLint** + **TypeScript** pour la qualité du code
-- **Vitest** + **Testing Library** pour les tests
-- **PostCSS** + **Autoprefixer** pour le CSS
+## 🚀 Fonctionnalités Clés
 
-## ✨ Fonctionnalités Principales (MVP)
+### 📦 Gestion Intelligente des Objets
+*   **Publication Facile :** Mettez en ligne vos objets avec photos et descriptions détaillées.
+*   **Catégorisation IA :** L'Intelligence Artificielle catégorise automatiquement vos objets (outils, électronique, livres, sports, etc.) pour une meilleure visibilité.
+*   **Prêt & Échange :** Proposez vos objets en prêt ou en échange, et gérez les demandes.
+*   **Recherche Avancée :** Trouvez rapidement ce dont vous avez besoin grâce à la recherche géolocalisée et par catégories.
+*   **Favoris & Évaluations :** Gardez une trace de vos objets préférés et évaluez les échanges.
 
-### 🏠 **Gestion des Objets**
-- Publication d'objets avec photos, descriptions et géolocalisation
-- Catégorisation automatique par IA (outils, électronique, livres, sports, etc.)
-- Système de prêt et d'échange
-- Recherche géolocalisée et par catégories
-- Système de favoris et d'évaluations
+### 🏘️ Communautés de Quartier Dynamiques
+*   **Profils Utilisateurs :** Gérez votre profil, votre réputation et votre localisation.
+*   **Voisinage Géographique :** Rejoignez ou créez des communautés basées sur votre quartier.
+*   **Chat Intégré :** Communiquez facilement avec vos voisins grâce à une messagerie instantanée avec assistant IA.
+*   **Notifications en Temps Réel :** Restez informé des nouvelles opportunités et messages.
+*   **Modération & Signalement :** Un système robuste pour assurer la sécurité et le respect au sein de la communauté.
+*   **Événements Communautaires :** Organisez et participez à des rencontres, ateliers ou échanges au niveau local.
+*   **Forums de Discussion :** Échangez sur des sujets spécifiques à votre quartier.
 
-### 👥 **Système Communautaire**
-- Profils utilisateurs avec réputation et géolocalisation
-- Système de voisinage géographique avec communautés
-- Chat intégré pour les négociations avec assistant IA
-- Notifications en temps réel
-- Système de modération et de signalement
+### 🤖 Intelligence Artificielle au Service du Partage
+*   **Analyse d'Images :** L'IA analyse les photos de vos objets lors de la publication pour des suggestions de catégories et descriptions.
+*   **Suggestions Contextuelles :** Obtenez des suggestions de prix et des descriptions optimisées.
+*   **Assistant de Chat :** Un assistant IA vous aide dans vos négociations et requêtes.
+*   **Score de Compatibilité :** L'IA évalue la compatibilité entre utilisateurs et objets pour des échanges pertinents.
+*   **Médiation des Conflits :** Un support IA pour faciliter la résolution des désaccords.
 
-### 🎮 **Gamification Avancée**
-- Système de niveaux et points
-- Badges de réputation (Super Prêteur, Voisin Fiable, etc.)
-- Défis communautaires quotidiens/hebdomadaires
-- Classement des utilisateurs les plus actifs
-- Récompenses et événements communautaires
+### 🏆 Gamification Engageante
+*   **Niveaux & Points :** Gagnez des points et progressez en niveau en participant activement.
+*   **Badges de Réputation :** Obtenez des badges (ex: "Super Prêteur", "Voisin Fiable") pour reconnaître votre engagement.
+*   **Défis Communautaires :** Participez à des défis quotidiens/hebdomadaires pour dynamiser les échanges.
+*   **Classement :** Visualisez votre position et celle des autres membres dans le classement des utilisateurs les plus actifs.
 
-### 🤖 **Intelligence Artificielle**
-- Analyse automatique d'images pour catégoriser les objets
-- Suggestions de prix et descriptions optimisées
-- Assistant de chat avec suggestions contextuelles
-- Analyse de compatibilité entre utilisateurs
-- Médiation automatique des conflits
+### 🎨 Interface Utilisateur Moderne & Intuitive
+*   **Design Responsive :** Une expérience fluide sur tous les appareils (mobile-first).
+*   **Navigation Intuitive :** Accédez facilement aux fonctionnalités grâce à une navigation claire.
+*   **Animations Fluides :** Des micro-interactions et animations pour une expérience agréable.
+*   **Cartes Interactives :** Explorez les objets et communautés autour de vous avec Mapbox.
+*   **Mode Sombre :** (En développement) Une option pour une interface plus reposante.
 
-### 🗺️ **Communautés de Quartier**
-- Création et gestion de communautés géographiques
-- Événements communautaires (rencontres, ateliers, échanges)
-- Forums de discussion par quartier
-- Statistiques d'activité communautaire
+## 🛠️ Stack Technique
 
-### 📱 **Interface Moderne**
-- Design responsive (mobile-first)
-- Navigation intuitive avec bottom navigation
-- Animations fluides et micro-interactions
-- Cartes interactives avec Mapbox
-- Mode sombre (en développement)
+| Catégorie | Technologie | Description |
+| :-------- | :---------- | :---------- |
+| **Frontend** | `React 18` (TypeScript) | Interface utilisateur moderne et robuste. |
+| | `Vite` | Bundler ultra-rapide pour le développement et la production. |
+| | `Tailwind CSS` | Framework CSS utilitaire pour un design rapide et cohérent. |
+| | `Framer Motion` | Bibliothèque pour des animations fluides et déclaratives. |
+| | `React Router` | Gestion de la navigation au sein de l'application SPA. |
+| | `TanStack Query` | Gestion performante de l'état serveur, du cache et des requêtes. |
+| | `Zustand` | Solution légère et flexible pour la gestion de l'état global client. |
+| | `React Hook Form` + `Zod` | Gestion et validation des formulaires de manière efficace. |
+| | `Lucide React` | Bibliothèque d'icônes modulaires. |
+| **Backend & Services** | `Supabase` | Backend-as-a-Service complet (PostgreSQL, Authentification, Stockage, Temps réel). |
+| | `Google Gemini AI` | Services d'Intelligence Artificielle pour l'analyse d'images et les suggestions de chat. |
+| | `Mapbox` | Services de cartographie pour la géolocalisation et les cartes interactives. |
+| **Outils de Dev** | `ESLint` + `TypeScript` | Assure la qualité et la cohérence du code. |
+| | `Vitest` + `Testing Library` | Frameworks pour les tests unitaires et d'intégration. |
+| | `PostCSS` + `Autoprefixer` | Traitement et optimisation du CSS. |
 
-## 📋 Prérequis
+## ⚙️ Installation et Configuration
 
-- **Node.js** 18+ et npm/yarn
-- **Compte Supabase** (gratuit)
-- **Clé API Gemini** (optionnel pour l'IA)
-- **Clé API Mapbox** (optionnel pour les cartes)
+### Prérequis
+Assurez-vous d'avoir installé :
+*   **Node.js** (version 18 ou supérieure)
+*   **npm** ou **Yarn**
 
-## 🛠️ Installation et Configuration
+### Étapes
 
-### 1. Cloner le projet
-```bash
-git clone <repository-url>
-cd trocall
-```
+1.  **Cloner le dépôt :**
+    ```bash
+    git clone https://github.com/moonback/TrocAll-officiel.git
+    cd TrocAll-officiel
+    ```
 
-### 2. Installer les dépendances
-```bash
-npm install
-# ou
-yarn install
-```
+2.  **Installer les dépendances :**
+    ```bash
+    npm install
+    # ou
+    yarn install
+    ```
 
-### 3. Configuration Supabase
+3.  **Configuration Supabase :**
+    *   Créez un projet sur [Supabase](https://supabase.com) et récupérez votre `URL de projet` et votre `Clé Anon`.
+    *   Installez la CLI Supabase globalement : `npm install -g supabase`.
+    *   Liez votre projet local à Supabase : `supabase link --project-ref <votre-project-ref>`.
+    *   Appliquez les migrations de la base de données : `supabase db push`.
 
-#### Créer un projet Supabase
-1. Allez sur [supabase.com](https://supabase.com)
-2. Créez un nouveau projet
-3. Récupérez l'URL et la clé anonyme
+4.  **Variables d'environnement :**
+    Créez un fichier `.env.local` à la racine du projet avec les informations suivantes :
+    ```env
+    # Supabase (obligatoire)
+    VITE_SUPABASE_URL="https://your-project.supabase.co"
+    VITE_SUPABASE_ANON_KEY="your-anon-key"
 
-#### Appliquer les migrations
-```bash
-# Installer Supabase CLI
-npm install -g supabase
+    # Google Gemini AI (optionnel, mais recommandé pour les fonctionnalités IA)
+    VITE_GEMINI_API_KEY="your-gemini-key"
 
-# Se connecter à votre projet
-supabase link --project-ref <your-project-ref>
+    # Mapbox (optionnel, mais recommandé pour les fonctionnalités de cartographie)
+    VITE_MAPBOX_TOKEN="your-mapbox-token"
+    ```
 
-# Appliquer les migrations
-supabase db push
-```
+5.  **Lancer l'application :**
+    ```bash
+    # Pour le développement
+    npm run dev
 
-### 4. Variables d'environnement
-Créez un fichier `.env.local` :
-```env
-# Supabase (obligatoire)
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
+    # Pour un build de production
+    npm run build
 
-# Gemini AI (optionnel)
-VITE_GEMINI_API_KEY=your-gemini-key
+    # Pour prévisualiser le build de production
+    npm run preview
+    ```
 
-# Mapbox (optionnel)
-VITE_MAPBOX_TOKEN=your-mapbox-token
-```
-
-### 5. Lancer le projet
-```bash
-# Développement
-npm run dev
-
-# Build de production
-npm run build
-
-# Preview de production
-npm run preview
-```
-
-## 🏗️ Structure du Projet
+## 📂 Structure du Projet
 
 ```
 src/
-├── components/           # Composants réutilisables
-│   ├── ui/              # Composants UI de base (Button, Card, Input...)
-│   ├── admin/            # Composants d'administration
-│   ├── modals/           # Modales et overlays
-│   ├── Shell.tsx         # Layout principal avec navigation
-│   ├── Topbar.tsx        # Barre de navigation desktop
-│   ├── BottomNavigation.tsx # Navigation mobile
-│   ├── ItemCard.tsx      # Carte d'objet
-│   ├── MapboxMap.tsx     # Carte interactive
-│   ├── ChatAIAssistant.tsx # Assistant IA pour le chat
-│   ├── GamificationPage.tsx # Système de gamification
-│   ├── NotificationSystem.tsx # Système de notifications
-│   └── ...
-├── pages/                # Pages de l'application
-│   ├── HomePage.tsx      # Page d'accueil avec dashboard
-│   ├── ItemsPage.tsx     # Liste et recherche d'objets
-│   ├── CreateItemPage.tsx # Création d'objet avec IA
-│   ├── GamificationPage.tsx # Système de niveaux et badges
-│   ├── ChatPage.tsx      # Messagerie intégrée
-│   ├── CommunitiesPage.tsx # Gestion des communautés
-│   ├── admin/            # Pages d'administration
-│   └── ...
-├── hooks/                # Hooks personnalisés
-│   ├── useItems.ts       # Gestion des objets
-│   ├── useGamification.ts # Système de gamification
-│   ├── useChatAI.ts      # Assistant IA
-│   ├── useCommunities.ts # Gestion des communautés
-│   ├── useAdmin.ts       # Fonctionnalités admin
-│   └── ...
-├── services/             # Services externes
-│   ├── supabase.ts       # Configuration Supabase
-│   ├── aiService.ts      # Services IA (Gemini)
-│   ├── chatAI.ts         # Assistant de chat
-│   ├── categoryDetection.ts # Détection de catégories
-│   ├── compatibilityAI.ts # Analyse de compatibilité
-│   └── mediationAI.ts    # Médiation des conflits
-├── store/                # État global
-│   └── authStore.ts      # Store d'authentification (Zustand)
-├── types/                # Types TypeScript
-│   ├── index.ts          # Types principaux
-│   ├── database.ts       # Types générés Supabase
-│   └── admin.ts          # Types d'administration
-├── utils/                # Utilitaires
-│   ├── categories.ts     # Catégories d'objets
-│   ├── validation.ts     # Schémas de validation
-│   ├── geolocation.ts    # Utilitaires géolocalisation
-│   └── formatting.ts     # Formatage des données
-└── test/                 # Tests
-    ├── setup.ts          # Configuration des tests
-    └── ...
+├── components/           # Composants réutilisables (UI, Admin, Modals, Layouts)
+├── pages/                # Vues principales de l'application (Accueil, Objets, Chat, Admin)
+├── hooks/                # Hooks React personnalisés pour la logique réutilisable
+├── services/             # Modules d'interaction avec les services externes (Supabase, IA)
+├── store/                # Gestion de l'état global avec Zustand
+├── types/                # Définitions de types TypeScript
+├── utils/                # Fonctions utilitaires (catégories, validation, géolocalisation)
+└── test/                 # Tests unitaires et d'intégration
 ```
 
-## 🔧 Scripts Disponibles
+## 🔒 Sécurité et Conformité
 
-```bash
-# Développement
-npm run dev              # Serveur de développement Vite
+*   **Sécurité au niveau des lignes (RLS) :** Protection des données via Supabase PostgreSQL.
+*   **Authentification Robuste :** Gérée par Supabase Auth.
+*   **Validation des Données :** Utilisation de Zod pour garantir l'intégrité des données.
+*   **Modération Active :** Système de signalement et de gestion des utilisateurs bannis.
+*   **RGPD :** Conception axée sur la protection des données personnelles (à confirmer par une politique de confidentialité détaillée).
 
-# Build et déploiement
-npm run build           # Build de production
-npm run preview         # Preview du build
+## 📊 Fonctionnalités d'Administration
 
-# Qualité du code
-npm run lint            # ESLint
-npm run lint:fix        # Correction automatique
+Un tableau de bord complet pour les administrateurs incluant :
+*   **Statistiques Globales :** Vue d'ensemble de l'activité de la plateforme.
+*   **Gestion des Utilisateurs :** Modération, bannissement et gestion des comptes.
+*   **Gestion des Objets :** Supervision et modération des annonces.
+*   **Gestion des Communautés :** Création, modification et modération des communautés.
+*   **Rapports & Logs :** Suivi des signalements et des activités du système.
 
-# Tests
-npm run test            # Tests unitaires Vitest
-npm run test:ui         # Interface de test
+## 🤝 Contribuer
+
+Nous accueillons toutes les contributions ! Veuillez consulter notre [guide de contribution](./CONTRIBUTING.md) pour plus de détails sur la manière de participer au projet.
+
+### Workflow de Contribution
+1.  **Fork** le dépôt.
+2.  Créez une branche pour votre fonctionnalité (`git checkout -b feature/nom-de-ma-fonctionnalite`).
+3.  Effectuez vos modifications et **commitez**-les (`git commit -m 'Ajout de ma super fonctionnalité'`).
+4.  **Poussez** votre branche (`git push origin feature/nom-de-ma-fonctionnalite`).
+5.  Ouvrez une **Pull Request** claire et détaillée.
+
+## 📚 Documentation Additionnelle
+
+*   [**ARCHITECTURE.md**](./ARCHITECTURE.md) : Détails de l'architecture technique.
+*   [**API_DOCS.md**](./API_DOCS.md) : Documentation des APIs utilisées.
+*   [**DB_SCHEMA.md**](./DB_SCHEMA.md) : Schéma détaillé de la base de données.
+*   [**ROADMAP.md**](./ROADMAP.md) : Feuille de route et évolutions futures du projet.
+*   [**CONTRIBUTING.md**](./CONTRIBUTING.md) : Guide complet pour les contributeurs.
+
+## ⚠️ Problèmes Connus & Améliorations Futures
+
+*   **Gamification :** Nécessite l'application des migrations RLS spécifiques à la gamification.
+*   **Intégration IA :** L'analyse d'images et certaines fonctionnalités IA dépendent d'une clé API Google Gemini valide.
+*   **Cartographie :** Les fonctionnalités de géolocalisation et de carte nécessitent une clé API Mapbox valide.
+*   **Communautés :** Certaines fonctionnalités avancées des communautés pourraient nécessiter des migrations ou des développements supplémentaires.
+*   **Optimisation des Performances :** Des optimisations continues sont prévues pour garantir une fluidité maximale.
+*   **Tests Automatisés :** Extension de la couverture des tests unitaires et d'intégration.
+*   **Mode Sombre :** Finalisation de l'implémentation du mode sombre.
+*   **Application Mobile Native :** Étude et développement d'applications iOS/Android dédiées.
+
+## 📄 Licence
+
+Ce projet est distribué sous la licence MIT. Voir le fichier [LICENSE](./LICENSE) pour plus d'informations.
+
+## 🙏 Remerciements
+
+Nous tenons à remercier les projets et services open source qui rendent TrocAll possible :
+*   [Supabase](https://supabase.com)
+*   [Google Gemini](https://ai.google.dev)
+*   [Mapbox](https://mapbox.com)
+*   [Tailwind CSS](https://tailwindcss.com)
+*   [Framer Motion](https://www.framer.com/motion)
+*   Et toute la communauté open source !
+
+---
+
+**TrocAll** - Ensemble, donnons une nouvelle vie à nos objets et à nos quartiers ! 🌱
+
+
+
+
+### 🔒 Sécurité et Conformité
+*   **Sécurité au niveau des lignes (RLS) :** Protection des données via Supabase PostgreSQL.
+*   **Authentification Robuste :** Gérée par Supabase Auth.
+*   **Validation des Données :** Utilisation de Zod pour garantir l'intégrité des données.
+*   **Modération Active :** Système de signalement et de gestion des utilisateurs bannis.
+*   **RGPD :** Conception axée sur la protection des données personnelles (à confirmer par une politique de confidentialité détaillée).
+
+### 📊 Fonctionnalités d'Administration
+Un tableau de bord complet pour les administrateurs incluant :
+*   **Statistiques Globales :** Vue d'ensemble de l'activité de la plateforme.
+*   **Gestion des Utilisateurs :** Modération, bannissement et gestion des comptes.
+*   **Gestion des Objets :** Supervision et modération des annonces.
+*   **Gestion des Communautés :** Création, modification et modération des communautés.
+*   **Rapports & Logs :** Suivi des signalements et des activités du système.
+
+## 🛠️ Stack Technique
+
+| Catégorie | Technologie | Description |
+| :-------- | :---------- | :---------- |
+| **Frontend** | `React 18` (TypeScript) | Interface utilisateur moderne et robuste. |
+| | `Vite` | Bundler ultra-rapide pour le développement et la production. |
+| | `Tailwind CSS` | Framework CSS utilitaire pour un design rapide et cohérent. |
+| | `Framer Motion` | Bibliothèque pour des animations fluides et déclaratives. |
+| | `React Router` | Gestion de la navigation au sein de l'application SPA. |
+| | `TanStack Query` | Gestion performante de l'état serveur, du cache et des requêtes. |
+| | `Zustand` | Solution légère et flexible pour la gestion de l'état global client. |
+| | `React Hook Form` + `Zod` | Gestion et validation des formulaires de manière efficace. |
+| | `Lucide React` | Bibliothèque d'icônes modulaires. |
+| **Backend & Services** | `Supabase` | Backend-as-a-Service complet (PostgreSQL, Authentification, Stockage, Temps réel). |
+| | `Google Gemini AI` | Services d'Intelligence Artificielle pour l'analyse d'images et les suggestions de chat. |
+| | `Mapbox` | Services de cartographie pour la géolocalisation et les cartes interactives. |
+| **Outils de Dev** | `ESLint` + `TypeScript` | Assure la qualité et la cohérence du code. |
+| | `Vitest` + `Testing Library` | Frameworks pour les tests unitaires et d'intégration. |
+| | `PostCSS` + `Autoprefixer` | Traitement et optimisation du CSS. |
+
+## ⚙️ Installation et Configuration
+
+### Prérequis
+Assurez-vous d'avoir installé :
+*   **Node.js** (version 18 ou supérieure)
+*   **npm** ou **Yarn**
+
+### Étapes
+
+1.  **Cloner le dépôt :**
+    ```bash
+    git clone https://github.com/moonback/TrocAll-officiel.git
+    cd TrocAll-officiel
+    ```
+
+2.  **Installer les dépendances :**
+    ```bash
+    npm install
+    # ou
+    yarn install
+    ```
+
+3.  **Configuration Supabase :**
+    *   Créez un projet sur [Supabase](https://supabase.com) et récupérez votre `URL de projet` et votre `Clé Anon`.
+    *   Installez la CLI Supabase globalement : `npm install -g supabase`.
+    *   Liez votre projet local à Supabase : `supabase link --project-ref <votre-project-ref>`.
+    *   Appliquez les migrations de la base de données : `supabase db push`.
+
+4.  **Variables d'environnement :**
+    Créez un fichier `.env.local` à la racine du projet avec les informations suivantes :
+    ```env
+    # Supabase (obligatoire)
+    VITE_SUPABASE_URL="https://your-project.supabase.co"
+    VITE_SUPABASE_ANON_KEY="your-anon-key"
+
+    # Google Gemini AI (optionnel, mais recommandé pour les fonctionnalités IA)
+    VITE_GEMINI_API_KEY="your-gemini-key"
+
+    # Mapbox (optionnel, mais recommandé pour les fonctionnalités de cartographie)
+    VITE_MAPBOX_TOKEN="your-mapbox-token"
+    ```
+
+5.  **Lancer l'application :**
+    ```bash
+    # Pour le développement
+    npm run dev
+
+    # Pour un build de production
+    npm run build
+
+    # Pour prévisualiser le build de production
+    npm run preview
+    ```
+
+## 📂 Structure du Projet
+
 ```
+src/
+├── components/           # Composants réutilisables (UI, Admin, Modals, Layouts)
+├── pages/                # Vues principales de l'application (Accueil, Objets, Chat, Admin)
+├── hooks/                # Hooks React personnalisés pour la logique réutilisable
+├── services/             # Modules d'interaction avec les services externes (Supabase, IA)
+├── store/                # Gestion de l'état global avec Zustand
+├── types/                # Définitions de types TypeScript
+├── utils/                # Fonctions utilitaires (catégories, validation, géolocalisation)
+└── test/                 # Tests unitaires et d'intégration
+```
+
+## 🤝 Contribuer
+
+Nous accueillons toutes les contributions ! Veuillez consulter notre [guide de contribution](./CONTRIBUTING.md) pour plus de détails sur la manière de participer au projet.
+
+### Workflow de Contribution
+1.  **Fork** le dépôt.
+2.  Créez une branche pour votre fonctionnalité (`git checkout -b feature/nom-de-ma-fonctionnalite`).
+3.  Effectuez vos modifications et **commitez**-les (`git commit -m 'Ajout de ma super fonctionnalité'`).
+4.  **Poussez** votre branche (`git push origin feature/nom-de-ma-fonctionnalite`).
+5.  Ouvrez une **Pull Request** claire et détaillée.
+
+## 📚 Documentation Additionnelle
+
+*   [**ARCHITECTURE.md**](./ARCHITECTURE.md) : Détails de l'architecture technique.
+*   [**API_DOCS.md**](./API_DOCS.md) : Documentation des APIs utilisées.
+*   [**DB_SCHEMA.md**](./DB_SCHEMA.md) : Schéma détaillé de la base de données.
+*   [**ROADMAP.md**](./ROADMAP.md) : Feuille de route et évolutions futures du projet.
+*   [**CONTRIBUTING.md**](./CONTRIBUTING.md) : Guide complet pour les contributeurs.
+
+## ⚠️ Problèmes Connus & Améliorations Futures
+
+*   **Gamification :** Nécessite l'application des migrations RLS spécifiques à la gamification.
+*   **Intégration IA :** L'analyse d'images et certaines fonctionnalités IA dépendent d'une clé API Google Gemini valide.
+*   **Cartographie :** Les fonctionnalités de géolocalisation et de carte nécessitent une clé API Mapbox valide.
+*   **Communautés :** Certaines fonctionnalités avancées des communautés pourraient nécessiter des migrations ou des développements supplémentaires.
+*   **Optimisation des Performances :** Des optimisations continues sont prévues pour garantir une fluidité maximale.
+*   **Tests Automatisés :** Extension de la couverture des tests unitaires et d'intégration.
+*   **Mode Sombre :** Finalisation de l'implémentation du mode sombre.
+*   **Application Mobile Native :** Étude et développement d'applications iOS/Android dédiées.
+
+## 📄 Licence
+
+Ce projet est distribué sous la licence MIT. Voir le fichier [LICENSE](./LICENSE) pour plus d'informations.
+
+## 🙏 Remerciements
+
+Nous tenons à remercier les projets et services open source qui rendent TrocAll possible :
+*   [Supabase](https://supabase.com)
+*   [Google Gemini](https://ai.google.dev)
+*   [Mapbox](https://mapbox.com)
+*   [Tailwind CSS](https://tailwindcss.com)
+*   [Framer Motion](https://www.framer.com/motion)
+*   Et toute la communauté open source !
+
+---
+
+**TrocAll** - Ensemble, donnons une nouvelle vie à nos objets et à nos quartiers ! 🌱
+
+
+Super Prêteur", "Voisin Fiable") pour reconnaître votre engagement.
+*   **Défis Communautaires :** Participez à des défis quotidiens/hebdomadaires pour dynamiser les échanges.
+*   **Classement :** Visualisez votre position et celle des autres membres dans le classement des utilisateurs les plus actifs.
+
+### 🎨 Interface Utilisateur Moderne & Intuitive
+*   **Design Responsive :** Une expérience fluide sur tous les appareils (mobile-first).
+*   **Navigation Intuitive :** Accédez facilement aux fonctionnalités grâce à une navigation claire.
+*   **Animations Fluides :** Des micro-interactions et animations pour une expérience agréable.
+*   **Cartes Interactives :** Explorez les objets et communautés autour de vous avec Mapbox.
+*   **Mode Sombre :** (En développement) Une option pour une interface plus reposante.
+
+## 🛠️ Stack Technique
+
+| Catégorie | Technologie | Description |
+| :-------- | :---------- | :---------- |
+| **Frontend** | `React 18` (TypeScript) | Interface utilisateur moderne et robuste. |
+| | `Vite` | Bundler ultra-rapide pour le développement et la production. |
+| | `Tailwind CSS` | Framework CSS utilitaire pour un design rapide et cohérent. |
+| | `Framer Motion` | Bibliothèque pour des animations fluides et déclaratives. |
+| | `React Router` | Gestion de la navigation au sein de l'application SPA. |
+| | `TanStack Query` | Gestion performante de l'état serveur, du cache et des requêtes. |
+| | `Zustand` | Solution légère et flexible pour la gestion de l'état global client. |
+| | `React Hook Form` + `Zod` | Gestion et validation des formulaires de manière efficace. |
+| | `Lucide React` | Bibliothèque d'icônes modulaires. |
+| **Backend & Services** | `Supabase` | Backend-as-a-Service complet (PostgreSQL, Authentification, Stockage, Temps réel). |
+| | `Google Gemini AI` | Services d'Intelligence Artificielle pour l'analyse d'images et les suggestions de chat. |
+| | `Mapbox` | Services de cartographie pour la géolocalisation et les cartes interactives. |
+| **Outils de Dev** | `ESLint` + `TypeScript` | Assure la qualité et la cohérence du code. |
+| | `Vitest` + `Testing Library` | Frameworks pour les tests unitaires et d'intégration. |
+| | `PostCSS` + `Autoprefixer` | Traitement et optimisation du CSS. |
+
+## ⚙️ Installation et Configuration
+
+### Prérequis
+Assurez-vous d'avoir installé :
+*   **Node.js** (version 18 ou supérieure)
+*   **npm** ou **Yarn**
+
+### Étapes
+
+1.  **Cloner le dépôt :**
+    ```bash
+    git clone https://github.com/moonback/TrocAll-officiel.git
+    cd TrocAll-officiel
+    ```
+
+2.  **Installer les dépendances :**
+    ```bash
+    npm install
+    # ou
+    yarn install
+    ```
+
+3.  **Configuration Supabase :**
+    *   Créez un projet sur [Supabase](https://supabase.com) et récupérez votre `URL de projet` et votre `Clé Anon`.
+    *   Installez la CLI Supabase globalement : `npm install -g supabase`.
+    *   Liez votre projet local à Supabase : `supabase link --project-ref <votre-project-ref>`.
+    *   Appliquez les migrations de la base de données : `supabase db push`.
+
+4.  **Variables d'environnement :**
+    Créez un fichier `.env.local` à la racine du projet avec les informations suivantes :
+    ```env
+    # Supabase (obligatoire)
+    VITE_SUPABASE_URL="https://your-project.supabase.co"
+    VITE_SUPABASE_ANON_KEY="your-anon-key"
+
+    # Google Gemini AI (optionnel, mais recommandé pour les fonctionnalités IA)
+    VITE_GEMINI_API_KEY="your-gemini-key"
+
+    # Mapbox (optionnel, mais recommandé pour les fonctionnalités de cartographie)
+    VITE_MAPBOX_TOKEN="your-mapbox-token"
+    ```
+
+5.  **Lancer l'application :**
+    ```bash
+    # Pour le développement
+    npm run dev
+
+    # Pour un build de production
+    npm run build
+
+    # Pour prévisualiser le build de production
+    npm run preview
+    ```
+
+## 📂 Structure du Projet
+
+```
+src/
+├── components/           # Composants réutilisables (UI, Admin, Modals, Layouts)
+├── pages/                # Vues principales de l'application (Accueil, Objets, Chat, Admin)
+├── hooks/                # Hooks React personnalisés pour la logique réutilisable
+├── services/             # Modules d'interaction avec les services externes (Supabase, IA)
+├── store/                # Gestion de l'état global avec Zustand
+├── types/                # Définitions de types TypeScript
+├── utils/                # Fonctions utilitaires (catégories, validation, géolocalisation)
+└── test/                 # Tests unitaires et d'intégration
+```
+
+## 🤝 Contribuer
+
+Nous accueillons toutes les contributions ! Veuillez consulter notre [guide de contribution](./CONTRIBUTING.md) pour plus de détails sur la manière de participer au projet.
+
+### Workflow de Contribution
+1.  **Fork** le dépôt.
+2.  Créez une branche pour votre fonctionnalité (`git checkout -b feature/nom-de-ma-fonctionnalite`).
+3.  Effectuez vos modifications et **commitez**-les (`git commit -m 'Ajout de ma super fonctionnalité'`).
+4.  **Poussez** votre branche (`git push origin feature/nom-de-ma-fonctionnalite`).
+5.  Ouvrez une **Pull Request** claire et détaillée.
+
+## 📚 Documentation Additionnelle
+
+*   [**ARCHITECTURE.md**](./ARCHITECTURE.md) : Détails de l'architecture technique.
+*   [**API_DOCS.md**](./API_DOCS.md) : Documentation des APIs utilisées.
+*   [**DB_SCHEMA.md**](./DB_SCHEMA.md) : Schéma détaillé de la base de données.
+*   [**ROADMAP.md**](./ROADMAP.md) : Feuille de route et évolutions futures du projet.
+*   [**CONTRIBUTING.md**](./CONTRIBUTING.md) : Guide complet pour les contributeurs.
+
+## ⚠️ Problèmes Connus & Améliorations Futures
+
+*   **Gamification :** Nécessite l'application des migrations RLS spécifiques à la gamification.
+*   **Intégration IA :** L'analyse d'images et certaines fonctionnalités IA dépendent d'une clé API Google Gemini valide.
+*   **Cartographie :** Les fonctionnalités de géolocalisation et de carte nécessitent une clé API Mapbox valide.
+*   **Communautés :** Certaines fonctionnalités avancées des communautés pourraient nécessiter des migrations ou des développements supplémentaires.
+*   **Optimisation des Performances :** Des optimisations continues sont prévues pour garantir une fluidité maximale.
+*   **Tests Automatisés :** Extension de la couverture des tests unitaires et d'intégration.
+*   **Mode Sombre :** Finalisation de l'implémentation du mode sombre.
+*   **Application Mobile Native :** Étude et développement d'applications iOS/Android dédiées.
+
+## 📄 Licence
+
+Ce projet est distribué sous la licence MIT. Voir le fichier [LICENSE](./LICENSE) pour plus d'informations.
+
+## 🙏 Remerciements
+
+Nous tenons à remercier les projets et services open source qui rendent TrocAll possible :
+*   [Supabase](https://supabase.com)
+*   [Google Gemini](https://ai.google.dev)
+*   [Mapbox](https://mapbox.com)
+*   [Tailwind CSS](https://tailwindcss.com)
+*   [Framer Motion](https://www.framer.com/motion)
+*   Et toute la communauté open source !
+
+---
+
+**TrocAll** - Ensemble, donnons une nouvelle vie à nos objets et à nos quartiers ! 🌱
+
+
+
+
+### 🔒 Sécurité et Conformité
+*   **Sécurité au niveau des lignes (RLS) :** Protection des données via Supabase PostgreSQL.
+*   **Authentification Robuste :** Gérée par Supabase Auth.
+*   **Validation des Données :** Utilisation de Zod pour garantir l'intégrité des données.
+*   **Modération Active :** Système de signalement et de gestion des utilisateurs bannis.
+*   **RGPD :** Conception axée sur la protection des données personnelles (à confirmer par une politique de confidentialité détaillée).
+
+### 📊 Fonctionnalités d'Administration
+Un tableau de bord complet pour les administrateurs incluant :
+*   **Statistiques Globales :** Vue d'ensemble de l'activité de la plateforme.
+*   **Gestion des Utilisateurs :** Modération, bannissement et gestion des comptes.
+*   **Gestion des Objets :** Supervision et modération des annonces.
+*   **Gestion des Communautés :** Création, modification et modération des communautés.
+*   **Rapports & Logs :** Suivi des signalements et des activités du système.
+
+
+
+## ⚙️ Scripts Disponibles
+
+Pour faciliter le développement et la maintenance, plusieurs scripts sont disponibles :
+
+*   `npm run dev` : Lance le serveur de développement avec Vite.
+*   `npm run build` : Crée un build optimisé pour la production.
+*   `npm run preview` : Permet de prévisualiser le build de production en local.
+*   `npm run lint` : Exécute ESLint pour vérifier la qualité du code.
+*   `npm run lint:fix` : Corrige automatiquement les problèmes de linting détectés.
+*   `npm run test` : Lance les tests unitaires avec Vitest.
+*   `npm run test:ui` : Ouvre l'interface utilisateur de Vitest pour une meilleure visualisation des tests.
+
+
 
 ## 🌐 Déploiement
 
+Plusieurs options de déploiement sont possibles pour TrocAll :
+
 ### Netlify (Recommandé)
-1. Connectez votre repository GitHub
-2. Configurez les variables d'environnement
-3. Déployez automatiquement
+1.  Connectez votre dépôt GitHub à Netlify.
+2.  Configurez les variables d'environnement nécessaires.
+3.  Profitez du déploiement continu automatique à chaque push sur votre branche principale.
 
 ### Vercel
 ```bash
@@ -225,83 +555,72 @@ npm install -g vercel
 vercel --prod
 ```
 
-### Build statique
+### Build Statique
 ```bash
 npm run build
-# Les fichiers sont dans dist/
+# Les fichiers de production sont générés dans le dossier `dist/`.
+# Vous pouvez ensuite les déployer sur n'importe quel serveur web statique.
 ```
 
-## 🔒 Sécurité
 
-- **Row Level Security (RLS)** activé sur toutes les tables
-- **Authentification** via Supabase Auth
-- **Validation** des données avec Zod
-- **Sanitisation** des entrées utilisateur
-- **Système de modération** et signalement
-- **Gestion des utilisateurs bannis**
-
-## 📊 Fonctionnalités d'Administration
-
-- **Dashboard** avec statistiques globales
-- **Gestion des utilisateurs** (bannissement, modération)
-- **Gestion des objets** (modération, suspension)
-- **Gestion des communautés** (validation, modération)
-- **Système de rapports** et logs
-- **Analytics** avancées
 
 ## 🤝 Contribuer
 
-Voir [CONTRIBUTING.md](./CONTRIBUTING.md) pour les guidelines détaillées.
+Nous accueillons toutes les contributions ! Veuillez consulter notre [guide de contribution](./CONTRIBUTING.md) pour plus de détails sur la manière de participer au projet.
 
-### Workflow de base
-1. Fork le projet
-2. Créer une branche feature (`git checkout -b feature/amazing-feature`)
-3. Commit vos changements (`git commit -m 'Add amazing feature'`)
-4. Push vers la branche (`git push origin feature/amazing-feature`)
-5. Ouvrir une Pull Request
+### Workflow de Contribution
+1.  **Fork** le dépôt.
+2.  Créez une branche pour votre fonctionnalité (`git checkout -b feature/nom-de-ma-fonctionnalite`).
+3.  Effectuez vos modifications et **commitez**-les (`git commit -m 'Ajout de ma super fonctionnalité'`).
+4.  **Poussez** votre branche (`git push origin feature/nom-de-ma-fonctionnalite`).
+5.  Ouvrez une **Pull Request** claire et détaillée.
+
+
 
 ## 📚 Documentation Additionnelle
 
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - Architecture technique détaillée
-- [API_DOCS.md](./API_DOCS.md) - Documentation des APIs
-- [DB_SCHEMA.md](./DB_SCHEMA.md) - Schéma de base de données
-- [ROADMAP.md](./ROADMAP.md) - Feuille de route du projet
-- [CONTRIBUTING.md](./CONTRIBUTING.md) - Guide de contribution
+Pour une compréhension plus approfondie du projet, consultez les documents suivants :
 
-## 🐛 Problèmes Connus
+*   [**ARCHITECTURE.md**](./ARCHITECTURE.md) : Détails de l'architecture technique et des choix de conception.
+*   [**API_DOCS.md**](./API_DOCS.md) : Documentation des APIs internes et externes utilisées.
+*   [**DB_SCHEMA.md**](./DB_SCHEMA.md) : Schéma détaillé de la base de données PostgreSQL.
+*   [**ROADMAP.md**](./ROADMAP.md) : Feuille de route du projet et évolutions futures prévues.
+*   [**CONTRIBUTING.md**](./CONTRIBUTING.md) : Guide complet pour les contributeurs souhaitant rejoindre le projet.
 
-- **Gamification** : Les tables de gamification nécessitent l'application des migrations RLS
-- **IA** : L'analyse d'images nécessite une clé API Gemini
-- **Cartes** : La géolocalisation nécessite une clé API Mapbox
-- **Communautés** : Certaines fonctionnalités nécessitent des migrations supplémentaires
 
-## 🚀 Roadmap
 
-### Phase Actuelle (MVP)
-- ✅ Système de base complet
-- ✅ Gamification avancée
-- ✅ IA intégrée
-- ✅ Communautés de quartier
-- ✅ Administration complète
+## ⚠️ Problèmes Connus & Améliorations Futures
 
-### Prochaines étapes
-- 🔄 Optimisation des performances
-- 🔄 Tests automatisés complets
-- 🔄 Mode sombre
-- 🔄 Application mobile native
+Cette section liste les points d'attention actuels et les pistes d'amélioration pour le projet TrocAll :
+
+*   **Gamification :** Les tables de gamification nécessitent l'application des migrations RLS spécifiques pour une sécurité optimale.
+*   **Intégration IA :** L'analyse d'images et certaines fonctionnalités d'IA dépendent d'une clé API Google Gemini valide et configurée.
+*   **Cartographie :** Les fonctionnalités de géolocalisation et l'affichage des cartes nécessitent une clé API Mapbox valide.
+*   **Communautés :** Certaines fonctionnalités avancées liées aux communautés pourraient nécessiter des migrations ou des développements supplémentaires pour être pleinement opérationnelles.
+*   **Optimisation des Performances :** Des optimisations continues sont prévues pour garantir une fluidité maximale de l'application, notamment sur les appareils mobiles.
+*   **Tests Automatisés :** Extension de la couverture des tests unitaires et d'intégration pour assurer une meilleure robustesse du code.
+*   **Mode Sombre :** Finalisation de l'implémentation du mode sombre pour améliorer l'expérience utilisateur.
+*   **Application Mobile Native :** Étude et développement d'applications iOS/Android dédiées pour une expérience native.
+
+
 
 ## 📄 Licence
 
-Ce projet est sous licence MIT. Voir [LICENSE](./LICENSE) pour plus de détails.
+Ce projet est distribué sous la licence MIT. Pour plus de détails, veuillez consulter le fichier [LICENSE](./LICENSE) à la racine du dépôt.
+
+
 
 ## 🙏 Remerciements
 
-- [Supabase](https://supabase.com) pour l'infrastructure backend
-- [Google Gemini](https://ai.google.dev) pour les services d'IA
-- [Mapbox](https://mapbox.com) pour les services de cartographie
-- [Tailwind CSS](https://tailwindcss.com) pour le système de design
-- [Framer Motion](https://framer.com/motion) pour les animations
+Nous tenons à remercier chaleureusement les projets et services open source qui rendent TrocAll possible et nous inspirent au quotidien :
+*   [Supabase](https://supabase.com) : Pour son infrastructure backend complète et facile à utiliser.
+*   [Google Gemini](https://ai.google.dev) : Pour ses puissants services d'Intelligence Artificielle.
+*   [Mapbox](https://mapbox.com) : Pour ses outils de cartographie interactifs et performants.
+*   [Tailwind CSS](https://tailwindcss.com) : Pour son framework CSS utilitaire qui accélère le développement UI.
+*   [Framer Motion](https://www.framer.com/motion) : Pour ses capacités d'animation fluides et déclaratives.
+*   Et toute la communauté open source pour leur travail incroyable et leur soutien !
 
 ---
 
-**TrocAll** - Révolutionnons la consommation locale ensemble ! 🌱
+**TrocAll** - Ensemble, donnons une nouvelle vie à nos objets et à nos quartiers ! 🌱
+
