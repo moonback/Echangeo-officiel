@@ -26,7 +26,7 @@ const Shell: React.FC<ShellProps> = ({ children }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.22, ease: 'easeOut' }}
-            className="max-w-7xl mx-auto px-4 py-6"
+            className="max-w-12xl mx-auto px-4 py-6"
           >
             {children}
           </motion.div>
@@ -121,7 +121,7 @@ const Shell: React.FC<ShellProps> = ({ children }) => {
                 >
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
                     <Trophy size={16} className="text-white" />
-                  </div>
+        </div>
                   <span className="text-sm font-medium">Gamification</span>
                 </motion.button>
               </motion.div>

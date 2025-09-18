@@ -435,7 +435,7 @@ function createCompactFloatingPopup(marker: MapboxMarker): string {
 }
 
 // Fonction pour créer le contenu HTML du popup de communauté au survol
-function createCommunityHoverPopup(marker: MapboxMarker): string {
+function createCommunityHoverPopup(marker: MapboxMarker, onClose?: () => void): string {
   return `
     <div style="
       background: linear-gradient(135deg, #8B5CF6, #7C3AED);
@@ -446,15 +446,42 @@ function createCommunityHoverPopup(marker: MapboxMarker): string {
       border: 1px solid rgba(255, 255, 255, 0.2);
       min-width: 200px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      position: relative;
     ">
-      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-          <circle cx="9" cy="7" r="4"></circle>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-        </svg>
-        <span style="font-weight: 700; font-size: 14px;">Communauté</span>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          <span style="font-weight: 700; font-size: 14px;">Communauté</span>
+        </div>
+        ${onClose ? `
+          <button 
+            id="close-community-popup"
+            style="
+              background: rgba(255, 255, 255, 0.2);
+              border: none;
+              color: white;
+              border-radius: 50%;
+              width: 24px;
+              height: 24px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+              font-size: 14px;
+              line-height: 1;
+              transition: all 0.2s ease;
+            "
+            onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'"
+            onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'"
+          >
+            ×
+          </button>
+        ` : ''}
       </div>
       
       <div style="margin-bottom: 8px;">
@@ -490,6 +517,7 @@ function createCommunityHoverPopup(marker: MapboxMarker): string {
         color: rgba(255, 255, 255, 0.8);
         padding-top: 8px;
         border-top: 1px solid rgba(255, 255, 255, 0.2);
+        margin-bottom: 12px;
       ">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
@@ -497,6 +525,35 @@ function createCommunityHoverPopup(marker: MapboxMarker): string {
         </svg>
         <span>${marker.distance ? `${marker.distance.toFixed(1)} km` : 'Proche'}</span>
       </div>
+      
+      <button 
+        onclick="window.location.href='/communities/${marker.id.replace('community-', '')}'"
+        style="
+          width: 100%;
+          background: rgba(255, 255, 255, 0.2);
+          backdrop-filter: blur(8px);
+          color: white;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: 8px;
+          padding: 8px 12px;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+        "
+        onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'"
+        onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'"
+      >
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+        </svg>
+        Cliquez pour plus de détails
+      </button>
     </div>
   `;
 }
@@ -613,7 +670,41 @@ function createSimplePopup(marker: MapboxMarker): string {
     `;
   }
 
-  content += `
+  // Ajouter un bouton pour les communautés
+  if (marker.type === 'community') {
+    content += `
+      <div style="margin-top: 12px;">
+        <button 
+          onclick="window.location.href='/communities/${marker.id.replace('community-', '')}'"
+          style="
+            width: 100%;
+            background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+          "
+          onmouseover="this.style.transform='translateY(-1px)'"
+          onmouseout="this.style.transform='translateY(0)'"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+          </svg>
+          Voir la communauté
+        </button>
+      </div>
+    `;
+  } else {
+    content += `
       <div style="
         margin-top: 8px;
         padding-top: 8px;
@@ -623,6 +714,10 @@ function createSimplePopup(marker: MapboxMarker): string {
       ">
         Cliquez pour plus de détails
       </div>
+    `;
+  }
+
+  content += `
     </div>
   `;
 
@@ -870,9 +965,31 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
   const markersRef = React.useRef<mapboxgl.Marker[]>([]);
   const popupRef = React.useRef<mapboxgl.Popup | null>(null);
   const [hoveredCommunity, setHoveredCommunity] = React.useState<MapboxMarker | null>(null);
+  const [isCommunityPopupOpen, setIsCommunityPopupOpen] = React.useState(false);
+
+  // Fonction pour fermer le popup de communauté
+  const closeCommunityPopup = React.useCallback(() => {
+    setIsCommunityPopupOpen(false);
+    setHoveredCommunity(null);
+  }, []);
 
   // Exposer la référence de la carte
   React.useImperativeHandle(ref, () => mapRef.current as mapboxgl.Map);
+
+  // Gérer le clic sur le bouton de fermeture
+  React.useEffect(() => {
+    const handleCloseClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (target && target.id === 'close-community-popup') {
+        closeCommunityPopup();
+      }
+    };
+
+    if (isCommunityPopupOpen) {
+      document.addEventListener('click', handleCloseClick);
+      return () => document.removeEventListener('click', handleCloseClick);
+    }
+  }, [isCommunityPopupOpen, closeCommunityPopup]);
 
   React.useEffect(() => {
     if (!accessToken) {
@@ -931,14 +1048,23 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
             // Ajouter les événements de survol pour les communautés
             if (marker.type === 'community') {
               el.addEventListener('mouseenter', () => {
-                setHoveredCommunity(marker);
+                if (!isCommunityPopupOpen) {
+                  setHoveredCommunity(marker);
+                }
               });
 
               el.addEventListener('mouseleave', () => {
-                // Délai pour éviter la fermeture immédiate
-                setTimeout(() => {
-                  setHoveredCommunity(null);
-                }, 150);
+                if (!isCommunityPopupOpen) {
+                  // Délai pour éviter la fermeture immédiate
+                  setTimeout(() => {
+                    setHoveredCommunity(null);
+                  }, 150);
+                }
+              });
+
+              el.addEventListener('click', () => {
+                setIsCommunityPopupOpen(true);
+                setHoveredCommunity(marker);
               });
             }
 
@@ -1000,7 +1126,7 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
         mapRef.current = null;
       }
     };
-  }, [accessToken, center.lat, center.lng, zoom, markers, onMarkerClick, autoFit, showUserLocation, userLocation, showPopup]);
+  }, [accessToken, center.lat, center.lng, zoom, markers, onMarkerClick, autoFit, showUserLocation, userLocation, showPopup, isCommunityPopupOpen]);
 
   // Mettre à jour les marqueurs quand ils changent
   React.useEffect(() => {
@@ -1052,21 +1178,30 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
          // Ajouter les événements de survol pour les communautés
          if (marker.type === 'community') {
            el.addEventListener('mouseenter', () => {
-             setHoveredCommunity(marker);
+             if (!isCommunityPopupOpen) {
+               setHoveredCommunity(marker);
+             }
            });
 
            el.addEventListener('mouseleave', () => {
-             // Délai pour éviter la fermeture immédiate
-             setTimeout(() => {
-               setHoveredCommunity(null);
-             }, 150);
+             if (!isCommunityPopupOpen) {
+               // Délai pour éviter la fermeture immédiate
+               setTimeout(() => {
+                 setHoveredCommunity(null);
+               }, 150);
+             }
+           });
+
+           el.addEventListener('click', () => {
+             setIsCommunityPopupOpen(true);
+             setHoveredCommunity(marker);
            });
          }
 
         markersRef.current.push(mapboxMarker);
       }
     });
-  }, [markers, onMarkerClick, showPopup]);
+  }, [markers, onMarkerClick, showPopup, isCommunityPopupOpen]);
 
   // Mettre à jour le marqueur utilisateur
   React.useEffect(() => {
@@ -1245,12 +1380,14 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
         {/* Popup de survol pour les communautés */}
         {hoveredCommunity && (
           <div 
-            className="absolute top-4 left-4 z-50 pointer-events-none"
+            className="absolute top-4 left-4 z-50"
             style={{
               animation: 'fadeInSlide 0.3s ease-out'
             }}
           >
-            <div dangerouslySetInnerHTML={{ __html: createCommunityHoverPopup(hoveredCommunity) }} />
+            <div dangerouslySetInnerHTML={{ 
+              __html: createCommunityHoverPopup(hoveredCommunity, isCommunityPopupOpen ? closeCommunityPopup : undefined) 
+            }} />
           </div>
         )}
       </div>

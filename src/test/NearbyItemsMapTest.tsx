@@ -4,7 +4,7 @@ import NearbyItemsMap from '../components/NearbyItemsMap';
 const NearbyItemsMapTest: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-brand-50 p-8">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w1-2xl mx-auto">
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Test du composant NearbyItemsMap amélioré

@@ -71,12 +71,12 @@ const EditItemPage: React.FC = () => {
 
   if (isLoading || !item) {
     return (
-      <div className="p-4 max-w-7xl mx-auto">Chargement...</div>
+      <div className="p-4 max-w1-2xl mx-auto">Chargement...</div>
     );
   }
 
   return (
-    <div className="p-4 max-w-7xl mx-auto">
+    <div className="p-4 max-w1-2xl mx-auto">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex items-center mb-6">
         <Link to={`/items/${id}`} className="text-gray-600 hover:text-gray-900 mr-4">Retour</Link>
         <h1 className="text-2xl font-bold text-gray-900">Modifier l'objet</h1>

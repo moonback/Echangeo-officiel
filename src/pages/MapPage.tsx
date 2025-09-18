@@ -15,7 +15,7 @@ const MapPage: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         className="bg-white shadow-sm border-b border-gray-200"
       >
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="max-w1-2xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link to="/">
@@ -56,7 +56,7 @@ const MapPage: React.FC = () => {
       </motion.div>
 
       {/* Contenu principal */}
-      <div className="max-w-7xl mx-auto p-4">
+      <div className="max-w1-2xl mx-auto p-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

@@ -132,7 +132,7 @@ const CommunityDetailPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="p-4 max-w-7xl mx-auto">
+      <div className="p-4 max-w1-2xl mx-auto">
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded mb-4"></div>
           <div className="h-64 bg-gray-200 rounded mb-6"></div>
@@ -147,7 +147,7 @@ const CommunityDetailPage: React.FC = () => {
 
   if (!community) {
     return (
-      <div className="p-4 max-w-7xl mx-auto">
+      <div className="p-4 max-w1-2xl mx-auto">
           <EmptyState
             icon={<Users className="w-12 h-12 mx-auto" />}
             title="Quartier introuvable"
@@ -163,7 +163,7 @@ const CommunityDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="p-4 max-w-7xl mx-auto">
+    <div className="p-4 max-w1-2xl mx-auto">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

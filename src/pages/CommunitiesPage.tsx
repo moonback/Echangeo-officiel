@@ -45,7 +45,7 @@ const CommunitiesPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="p-4 max-w-7xl mx-auto">
+      <div className="p-4 max-w1-2xl mx-auto">
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded mb-4"></div>
           <div className="h-4 bg-gray-200 rounded mb-8"></div>
