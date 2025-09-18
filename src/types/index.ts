@@ -89,6 +89,14 @@ export type ItemCategory =
   | 'kitchen' 
   | 'garden' 
   | 'toys' 
+  | 'fashion'
+  | 'furniture'
+  | 'music'
+  | 'baby'
+  | 'art'
+  | 'beauty'
+  | 'auto'
+  | 'office'
   | 'services'
   | 'other';
 

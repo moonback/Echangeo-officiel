@@ -168,6 +168,7 @@ const AIImageUpload: React.FC<AIImageUploadProps> = ({
       resetAI();
       try {
         const analysis = await analyzeImage(images[0]);
+        setHasAnalyzed(true);
         if (onAIAnalysisResult) {
           onAIAnalysisResult(analysis);
         }

@@ -126,15 +126,50 @@ const AIAnalysisCard: React.FC<AIAnalysisCardProps> = ({
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-red-50 border border-red-200 rounded-xl p-4"
+                className={`rounded-xl p-4 ${
+                  error.includes('429') || error.includes('Limite de taux')
+                    ? 'bg-amber-50 border border-amber-200'
+                    : 'bg-red-50 border border-red-200'
+                }`}
               >
                 <div className="flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5" />
+                  <AlertTriangle className={`w-5 h-5 mt-0.5 ${
+                    error.includes('429') || error.includes('Limite de taux')
+                      ? 'text-amber-600'
+                      : 'text-red-600'
+                  }`} />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-red-800 mb-1">
-                      Erreur d'analyse
+                    <p className={`text-sm font-medium mb-1 ${
+                      error.includes('429') || error.includes('Limite de taux')
+                        ? 'text-amber-800'
+                        : 'text-red-800'
+                    }`}>
+                      {error.includes('429') || error.includes('Limite de taux')
+                        ? 'Limite de taux dépassée'
+                        : 'Erreur d\'analyse'
+                      }
                     </p>
-                    <p className="text-sm text-red-700">{error}</p>
+                    <p className={`text-sm ${
+                      error.includes('429') || error.includes('Limite de taux')
+                        ? 'text-amber-700'
+                        : 'text-red-700'
+                    }`}>
+                      {error}
+                    </p>
+                    
+                    {/* Message spécifique pour les erreurs 429 */}
+                    {(error.includes('429') || error.includes('Limite de taux')) && (
+                      <div className="mt-3 p-3 bg-white/50 rounded-lg border border-amber-200">
+                        <p className="text-xs text-amber-800 font-medium mb-2">
+                          💡 Solutions recommandées :
+                        </p>
+                        <ul className="text-xs text-amber-700 space-y-1">
+                          <li>• Attendez quelques instants avant de réessayer</li>
+                          <li>• Vérifiez votre niveau de service sur mistral.ai</li>
+                          <li>• Considérez passer à un niveau supérieur si nécessaire</li>
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 </div>
                 {onRetry && (
@@ -144,7 +179,11 @@ const AIAnalysisCard: React.FC<AIAnalysisCardProps> = ({
                       size="sm"
                       onClick={onRetry}
                       leftIcon={<RefreshCw size={16} />}
-                      className="text-red-700 hover:bg-red-100"
+                      className={`${
+                        error.includes('429') || error.includes('Limite de taux')
+                          ? 'text-amber-700 hover:bg-amber-100'
+                          : 'text-red-700 hover:bg-red-100'
+                      }`}
                     >
                       Réessayer
                     </Button>
@@ -174,10 +213,18 @@ const AIAnalysisCard: React.FC<AIAnalysisCardProps> = ({
                       <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
                         Catégorie détectée
                       </label>
-                      <div className="mt-1">
-                        <Badge variant="info" className="px-3 py-1">
-                          {getCategoryLabel(analysis.category)}
-                        </Badge>
+                      <div className="mt-1 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="info" className="px-3 py-1">
+                            {getCategoryLabel(analysis.category)}
+                          </Badge>
+                          {analysis.categoryConfidence && (
+                            <span className="text-xs text-gray-500">
+                              ({Math.round(analysis.categoryConfidence * 100)}% confiance)
+                            </span>
+                          )}
+                        </div>
+                        
                       </div>
                     </div>
 
@@ -276,7 +323,7 @@ const AIAnalysisCard: React.FC<AIAnalysisCardProps> = ({
                 )}
 
                 {/* Suggestions d'amélioration */}
-                {suggestions.length > 0 && (
+                {(suggestions.length > 0 || analysis.categorySuggestions?.length) && (
                   <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <Eye className="w-4 h-4 text-amber-600" />
@@ -289,6 +336,12 @@ const AIAnalysisCard: React.FC<AIAnalysisCardProps> = ({
                         <li key={index} className="text-sm text-amber-700 flex items-start gap-2">
                           <span className="w-1 h-1 rounded-full bg-amber-500 mt-2 flex-shrink-0" />
                           {suggestion}
+                        </li>
+                      ))}
+                      {analysis.categorySuggestions?.map((suggestion, index) => (
+                        <li key={`cat-${index}`} className="text-sm text-amber-700 flex items-start gap-2">
+                          <span className="w-1 h-1 rounded-full bg-amber-500 mt-2 flex-shrink-0" />
+                          <span className="font-medium">Catégorie :</span> {suggestion}
                         </li>
                       ))}
                     </ul>
