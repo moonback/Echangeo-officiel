@@ -2,29 +2,28 @@ import React from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
-// Fonction pour créer le contenu HTML du popup détaillé pour les objets
-function createDetailedItemPopup(marker: MapboxMarker): string {
-  const markerStyle = getMarkerStyle(marker);
+// Fonction pour créer le contenu HTML du popup compact flottant
+function createCompactFloatingPopup(marker: MapboxMarker): string {
   
   // Labels des catégories
   const categoryLabels: Record<string, string> = {
-    tools: 'Outils',
-    electronics: 'Électronique',
-    books: 'Livres',
-    sports: 'Sport',
-    kitchen: 'Cuisine',
-    garden: 'Jardin',
-    toys: 'Jouets',
-    fashion: 'Mode',
-    furniture: 'Meubles',
-    music: 'Musique',
-    baby: 'Bébé',
-    art: 'Art',
-    beauty: 'Beauté',
-    auto: 'Auto',
-    office: 'Bureau',
-    services: 'Services',
-    other: 'Autres',
+    tools: '🔨 Outils',
+    electronics: '📱 Électronique',
+    books: '📚 Livres',
+    sports: '⚽ Sport',
+    kitchen: '🍳 Cuisine',
+    garden: '🌱 Jardin',
+    toys: '🧸 Jouets',
+    fashion: '👗 Mode',
+    furniture: '🪑 Meubles',
+    music: '🎵 Musique',
+    baby: '👶 Bébé',
+    art: '🎨 Art',
+    beauty: '💄 Beauté',
+    auto: '🚗 Auto',
+    office: '💼 Bureau',
+    services: '🛠️ Services',
+    other: '📦 Autres',
   };
 
   // Labels des conditions
@@ -37,66 +36,105 @@ function createDetailedItemPopup(marker: MapboxMarker): string {
   };
 
   let content = `
-    <div class="detailed-popup-content" style="
-      min-width: 280px;
-      max-width: 320px;
+    <div class="compact-floating-popup" style="
+      width: 320px;
+      height: 384px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: white;
-      border-radius: 12px;
+      border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      position: relative;
     ">
   `;
 
-  // Image de l'objet
+  // Image de fond
   if (marker.imageUrl) {
     content += `
       <div style="
-        width: 100%;
-        height: 120px;
+        position: absolute;
+        inset: 0;
         background-image: url('${marker.imageUrl}');
         background-size: cover;
         background-position: center;
         background-color: #f3f4f6;
-        position: relative;
-      ">
-        <div style="
-          position: absolute;
-          top: 8px;
-          right: 8px;
-          background-color: ${markerStyle.backgroundColor};
-          color: white;
-          padding: 4px 8px;
-          border-radius: 12px;
-          font-size: 11px;
-          font-weight: 600;
-        ">
-          ${categoryLabels[marker.category || 'other'] || 'Autres'}
-        </div>
-      </div>
+      "></div>
+      <!-- Overlay gradient pour la lisibilité -->
+      <div style="
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.2), transparent);
+      "></div>
     `;
   }
 
-  // Contenu principal
+  // Contenu flottant
   content += `
-    <div style="padding: 16px;">
-      <!-- Titre -->
-      <div style="margin-bottom: 12px;">
+    <div style="
+      position: relative;
+      z-index: 10;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px;
+    ">
+      <!-- Header avec badges -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <!-- Badge catégorie -->
+        <div style="
+          background: rgba(255, 255, 255, 0.9);
+          backdrop-filter: blur(8px);
+          padding: 6px 12px;
+          border-radius: 20px;
+          font-size: 12px;
+          font-weight: 600;
+          color: #374151;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        ">
+          ${categoryLabels[marker.category || 'other'] || '📦 Autres'}
+        </div>
+        
+        <!-- Badge type d'offre -->
+        ${marker.offerType ? `
+          <div style="
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            ${marker.offerType === 'loan' 
+              ? 'background: #3B82F6; color: white;' 
+              : 'background: #8B5CF6; color: white;'}
+          ">
+            ${marker.offerType === 'loan' ? '📤 PRÊT' : '🔄 ÉCHANGE'}
+          </div>
+        ` : ''}
+      </div>
+      
+      <!-- Contenu principal -->
+      <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+        <!-- Titre -->
         <h3 style="
-          font-size: 16px;
+          font-size: 20px;
           font-weight: 700;
-          color: #1f2937;
-          margin: 0 0 4px 0;
-          line-height: 1.3;
+          color: white;
+          margin: 0 0 8px 0;
+          line-height: 1.2;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
         ">
           ${marker.title || 'Objet sans titre'}
         </h3>
+        
+        <!-- Description -->
         ${marker.description ? `
           <p style="
-            font-size: 13px;
-            color: #6b7280;
-            margin: 0;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+            margin: 0 0 16px 0;
             line-height: 1.4;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
@@ -105,167 +143,122 @@ function createDetailedItemPopup(marker: MapboxMarker): string {
             ${marker.description}
           </p>
         ` : ''}
-      </div>
-
-      <!-- Informations détaillées -->
-      <div style="margin-bottom: 12px;">
-  `;
-
-  // Propriétaire
-  if (marker.owner) {
-    content += `
-      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+        
+        <!-- Informations compactes -->
         <div style="
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          background-color: #10B981;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          font-size: 10px;
-          font-weight: 600;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+          margin-bottom: 16px;
         ">
-          👤
+          <!-- Propriétaire -->
+          ${marker.owner ? `
+            <div style="
+              background: rgba(255, 255, 255, 0.2);
+              backdrop-filter: blur(8px);
+              border-radius: 8px;
+              padding: 8px;
+              display: flex;
+              align-items: center;
+              gap: 6px;
+            ">
+              <div style="
+                width: 20px;
+                height: 20px;
+                background: rgba(255, 255, 255, 0.3);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 10px;
+                font-weight: 700;
+                color: white;
+              ">
+                ${marker.owner.charAt(0).toUpperCase()}
+              </div>
+              <span style="
+                font-size: 11px;
+                color: white;
+                font-weight: 500;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+              ">${marker.owner}</span>
+            </div>
+          ` : ''}
+          
+          <!-- Distance -->
+          ${marker.distance !== undefined ? `
+            <div style="
+              background: rgba(255, 255, 255, 0.2);
+              backdrop-filter: blur(8px);
+              border-radius: 8px;
+              padding: 8px;
+              display: flex;
+              align-items: center;
+              gap: 6px;
+            ">
+              <span style="font-size: 10px; color: white;">📍</span>
+              <span style="font-size: 11px; color: white; font-weight: 500;">
+                ${marker.distance < 1 ? `${Math.round(marker.distance * 1000)}m` : `${marker.distance.toFixed(1)}km`}
+              </span>
+            </div>
+          ` : ''}
+          
+          <!-- Condition -->
+          ${marker.condition ? `
+            <div style="
+              background: rgba(255, 255, 255, 0.2);
+              backdrop-filter: blur(8px);
+              border-radius: 8px;
+              padding: 8px;
+              display: flex;
+              align-items: center;
+              gap: 6px;
+            ">
+              <span style="font-size: 10px; color: white;">⭐</span>
+              <span style="font-size: 11px; color: white; font-weight: 500;">
+                ${conditionLabels[marker.condition] || marker.condition}
+              </span>
+            </div>
+          ` : ''}
+          
+          <!-- Prix -->
+          ${marker.price ? `
+            <div style="
+              background: rgba(255, 255, 255, 0.2);
+              backdrop-filter: blur(8px);
+              border-radius: 8px;
+              padding: 8px;
+              display: flex;
+              align-items: center;
+              gap: 6px;
+            ">
+              <span style="font-size: 10px; color: white;">€</span>
+              <span style="font-size: 11px; color: white; font-weight: 500;">${marker.price}€</span>
+            </div>
+          ` : ''}
         </div>
-        <span style="font-size: 13px; color: #374151;">
-          ${marker.owner}
-        </span>
       </div>
-    `;
-  }
-
-  // Condition
-  if (marker.condition) {
-    const conditionColor = {
-      new: '#10B981',
-      excellent: '#3B82F6',
-      good: '#F59E0B',
-      fair: '#EF4444',
-      poor: '#6B7280',
-    }[marker.condition] || '#6B7280';
-
-    content += `
-      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-        <div style="
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          background-color: ${conditionColor}20;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: ${conditionColor};
-          font-size: 10px;
-        ">
-          ⭐
-        </div>
-        <span style="font-size: 13px; color: #374151;">
-          ${conditionLabels[marker.condition] || marker.condition}
-        </span>
-      </div>
-    `;
-  }
-
-  // Distance
-  if (marker.distance !== undefined) {
-    content += `
-      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-        <div style="
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          background-color: #8B5CF620;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #8B5CF6;
-          font-size: 10px;
-        ">
-          📍
-        </div>
-        <span style="font-size: 13px; color: #374151;">
-          ${marker.distance < 1 ? `${Math.round(marker.distance * 1000)}m` : `${marker.distance.toFixed(1)}km`}
-        </span>
-      </div>
-    `;
-  }
-
-  // Type d'offre (si disponible)
-  if (marker.data?.offer_type) {
-    const offerTypeLabels: Record<string, string> = {
-      loan: 'Prêt',
-      trade: 'Échange',
-      donation: 'Don',
-    };
-    
-    const offerTypeColors: Record<string, string> = {
-      loan: '#3B82F6',
-      trade: '#F59E0B', 
-      donation: '#10B981',
-    };
-    
-    const offerType = marker.data.offer_type as string;
-    const color = offerTypeColors[offerType] || '#6B7280';
-    
-    content += `
-      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-        <div style="
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          background-color: ${color}20;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: ${color};
-          font-size: 10px;
-        ">
-          ${offerType === 'loan' ? '🔄' : offerType === 'trade' ? '🔄' : '🎁'}
-        </div>
-        <span style="font-size: 13px; color: #374151; font-weight: 600;">
-          ${offerTypeLabels[offerType] || offerType}
-        </span>
-      </div>
-    `;
-  }
-
-  content += `
-      </div>
-
-      <!-- Date de création -->
-      ${marker.createdAt ? `
-        <div style="
-          margin-bottom: 12px;
-          padding: 8px 12px;
-          background-color: #f9fafb;
-          border-radius: 8px;
-          font-size: 12px;
-          color: #6b7280;
-        ">
-          📅 Ajouté ${new Date(marker.createdAt).toLocaleDateString('fr-FR')}
-        </div>
-      ` : ''}
-
+      
       <!-- Bouton d'action -->
-      <div style="
-        padding-top: 12px;
-        border-top: 1px solid #e5e7eb;
-        text-align: center;
-      ">
-        <div class="action-button" style="
-          background-color: ${markerStyle.backgroundColor};
-          color: white;
-          padding: 8px 16px;
-          border-radius: 8px;
-          font-size: 13px;
-          font-weight: 600;
+      <div>
+        <button class="action-button" style="
+          width: 100%;
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(8px);
+          color: #1f2937;
+          padding: 12px 16px;
+          border-radius: 12px;
+          font-size: 14px;
+          font-weight: 700;
           cursor: pointer;
           transition: all 0.2s;
-        ">
+          border: none;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        " onclick="window.location.href='/items/${marker.id}'">
           Voir les détails
-        </div>
+        </button>
       </div>
     </div>
   </div>
@@ -404,9 +397,9 @@ function createSimplePopup(marker: MapboxMarker): string {
 
 // Fonction principale pour créer le contenu du popup
 function createPopupContent(marker: MapboxMarker): string {
-  // Utiliser le popup détaillé pour les objets
+  // Utiliser le popup compact flottant pour les objets
   if (marker.type === 'item') {
-    return createDetailedItemPopup(marker);
+    return createCompactFloatingPopup(marker);
   }
   
   // Utiliser le popup simple pour les autres types
@@ -498,6 +491,7 @@ export interface MapboxMarker {
   price?: number;
   distance?: number;
   createdAt?: string;
+  offerType?: string;
   data?: Record<string, unknown>; // Données complètes de l'objet
 }
 
@@ -581,44 +575,27 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
               .setLngLat([marker.longitude, marker.latitude])
               .addTo(map);
 
-            if (onMarkerClick) {
-              el.addEventListener('click', () => {
-                onMarkerClick(marker.id);
-              });
-            }
-
-            // Ajouter les événements de popup si activé
-            if (showPopup) {
-              el.addEventListener('mouseenter', () => {
-                // Fermer le popup existant
-                if (popupRef.current) {
-                  popupRef.current.remove();
-                }
-                
-                // Créer le nouveau popup
-                const popup = new mapboxgl.Popup({
-                  closeButton: false,
-                  closeOnClick: false,
-                  offset: 15,
-                  className: 'custom-popup'
-                })
-                  .setLngLat([marker.longitude, marker.latitude])
-                  .setHTML(createPopupContent(marker))
-                  .addTo(map);
-                
-                popupRef.current = popup;
-              });
-
-              el.addEventListener('mouseleave', () => {
-                // Délai pour éviter la fermeture immédiate si on survole le popup
-                setTimeout(() => {
-                  if (popupRef.current) {
-                    popupRef.current.remove();
-                    popupRef.current = null;
-                  }
-                }, 100);
-              });
-            }
+            // Ajouter l'événement de clic pour ouvrir le popup
+            el.addEventListener('click', () => {
+              // Fermer le popup existant
+              if (popupRef.current) {
+                popupRef.current.remove();
+              }
+              
+             // Créer le nouveau popup au clic
+             const popup = new mapboxgl.Popup({
+               closeButton: true,
+               closeOnClick: false,
+               closeOnMove: true,
+               offset: 15,
+               className: 'custom-popup'
+             })
+               .setLngLat([marker.longitude, marker.latitude])
+               .setHTML(createPopupContent(marker))
+               .addTo(map);
+              
+              popupRef.current = popup;
+            });
 
             markersRef.current.push(mapboxMarker);
           }
@@ -720,44 +697,27 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
           .setLngLat([marker.longitude, marker.latitude])
           .addTo(mapRef.current!);
 
-        if (onMarkerClick) {
-          el.addEventListener('click', () => {
-            onMarkerClick(marker.id);
-          });
-        }
-
-        // Ajouter les événements de popup si activé
-        if (showPopup) {
-          el.addEventListener('mouseenter', () => {
-            // Fermer le popup existant
-            if (popupRef.current) {
-              popupRef.current.remove();
-            }
-            
-            // Créer le nouveau popup
-            const popup = new mapboxgl.Popup({
-              closeButton: false,
-              closeOnClick: false,
-              offset: 15,
-              className: 'custom-popup'
-            })
-              .setLngLat([marker.longitude, marker.latitude])
-              .setHTML(createPopupContent(marker))
-              .addTo(mapRef.current!);
-            
-            popupRef.current = popup;
-          });
-
-          el.addEventListener('mouseleave', () => {
-            // Délai pour éviter la fermeture immédiate si on survole le popup
-            setTimeout(() => {
-              if (popupRef.current) {
-                popupRef.current.remove();
-                popupRef.current = null;
-              }
-            }, 100);
-          });
-        }
+         // Ajouter l'événement de clic pour ouvrir le popup
+         el.addEventListener('click', () => {
+           // Fermer le popup existant
+           if (popupRef.current) {
+             popupRef.current.remove();
+           }
+           
+           // Créer le nouveau popup au clic
+           const popup = new mapboxgl.Popup({
+             closeButton: true,
+             closeOnClick: false,
+             closeOnMove: true,
+             offset: 15,
+             className: 'custom-popup'
+           })
+             .setLngLat([marker.longitude, marker.latitude])
+             .setHTML(createPopupContent(marker))
+             .addTo(mapRef.current!);
+           
+           popupRef.current = popup;
+         });
 
         markersRef.current.push(mapboxMarker);
       }
@@ -815,54 +775,70 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
 
   return (
     <>
-      <style>
-        {`
-          .custom-popup .mapboxgl-popup-content {
-            padding: 0;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            background: white;
-            max-width: none !important;
-          }
-          
-          .custom-popup .mapboxgl-popup-tip {
-            border-top-color: white;
-            border-bottom-color: white;
-          }
-          
-          .custom-popup .mapboxgl-popup-close-button {
-            display: none;
-          }
+       <style>
+         {`
+           .custom-popup .mapboxgl-popup-content {
+             padding: 0;
+             border-radius: 16px;
+             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+             border: 1px solid rgba(255, 255, 255, 0.2);
+             background: transparent;
+             max-width: none !important;
+           }
+           
+           .custom-popup .mapboxgl-popup-tip {
+             border-top-color: white;
+             border-bottom-color: white;
+           }
+           
+           .custom-popup .mapboxgl-popup-close-button {
+             background: rgba(255, 255, 255, 0.9);
+             color: #374151;
+             border-radius: 50%;
+             width: 24px;
+             height: 24px;
+             font-size: 14px;
+             line-height: 1;
+             top: 8px;
+             right: 8px;
+             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+           }
 
-          /* Styles pour les popups détaillés */
-          .detailed-popup-content {
-            animation: popupSlideIn 0.2s ease-out;
-          }
+           /* Styles pour les popups compacts flottants */
+           .compact-floating-popup {
+             animation: popupScaleIn 0.3s ease-out;
+           }
 
-          @keyframes popupSlideIn {
-            from {
-              opacity: 0;
-              transform: translateY(-10px) scale(0.95);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0) scale(1);
-            }
-          }
+           @keyframes popupScaleIn {
+             from {
+               opacity: 0;
+               transform: scale(0.9) translateY(-10px);
+             }
+             to {
+               opacity: 1;
+               transform: scale(1) translateY(0);
+             }
+           }
 
-          /* Hover effect pour le bouton d'action */
-          .detailed-popup-content .action-button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-          }
-        `}
-      </style>
+           /* Hover effect pour le bouton d'action */
+           .compact-floating-popup .action-button:hover {
+             background: white !important;
+             transform: translateY(-1px);
+             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2) !important;
+           }
+
+           .compact-floating-popup .action-button:active {
+             transform: translateY(0);
+             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+           }
+         `}
+       </style>
       <div
         ref={mapContainerRef}
         style={{ height: typeof height === 'number' ? `${height}px` : height }}
-        className="rounded-xl overflow-hidden border border-gray-200"
-      />
+        className="rounded-xl overflow-hidden border border-gray-200 relative"
+      >
+      </div>
     </>
   );
 });

@@ -72,7 +72,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
   
   // Nouveaux états pour l'amélioration du design
   const [showLegend, setShowLegend] = useState(false);
-  const [showCarousel, setShowCarousel] = useState(true);
+  const [showCarousel, setShowCarousel] = useState(false);
   
   // Référence pour la carte
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -216,6 +216,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
         price: item.estimated_value,
         distance: distance,
         createdAt: item.created_at,
+        offerType: item.offer_type,
       data: item as Record<string, unknown>
       };
     });
