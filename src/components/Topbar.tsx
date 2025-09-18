@@ -211,7 +211,7 @@ const Topbar: React.FC = () => {
             <div className="p-4 border-b border-gray-200 flex items-center justify-between">
               <Link to="/" onClick={closeMobile} className="group">
                 <img 
-                  src="/logo.png" 
+                  src="/icon.png" 
                   alt="Échangeo Logo" 
                   className="w-12 h-12 object-contain"
                   onError={(e) => {
@@ -221,7 +221,7 @@ const Topbar: React.FC = () => {
                   }}
                 />
                 <div className="w-12 h-12 bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center hidden">
-                  <span className="text-white font-bold text-base">T</span>
+                  <span className="text-white font-bold text-base">É</span>
                 </div>
               </Link>
               <button onClick={closeMobile} className="p-2 rounded-lg hover:bg-gray-100"><X size={20} /></button>
@@ -361,7 +361,7 @@ const Topbar: React.FC = () => {
           <div className="md:hidden flex items-center justify-between h-full">
               <Link to="/" className="group">
                 <img 
-                  src="/logo.png" 
+                  src="/icon.png" 
                   alt="Échangeo Logo" 
                   className="w-12 h-12 object-contain"
                   onError={(e) => {
@@ -371,7 +371,7 @@ const Topbar: React.FC = () => {
                   }}
                 />
                 <div className="w-12 h-12 bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center hidden">
-                  <span className="text-white font-bold text-base">T</span>
+                  <span className="text-white font-bold text-base">É</span>
                 </div>
               </Link>
               <div className="flex items-center gap-1">
