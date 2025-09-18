@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Package, Plus, Search, MessageCircle, User, LogOut, Menu, X, Users, HelpCircle, Star, Settings, Sparkles, Trophy } from 'lucide-react';
+import { Package, Plus, Search, MessageCircle, User, LogOut, Menu, X, Users, HelpCircle, Star, Settings, Sparkles, Trophy, CheckCircle } from 'lucide-react';
 import { Link, useNavigate, useLocation, NavLink } from 'react-router-dom';
 import Button from './ui/Button';
 import { useAuthStore } from '../store/authStore';
@@ -169,6 +169,7 @@ const Topbar: React.FC = () => {
 
   const mobileNavigationLinks = useMemo(() => [
     ...navigationLinks.slice(0, 5), // Objets, Voisins, Gamification, IA, Aide
+    { to: '/messages', label: 'Messages' },
     { to: '/requests', label: 'Échanges' },
     { to: '/me', label: 'Mon profil' },
     ...navigationLinks.slice(5) // Pro et Créer un compte si pas connecté
@@ -235,11 +236,21 @@ const Topbar: React.FC = () => {
             </Button>
             
             <Link 
+              to="/messages" 
+              className="p-2.5 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500" 
+              aria-label="Voir les messages"
+              title="Messages"
+            >
+              <MessageCircle size={18} />
+            </Link>
+            
+            <Link 
               to="/requests" 
               className="p-2.5 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500" 
               aria-label="Voir les échanges"
+              title="Échanges"
             >
-              <MessageCircle size={18} />
+              <CheckCircle size={18} />
             </Link>
             
             <Link 
