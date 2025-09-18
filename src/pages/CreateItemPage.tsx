@@ -17,6 +17,8 @@ import Select from '../components/ui/Select';
 import TextArea from '../components/ui/TextArea';
 import Card from '../components/ui/Card';
 import AIImageUpload from '../components/AIImageUpload';
+import NeighborhoodSelectionModal from '../components/modals/NeighborhoodSelectionModal';
+import type { NeighborhoodSuggestion } from '../types';
 
 const createItemSchema = z.object({
   title: z.string().min(1, 'Le titre est requis').max(100, 'Le titre est trop long'),
@@ -65,6 +67,10 @@ const CreateItemPage: React.FC = () => {
   const [addressSuggestions, setAddressSuggestions] = useState<Array<{ label: string; lat: number; lon: number }>>([]);
   const [isSearchingAddress, setIsSearchingAddress] = useState(false);
   const [addressDropdownOpen, setAddressDropdownOpen] = useState(false);
+  const [isNeighborhoodModalOpen, setIsNeighborhoodModalOpen] = useState(false);
+  const [selectedNeighborhood, setSelectedNeighborhood] = useState<NeighborhoodSuggestion | null>(null);
+  const [isSearchingNeighborhoods, setIsSearchingNeighborhoods] = useState(false);
+  const [detectedAddress, setDetectedAddress] = useState<string>('');
 
   // Récupérer les quartiers proches si la position est disponible
   const { data: nearbyCommunities, isLoading: communitiesLoading } = useNearbyCommunities(
@@ -259,7 +265,76 @@ const CreateItemPage: React.FC = () => {
     setAiAnalysisApplied(true);
   };
 
-  // Obtenir la géolocalisation de l'utilisateur
+  // Obtenir l'adresse à partir des coordonnées GPS
+  const getAddressFromCoordinates = async (lat: number, lng: number): Promise<string | null> => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`,
+        {
+          headers: {
+            'Accept-Language': 'fr',
+            'User-Agent': 'TrocAll App (contact@example.com)'
+          }
+        }
+      );
+      
+      const data = await response.json();
+      
+      if (data && data.address) {
+        // Construire l'adresse à partir des composants disponibles
+        const address = data.address;
+        const parts = [];
+        
+        if (address.postcode) parts.push(address.postcode);
+        if (address.city || address.town || address.village) {
+          parts.push(address.city || address.town || address.village);
+        }
+        
+        return parts.length > 0 ? parts.join(', ') : null;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Erreur lors de la récupération de l\'adresse:', error);
+      return null;
+    }
+  };
+
+  // Rechercher automatiquement des quartiers basés sur la position
+  const searchNeighborhoodsFromLocation = async (lat: number, lng: number) => {
+    setIsSearchingNeighborhoods(true);
+    try {
+      // Obtenir l'adresse à partir des coordonnées
+      const address = await getAddressFromCoordinates(lat, lng);
+      
+      if (address) {
+        console.log('Adresse détectée:', address);
+        setDetectedAddress(address);
+        
+        // Rechercher des quartiers basés sur cette adresse
+        const { suggestNeighborhoods } = await import('../services/neighborhoodSuggestionAI');
+        const suggestions = await suggestNeighborhoods(address, nearbyCommunities || []);
+        
+        if (suggestions.length > 0) {
+          // Prendre la première suggestion (la plus pertinente)
+          const bestSuggestion = suggestions[0];
+          handleSelectNeighborhood(bestSuggestion);
+          
+          console.log('Quartier suggéré automatiquement:', bestSuggestion.name);
+        } else {
+          console.log('Aucun quartier trouvé pour cette adresse');
+          // Ouvrir le modal avec l'adresse détectée pour recherche manuelle
+          setIsNeighborhoodModalOpen(true);
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors de la recherche automatique de quartiers:', error);
+    } finally {
+      setIsSearchingNeighborhoods(false);
+    }
+  };
+
+  // Obtenir la géolocalisation de l'utilisateur et rechercher automatiquement les quartiers
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
       alert('La géolocalisation n\'est pas supportée par votre navigateur');
@@ -268,7 +343,7 @@ const CreateItemPage: React.FC = () => {
 
     setIsLocating(true);
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const location = {
           lat: position.coords.latitude,
           lng: position.coords.longitude
@@ -277,6 +352,9 @@ const CreateItemPage: React.FC = () => {
         setValue('latitude', location.lat);
         setValue('longitude', location.lng);
         setIsLocating(false);
+        
+        // Rechercher automatiquement des quartiers basés sur cette position
+        await searchNeighborhoodsFromLocation(location.lat, location.lng);
       },
       (error) => {
         console.error('Erreur de géolocalisation:', error);
@@ -289,6 +367,65 @@ const CreateItemPage: React.FC = () => {
         maximumAge: 300000 // 5 minutes
       }
     );
+  };
+
+  // Gérer l'ouverture du modal de suggestion de quartiers avec géolocalisation
+  const handleOpenNeighborhoodModal = async () => {
+    if (!navigator.geolocation) {
+      alert('La géolocalisation n\'est pas supportée par votre navigateur');
+      return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const location = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+        setUserLocation(location);
+        setValue('latitude', location.lat);
+        setValue('longitude', location.lng);
+        setIsLocating(false);
+        
+        // Obtenir l'adresse à partir des coordonnées
+        const address = await getAddressFromCoordinates(location.lat, location.lng);
+        if (address) {
+          setDetectedAddress(address);
+          setIsNeighborhoodModalOpen(true);
+        } else {
+          alert('Impossible de détecter votre adresse. Veuillez saisir manuellement un code postal ou une ville.');
+          setIsNeighborhoodModalOpen(true);
+        }
+      },
+      (error) => {
+        console.error('Erreur de géolocalisation:', error);
+        setIsLocating(false);
+        alert('Impossible d\'obtenir votre position. Veuillez autoriser la géolocalisation ou saisir manuellement.');
+        setIsNeighborhoodModalOpen(true);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000 // 5 minutes
+      }
+    );
+  };
+
+  // Gérer la sélection d'un quartier suggéré
+  const handleSelectNeighborhood = (neighborhood: NeighborhoodSuggestion) => {
+    setSelectedNeighborhood(neighborhood);
+    setSelectedCommunity(''); // Réinitialiser la sélection de communauté existante
+    
+    // Mettre à jour les coordonnées si disponibles
+    if (neighborhood.coordinates) {
+      setUserLocation({
+        lat: neighborhood.coordinates.latitude,
+        lng: neighborhood.coordinates.longitude
+      });
+      setValue('latitude', neighborhood.coordinates.latitude);
+      setValue('longitude', neighborhood.coordinates.longitude);
+    }
   };
 
   const onSubmit = async (data: CreateItemForm) => {
@@ -799,16 +936,29 @@ const CreateItemPage: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700">
                 Quartier/Communauté
               </label>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={getCurrentLocation}
-                disabled={isLocating}
-                className="text-blue-600 hover:text-blue-700"
-              >
-                {isLocating ? 'Localisation…' : 'Détecter les quartiers proches'}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleOpenNeighborhoodModal}
+                  disabled={isLocating}
+                  className="text-purple-600 hover:text-purple-700 flex items-center gap-1"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  {isLocating ? 'Détection…' : 'Suggérer un quartier'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={getCurrentLocation}
+                  disabled={isLocating || isSearchingNeighborhoods}
+                  className="text-blue-600 hover:text-blue-700"
+                >
+                  {isLocating ? 'Localisation…' : isSearchingNeighborhoods ? 'Recherche de quartiers…' : 'Utiliser ma position'}
+                </Button>
+              </div>
             </div>
             
             {userLocation && (
@@ -816,6 +966,28 @@ const CreateItemPage: React.FC = () => {
                 <p className="text-sm text-blue-800">
                   📍 Position détectée : {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
                 </p>
+              </div>
+            )}
+
+            {isSearchingNeighborhoods && (
+              <div className="mb-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-sm text-purple-800">
+                    ✨ Recherche automatique de quartiers en cours...
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {isLocating && (
+              <div className="mb-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-sm text-purple-800">
+                    ✨ Détection de votre position pour suggérer des quartiers...
+                  </p>
+                </div>
               </div>
             )}
 
@@ -864,7 +1036,18 @@ const CreateItemPage: React.FC = () => {
             ) : (
               <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
                 <p className="text-sm text-gray-600">
-                  Cliquez sur "Détecter les quartiers proches" pour voir les quartiers disponibles dans votre zone.
+                  Cliquez sur "Utiliser ma position" pour une sélection automatique, ou "Suggérer un quartier" pour voir plusieurs options basées sur votre adresse.
+                </p>
+              </div>
+            )}
+
+            {selectedNeighborhood && (
+              <div className="mt-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                <p className="text-sm text-purple-800">
+                  ✨ Quartier suggéré par IA : {selectedNeighborhood.name}
+                </p>
+                <p className="text-xs text-purple-600 mt-1">
+                  {selectedNeighborhood.city} • {selectedNeighborhood.postalCode || 'N/A'} • {selectedNeighborhood.description}
                 </p>
               </div>
             )}
@@ -939,12 +1122,20 @@ const CreateItemPage: React.FC = () => {
                       </p>
                     </div>
                   )}
-                  {selectedCommunity && (
+                  {(selectedCommunity || selectedNeighborhood) && (
                     <div>
                       <h4 className="font-medium text-gray-900">Quartier</h4>
                       <p className="text-sm text-gray-700">
-                        {nearbyCommunities?.find(c => c.community_id === selectedCommunity)?.community_name}
+                        {selectedNeighborhood 
+                          ? `${selectedNeighborhood.name} (${selectedNeighborhood.city})`
+                          : nearbyCommunities?.find(c => c.community_id === selectedCommunity)?.community_name
+                        }
                       </p>
+                      {selectedNeighborhood && (
+                        <p className="text-xs text-purple-600 mt-1">
+                          ✨ Suggéré par IA
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
@@ -988,6 +1179,16 @@ const CreateItemPage: React.FC = () => {
         </div>
 
       </motion.form>
+
+      {/* Modal de suggestion de quartiers */}
+      <NeighborhoodSelectionModal
+        isOpen={isNeighborhoodModalOpen}
+        onClose={() => setIsNeighborhoodModalOpen(false)}
+        onSelectNeighborhood={handleSelectNeighborhood}
+        existingCommunities={nearbyCommunities || []}
+        userLocation={userLocation || undefined}
+        searchInput={detectedAddress}
+      />
     </div>
   );
 };

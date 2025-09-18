@@ -263,3 +263,19 @@ export interface NearbyCommunity {
 export interface CommunityOverview extends Community {
   activity_level: 'active' | 'moderate' | 'inactive';
 }
+
+// Types pour la suggestion de quartiers avec IA
+export interface NeighborhoodSuggestion {
+  name: string;
+  description: string;
+  postalCode?: string;
+  city: string;
+  department: string;
+  region: string;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
+  confidence: number;
+  alternatives?: NeighborhoodSuggestion[];
+}
