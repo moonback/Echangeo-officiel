@@ -56,6 +56,17 @@ const HomePage: React.FC = () => {
       >
         <Card className="overflow-hidden glass-strong">
           <div className="relative p-4 md:p-6 bg-gradient-to-br from-brand-50/80 via-white/60 to-purple-50/40">
+            {/* Image de fond */}
+            <div 
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50"
+              style={{
+                backgroundImage: `url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80')`
+              }}
+            />
+            
+            {/* Overlay pour améliorer la lisibilité */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/70 via-white/50 to-white/70" />
+            
             {/* Décorations de fond plus discrètes */}
             <div className="absolute top-0 right-0 w-40 h-40 md:w-64 md:h-64 bg-gradient-to-br from-brand-200/20 to-purple-200/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-24 h-24 md:w-40 md:h-40 bg-gradient-to-tr from-blue-200/20 to-brand-200/20 rounded-full blur-xl translate-y-1/2 -translate-x-1/2 pointer-events-none" />
