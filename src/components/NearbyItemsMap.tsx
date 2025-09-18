@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, RefreshCw, Eye, EyeOff, Users, ArrowLeft } from 'lucide-react';
+import { MapPin, RefreshCw, Eye, EyeOff, Users, ArrowLeft, Filter, X, SlidersHorizontal } from 'lucide-react';
 import { useItems } from '../hooks/useItems';
 import { useCommunities, useCommunityItems } from '../hooks/useCommunities';
 import MapboxMap from './MapboxMap';
@@ -22,6 +22,7 @@ interface NearbyItemsMapProps {
   onItemClick?: (itemId: string) => void;
   showCommunities?: boolean;
   onCommunityClick?: (communityId: string) => void;
+  showSidebar?: boolean;
 }
 
 const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
@@ -35,7 +36,8 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
   maxItems,
   onItemClick,
   showCommunities = true,
-  onCommunityClick
+  onCommunityClick,
+  showSidebar = true
 }) => {
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
   const [showOnlyWithImages, setShowOnlyWithImages] = useState(false);
@@ -43,6 +45,13 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
   const [locationError, setLocationError] = useState<string | null>(null);
   const [selectedCommunity, setSelectedCommunity] = useState<Community | null>(null);
   const [viewMode, setViewMode] = useState<'communities' | 'items'>('communities');
+  
+  // États pour les filtres de la sidebar
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedCondition, setSelectedCondition] = useState<string>('');
+  const [selectedType, setSelectedType] = useState<string>('');
+  const [maxDistance, setMaxDistance] = useState<number>(10); // km
 
   const { data: items, isLoading, refetch } = useItems({
     isAvailable: true,
@@ -85,17 +94,52 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
     const sourceItems = selectedCommunity ? communityItems : items;
     if (!sourceItems) return [];
     
-    let filtered = sourceItems.filter((item) => 
-      typeof item.latitude === 'number' && 
-      typeof item.longitude === 'number'
-    );
+    let filtered = sourceItems.filter((item) => {
+      // Filtre de base : géolocalisation
+      if (typeof item.latitude !== 'number' || typeof item.longitude !== 'number') {
+        return false;
+      }
+
+      // Filtre par catégorie
+      if (selectedCategory && item.category !== selectedCategory) {
+        return false;
+      }
+
+      // Filtre par condition
+      if (selectedCondition && item.condition !== selectedCondition) {
+        return false;
+      }
+
+      // Filtre par type (prêt ou échange)
+      if (selectedType && item.offer_type !== selectedType) {
+        return false;
+      }
+
+      // Filtre par distance
+      if (userLoc && maxDistance < 1000) { // Si maxDistance < 1000, on considère que c'est en km
+        const R = 6371; // Rayon de la Terre en km
+        const dLat = (item.latitude - userLoc.lat) * Math.PI / 180;
+        const dLon = (item.longitude - userLoc.lng) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+          Math.cos(userLoc.lat * Math.PI / 180) * Math.cos(item.latitude * Math.PI / 180) *
+          Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        const distance = R * c;
+        
+        if (distance > maxDistance) {
+          return false;
+        }
+      }
+
+      return true;
+    });
 
     if (maxItems) {
       filtered = filtered.slice(0, maxItems);
     }
 
     return filtered;
-  }, [items, communityItems, selectedCommunity, maxItems]);
+  }, [items, communityItems, selectedCommunity, maxItems, selectedCategory, selectedCondition, selectedType, maxDistance, userLoc]);
 
   // Préparer les marqueurs de communautés
   const communityMarkers = useMemo(() => {
@@ -135,20 +179,20 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
       }
 
       return {
-        id: item.id,
-        latitude: item.latitude as number,
-        longitude: item.longitude as number,
-        title: item.title,
+      id: item.id,
+      latitude: item.latitude as number,
+      longitude: item.longitude as number,
+      title: item.title,
         description: item.description,
-        imageUrl: item.images && item.images.length > 0 ? item.images[0].url : undefined,
-        category: item.category,
-        type: 'item' as const,
+      imageUrl: item.images && item.images.length > 0 ? item.images[0].url : undefined,
+      category: item.category,
+      type: 'item' as const,
         owner: item.owner?.full_name || item.owner?.email || 'Propriétaire anonyme',
         condition: item.condition,
         price: item.estimated_value,
         distance: distance,
         createdAt: item.created_at,
-        data: item
+      data: item
       };
     });
   }, [filteredItems, userLoc]);
@@ -203,6 +247,24 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
     setViewMode('communities');
   };
 
+  // Réinitialiser les filtres
+  const resetFilters = () => {
+    setSelectedCategory('');
+    setSelectedCondition('');
+    setSelectedType('');
+    setMaxDistance(10);
+    setShowOnlyWithImages(false);
+  };
+
+  // Compter les filtres actifs
+  const activeFiltersCount = [
+    selectedCategory,
+    selectedCondition,
+    selectedType,
+    maxDistance < 10,
+    showOnlyWithImages
+  ].filter(Boolean).length;
+
   // Coordonnées par défaut (Paris)
   const defaultCenter = { lat: 48.8566, lng: 2.3522 };
   const mapCenter = userLoc || defaultCenter;
@@ -211,9 +273,188 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={className}
+      className={`${className} ${isSidebarOpen ? 'flex' : ''}`}
     >
-      <Card className={`p-0 glass ${className.includes('h-full') ? 'h-full flex flex-col' : ''} ${className.includes('w-full') ? 'w-full' : ''}`}>
+      {/* Sidebar des filtres */}
+      {showSidebar && isSidebarOpen && (
+        <motion.div
+          initial={{ x: -300, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: -300, opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          className="w-80 bg-white border-r border-gray-200 flex-shrink-0"
+        >
+          <div className="p-4 border-b border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Filter size={20} />
+                Filtres
+              </h3>
+              <Button
+                onClick={() => setIsSidebarOpen(false)}
+                variant="ghost"
+                size="sm"
+                className="p-1"
+              >
+                <X size={16} />
+              </Button>
+            </div>
+            
+            <Button
+              onClick={resetFilters}
+              variant="ghost"
+              size="sm"
+              className="w-full text-gray-500"
+            >
+              Réinitialiser les filtres
+            </Button>
+          </div>
+
+          <div className="p-4 space-y-6 overflow-y-auto" style={{ height: 'calc(100vh - 200px)' }}>
+            {viewMode === 'communities' ? (
+              <>
+                {/* Filtres pour les communautés */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Distance maximale: {maxDistance}km
+                  </label>
+                  <input
+                    type="range"
+                    min="1"
+                    max="50"
+                    value={maxDistance}
+                    onChange={(e) => setMaxDistance(Number(e.target.value))}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>1km</span>
+                    <span>50km</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={showOnlyWithImages}
+                      onChange={(e) => setShowOnlyWithImages(e.target.checked)}
+                      className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                    />
+                    <span className="text-sm font-medium text-gray-700">
+                      Quartiers avec objets seulement
+                    </span>
+                  </label>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Filtres pour les objets */}
+                {/* Filtre par catégorie */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Catégorie
+                  </label>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                  >
+                    <option value="">Toutes les catégories</option>
+                    <option value="tools">Outils</option>
+                    <option value="electronics">Électronique</option>
+                    <option value="books">Livres</option>
+                    <option value="sports">Sport</option>
+                    <option value="kitchen">Cuisine</option>
+                    <option value="garden">Jardin</option>
+                    <option value="toys">Jouets</option>
+                    <option value="fashion">Mode</option>
+                    <option value="furniture">Meubles</option>
+                    <option value="music">Musique</option>
+                    <option value="baby">Bébé</option>
+                    <option value="art">Art</option>
+                    <option value="beauty">Beauté</option>
+                    <option value="auto">Auto</option>
+                    <option value="office">Bureau</option>
+                    <option value="services">Services</option>
+                    <option value="other">Autres</option>
+                  </select>
+                </div>
+
+                {/* Filtre par condition */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    État
+                  </label>
+                  <select
+                    value={selectedCondition}
+                    onChange={(e) => setSelectedCondition(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                  >
+                    <option value="">Tous les états</option>
+                    <option value="new">Neuf</option>
+                    <option value="excellent">Excellent</option>
+                    <option value="good">Bon</option>
+                    <option value="fair">Correct</option>
+                    <option value="poor">Usé</option>
+                  </select>
+                </div>
+
+                {/* Filtre par distance */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Distance maximale: {maxDistance}km
+                  </label>
+                  <input
+                    type="range"
+                    min="1"
+                    max="50"
+                    value={maxDistance}
+                    onChange={(e) => setMaxDistance(Number(e.target.value))}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>1km</span>
+                    <span>50km</span>
+                  </div>
+                </div>
+
+                {/* Filtre par type */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Type d'échange
+                  </label>
+                  <select
+                    value={selectedType}
+                    onChange={(e) => setSelectedType(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                  >
+                    <option value="">Tous les types</option>
+                    <option value="loan">Prêt</option>
+                    <option value="trade">Échange</option>
+                  </select>
+                </div>
+
+                {/* Filtre par images */}
+                <div>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={showOnlyWithImages}
+                      onChange={(e) => setShowOnlyWithImages(e.target.checked)}
+                      className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                    />
+                    <span className="text-sm font-medium text-gray-700">
+                      Avec photos seulement
+                    </span>
+                  </label>
+                </div>
+              </>
+            )}
+          </div>
+        </motion.div>
+      )}
+
+      <Card className={`p-0 glass ${className.includes('h-full') ? 'h-full flex flex-col' : ''} ${className.includes('w-full') ? 'w-full' : ''} ${isSidebarOpen ? 'flex-1' : ''}`}>
         {/* Header */}
         <div className="p-4 border-b border-gray-200/50">
           <div className="flex items-center justify-between mb-3">
@@ -276,6 +517,26 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
                   />
                   Actualiser
                 </Button>
+
+                {/* Bouton de filtres */}
+                {showSidebar && (
+                <Button
+                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                  variant="ghost"
+                  size="sm"
+                    className={`flex items-center gap-2 ${
+                      activeFiltersCount > 0 ? 'text-brand-600' : 'text-gray-500'
+                    }`}
+                  >
+                    <SlidersHorizontal size={16} />
+                    Filtres
+                    {activeFiltersCount > 0 && (
+                      <Badge variant="brand" size="sm">
+                        {activeFiltersCount}
+                      </Badge>
+                    )}
+                </Button>
+                )}
               </div>
             )}
           </div>
