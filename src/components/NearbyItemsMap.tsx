@@ -71,7 +71,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
   const [maxDistance, setMaxDistance] = useState<number>(10); // km
   
   // Nouveaux états pour l'amélioration du design
-  const [showLegend, setShowLegend] = useState(true);
+  const [showLegend, setShowLegend] = useState(false);
   const [showCarousel, setShowCarousel] = useState(true);
   
   // Référence pour la carte
@@ -776,33 +776,14 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
             </div>
           )}
 
-          {/* Indicateur de position utilisateur amélioré */}
-          {userLoc && (
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="absolute top-4 left-4 bg-gradient-to-r from-green-50 to-emerald-50 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-xl border border-green-200/50"
-            >
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                  <div className="absolute inset-0 w-3 h-3 bg-green-400 rounded-full animate-ping opacity-75"></div>
-              </div>
-                <div>
-                  <span className="text-sm font-semibold text-green-800">Position détectée</span>
-                  <p className="text-xs text-green-600">Géolocalisation active</p>
-            </div>
-              </div>
-            </motion.div>
-          )}
 
           {/* Légende améliorée */}
           {showLegend && (
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-xl rounded-2xl px-3 py-3 shadow-2xl border border-gray-200/50 max-w-xs z-10"
+              className="absolute top-20 right-4 bg-white/95 backdrop-blur-xl rounded-2xl px-3 py-3 shadow-2xl border border-gray-200/50 max-w-xs z-10"
             >
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-sm font-bold text-gray-800 flex items-center gap-2">
@@ -901,7 +882,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
             <motion.div 
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="absolute bottom-4 right-4 z-10"
+              className="absolute top-20 right-4 z-10"
             >
               <Button
                 onClick={() => setShowLegend(true)}
