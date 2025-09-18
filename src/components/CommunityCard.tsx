@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { MapPin, Users, Calendar, MessageCircle, TrendingUp, UserPlus, Check } from 'lucide-react';
+import { MapPin, Users, Calendar, MessageCircle, TrendingUp, UserPlus } from 'lucide-react';
 import Card from './ui/Card';
 import Badge from './ui/Badge';
 import Button from './ui/Button';
@@ -114,7 +113,7 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
             
             <Badge 
               className={getActivityColor(community.activity_level)}
-              variant="outline"
+              variant="neutral"
             >
               {getActivityLabel(community.activity_level)}
             </Badge>
@@ -132,25 +131,25 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
             <div className="flex items-center gap-2 text-sm">
               <Users className="w-4 h-4 text-brand-600" />
               <span className="text-gray-700">
-                <span className="font-semibold">{community.total_members}</span> membres
+                <span className="font-semibold">{community.stats?.total_members || 0}</span> membres
               </span>
             </div>
             <div className="flex items-center gap-2 text-sm">
               <TrendingUp className="w-4 h-4 text-green-600" />
               <span className="text-gray-700">
-                <span className="font-semibold">{community.total_exchanges}</span> échanges
+                <span className="font-semibold">{community.stats?.total_exchanges || 0}</span> échanges
               </span>
             </div>
             <div className="flex items-center gap-2 text-sm">
               <Calendar className="w-4 h-4 text-blue-600" />
               <span className="text-gray-700">
-                <span className="font-semibold">{community.total_events}</span> événements
+                <span className="font-semibold">{community.stats?.total_events || 0}</span> événements
               </span>
             </div>
             <div className="flex items-center gap-2 text-sm">
               <MessageCircle className="w-4 h-4 text-purple-600" />
               <span className="text-gray-700">
-                <span className="font-semibold">{community.total_items}</span> objets
+                <span className="font-semibold">{community.stats?.total_items || 0}</span> objets
               </span>
             </div>
           </div>
@@ -159,8 +158,8 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
           <div className="flex items-center justify-between pt-4 border-t border-gray-100">
             <div className="text-xs text-gray-500">
               Dernière activité: {
-                community.last_activity 
-                  ? new Date(community.last_activity).toLocaleDateString('fr-FR')
+                community.stats?.last_activity && typeof community.stats.last_activity === 'string'
+                  ? new Date(community.stats.last_activity).toLocaleDateString('fr-FR')
                   : 'Jamais'
               }
             </div>
@@ -169,9 +168,8 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
                 <Button
                   onClick={handleLeaveCommunity}
                   disabled={isLeaving}
-                  variant="outline"
+                  variant="danger"
                   size="sm"
-                  className="text-red-600 border-red-200 hover:bg-red-50"
                 >
                   {isLeaving ? 'Sortie...' : 'Quitter'}
                 </Button>

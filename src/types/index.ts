@@ -264,6 +264,7 @@ export interface NearbyCommunity {
 
 export interface CommunityOverview extends Community {
   activity_level: 'active' | 'moderate' | 'inactive';
+  stats?: CommunityStats;
   [key: string]: unknown; // Signature d'index pour la compatibilité avec MapboxMarker
 }
 
