@@ -1,4 +1,4 @@
-import type { Community } from '../types';
+import type { Community, NearbyCommunity } from '../types';
 
 export interface NeighborhoodSuggestion {
   name: string;
@@ -180,13 +180,14 @@ Répondez UNIQUEMENT avec le JSON, sans texte supplémentaire.`;
  */
 export const validateNeighborhoodUniqueness = (
   suggestion: NeighborhoodSuggestion,
-  existingCommunities: Community[]
+  existingCommunities: (Community | NearbyCommunity)[]
 ): boolean => {
   const suggestionName = suggestion.name.toLowerCase();
   const suggestionCity = suggestion.city.toLowerCase();
   
   return !existingCommunities.some(community => {
-    const existingName = community.community_name.toLowerCase();
+    // Gérer les deux types : Community (avec 'name') et NearbyCommunity (avec 'community_name')
+    const existingName = ('community_name' in community ? community.community_name : community.name).toLowerCase();
     const existingCity = community.city.toLowerCase();
     
     // Vérifier si le nom est trop similaire
@@ -210,7 +211,7 @@ export const validateNeighborhoodUniqueness = (
  */
 export const filterUniqueNeighborhoods = (
   suggestions: NeighborhoodSuggestion[],
-  existingCommunities: Community[]
+  existingCommunities: (Community | NearbyCommunity)[]
 ): NeighborhoodSuggestion[] => {
   return suggestions.filter(suggestion => 
     validateNeighborhoodUniqueness(suggestion, existingCommunities)
