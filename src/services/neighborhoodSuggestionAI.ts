@@ -51,7 +51,7 @@ CONTEXTE :
 - Les quartiers doivent être des zones géographiques bien définies et reconnaissables
 
 QUARTIERS EXISTANTS DANS L'APPLICATION :
-${existingCommunities.map(c => `- ${c.community_name} (${c.city}, ${c.postal_code})`).join('\n')}
+${existingCommunities.map(c => `- ${'community_name' in c ? c.community_name : c.name} (${'city' in c ? c.city : 'N/A'}, ${'postal_code' in c ? c.postal_code : 'N/A'})`).join('\n')}
 
 INSTRUCTIONS :
 1. Si l'entrée est un code postal, identifiez la ville correspondante et ses quartiers
@@ -190,15 +190,15 @@ export const validateNeighborhoodUniqueness = (
   return !existingCommunities.some(community => {
     // Gérer les deux types : Community (avec 'name') et NearbyCommunity (avec 'community_name')
     const existingName = ('community_name' in community ? community.community_name : community.name)?.toLowerCase() || '';
-    const existingCity = community.city?.toLowerCase() || '';
+    const existingCity = ('city' in community ? community.city : '')?.toLowerCase() || '';
     
     // Vérifier si le nom est trop similaire
     if (suggestionName.includes(existingName) || existingName.includes(suggestionName)) {
       return true;
     }
     
-    // Vérifier si c'est dans la même ville avec un nom très similaire
-    if (suggestionCity === existingCity && 
+    // Vérifier si c'est dans la même ville avec un nom très similaire (seulement si la communauté a une ville)
+    if (existingCity && suggestionCity === existingCity && 
         (suggestionName.includes(existingName.split(' ')[0]) || 
          existingName.includes(suggestionName.split(' ')[0]))) {
       return true;
@@ -219,7 +219,7 @@ export const filterUniqueNeighborhoods = (
   const validExistingCommunities = existingCommunities.filter(community => 
     community && 
     (('community_name' in community && community.community_name) || ('name' in community && community.name)) &&
-    community.city
+    ('city' in community ? community.city : true) // NearbyCommunity n'a pas de city, mais c'est OK
   );
   
   return suggestions.filter(suggestion => 
