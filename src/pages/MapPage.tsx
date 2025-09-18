@@ -87,7 +87,6 @@ const MapPage: React.FC = () => {
 
           {/* Carte principale */}
           <NearbyItemsMap
-            title="Objets disponibles"
             height={600}
             zoom={11}
             autoFit={true}

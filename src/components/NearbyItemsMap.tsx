@@ -12,7 +12,6 @@ import {
   SlidersHorizontal,
   Navigation,
   Layers,
-  Map,
   Grid3X3,
   Zap,
   Target,
@@ -29,7 +28,6 @@ import type { Community } from '../types';
 
 interface NearbyItemsMapProps {
   className?: string;
-  title?: string;
   showStats?: boolean;
   showControls?: boolean;
   height?: number;
@@ -44,7 +42,6 @@ interface NearbyItemsMapProps {
 
 const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
   className = '',
-  title = 'Autour de moi',
   showStats = true,
   showControls = true,
   height = 360,
@@ -59,7 +56,6 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
   const [showOnlyWithImages, setShowOnlyWithImages] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [locationError, setLocationError] = useState<string | null>(null);
   const [selectedCommunity, setSelectedCommunity] = useState<Community | null>(null);
   const [viewMode, setViewMode] = useState<'communities' | 'items'>('communities');
   
@@ -88,7 +84,6 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
   // Géolocalisation de l'utilisateur
   useEffect(() => {
     if (!navigator.geolocation) {
-      setLocationError('La géolocalisation n\'est pas supportée par votre navigateur');
       return;
     }
 
@@ -96,11 +91,9 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-          setLocationError(null);
         },
         (error) => {
           console.error('Erreur de géolocalisation:', error);
-          setLocationError('Impossible d\'obtenir votre position');
         },
         {
           enableHighAccuracy: true,
@@ -559,72 +552,14 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
         <div className={`relative overflow-hidden ${className.includes('h-full') ? 'flex-1' : ''} ${className.includes('w-full') ? 'w-full' : ''}`}>
           
           {/* Éléments flottants au-dessus de la carte */}
-          <div className="absolute top-4 left-4 right-4 z-30">
-            <div className="flex items-center justify-between">
-              {/* Titre et informations flottants */}
+          <div className="absolute top-4 right-4 z-30">
+            {/* Contrôles flottants */}
+            {showControls && (
               <motion.div 
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="flex items-center gap-4"
+                className="flex items-center gap-2"
               >
-                <div className="bg-white/95 backdrop-blur-xl rounded-2xl px-4 py-3 shadow-2xl border border-gray-200/50">
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <div className="p-2 bg-gradient-to-r from-brand-500 to-blue-500 rounded-xl shadow-lg">
-                        {viewMode === 'communities' ? (
-                          <Users className="w-5 h-5 text-white" />
-                        ) : (
-                          <MapPin className="w-5 h-5 text-white" />
-                        )}
-                      </div>
-                      {userLoc && (
-                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
-                      )}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <h2 className="text-lg font-bold text-gray-900">
-                          {selectedCommunity ? selectedCommunity.name : title}
-                        </h2>
-                        {selectedCommunity && (
-                          <Badge variant="info" size="sm" className="animate-pulse">
-                            <Map size={10} className="mr-1" />
-                            Quartier
-                          </Badge>
-                        )}
-                      </div>
-                      {locationError && (
-                        <motion.p 
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="text-xs text-red-500 flex items-center gap-1"
-                        >
-                          <Navigation size={12} />
-                          {locationError}
-                        </motion.p>
-                      )}
-                      {selectedCommunity && (
-                        <motion.p 
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="text-xs text-gray-600 flex items-center gap-1"
-                        >
-                          <MapPin size={12} />
-                          {selectedCommunity.city} • {selectedCommunity.stats?.total_items || 0} objets
-                        </motion.p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-              
-              {/* Contrôles flottants */}
-              {showControls && (
-                <motion.div 
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="flex items-center gap-2"
-                >
                   {/* Bouton retour aux quartiers */}
                   {selectedCommunity && (
                     <Button
@@ -680,9 +615,8 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
                       )}
                     </Button>
                   )}
-                </motion.div>
-              )}
-            </div>
+              </motion.div>
+            )}
           </div>
           {(isLoading || (viewMode === 'items' && communityItemsLoading)) ? (
             <div 
@@ -787,7 +721,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="absolute top-24 right-4 bg-white/95 backdrop-blur-xl rounded-2xl px-3 py-3 shadow-2xl border border-gray-200/50 max-w-xs z-10"
+              className="absolute top-20 right-4 bg-white/95 backdrop-blur-xl rounded-2xl px-3 py-3 shadow-2xl border border-gray-200/50 max-w-xs z-10"
             >
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-sm font-bold text-gray-800 flex items-center gap-2">
@@ -886,7 +820,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
             <motion.div 
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="absolute top-24 right-4 z-10"
+              className="absolute top-20 right-4 z-10"
             >
               <Button
                 onClick={() => setShowLegend(true)}
