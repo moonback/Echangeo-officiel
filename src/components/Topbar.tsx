@@ -15,15 +15,18 @@ const useSearch = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleSearch = useCallback((searchQuery: string) => {
+  const handleSearch = useCallback((searchQuery: string, closeSearch?: () => void) => {
     if (searchQuery.trim()) {
       navigate(`/items?search=${encodeURIComponent(searchQuery)}`);
+      if (closeSearch) {
+        closeSearch();
+      }
     }
   }, [navigate]);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>, closeSearch?: () => void) => {
     if (e.key === 'Enter') {
-      handleSearch(query);
+      handleSearch(query, closeSearch);
     }
   }, [query, handleSearch]);
 
@@ -62,6 +65,32 @@ const useMobileMenu = () => {
   }, [isOpen, close]);
 
   return { isOpen, toggle, close, open };
+};
+
+// Hook pour gérer l'état de la recherche dépliée
+const useSearchExpanded = () => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const toggle = useCallback(() => setIsExpanded(prev => !prev), []);
+  const close = useCallback(() => setIsExpanded(false), []);
+  const open = useCallback(() => setIsExpanded(true), []);
+
+  // Fermer la recherche sur Escape
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') close();
+    };
+
+    if (isExpanded) {
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isExpanded, close]);
+
+  return { isExpanded, toggle, close, open };
 };
 
 const FavoritesButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
@@ -136,6 +165,7 @@ const Topbar: React.FC = () => {
   }, []);
   const { query, setQuery, handleKeyDown } = useSearch();
   const { isOpen: mobileOpen, toggle: toggleMobile, close: closeMobile } = useMobileMenu();
+  const { isExpanded: searchExpanded, toggle: toggleSearch, close: closeSearch } = useSearchExpanded();
 
   // Mémoriser les actions pour éviter les re-renders
   const handleSignOut = useCallback(async () => {
@@ -204,24 +234,16 @@ const Topbar: React.FC = () => {
             ))}
           </nav>
 
-          {/* Barre de recherche desktop */}
-          <div className="hidden md:flex items-center flex-1 max-w-xl mx-4">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
-              <input
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Rechercher un objet…"
-                className="w-full pl-9 pr-4 h-10 rounded-xl border border-gray-300 
-                         focus:ring-2 focus:ring-brand-500 focus:border-transparent 
-                         transition-colors bg-white/80 backdrop-blur-sm
-                         placeholder:text-gray-500"
-                aria-label="Rechercher un objet"
-              />
-            </div>
-          </div>
+          {/* Bouton de recherche desktop */}
+          <button
+            onClick={toggleSearch}
+            className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
+            aria-label="Rechercher un objet"
+            title="Rechercher"
+          >
+            <Search size={18} />
+            <span className="text-sm">Rechercher</span>
+          </button>
 
           {/* Actions desktop */}
           <div className="hidden md:flex items-center gap-1 ml-auto">
@@ -316,25 +338,57 @@ const Topbar: React.FC = () => {
           </button>
         </div>
 
-        {/* Barre de recherche mobile */}
+        {/* Bouton de recherche mobile */}
         <div className="md:hidden px-4 pb-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Rechercher un objet…"
-              className="w-full pl-9 pr-4 h-10 rounded-xl border border-gray-300 
-                       focus:ring-2 focus:ring-brand-500 focus:border-transparent 
-                       transition-colors bg-white/80 backdrop-blur-sm
-                       placeholder:text-gray-500"
-              aria-label="Rechercher un objet"
-            />
-          </div>
+          <button
+            onClick={toggleSearch}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
+            aria-label="Rechercher un objet"
+          >
+            <Search size={18} />
+            <span className="text-sm">Rechercher un objet…</span>
+          </button>
         </div>
       </header>
+
+      {/* Barre de recherche dépliée */}
+      <AnimatePresence>
+        {searchExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="bg-white/95 backdrop-blur-xl border-b border-gray-200/50 shadow-sm overflow-hidden"
+          >
+            <div className="max-w-7xl mx-auto px-4 py-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(e, closeSearch)}
+                  placeholder="Rechercher un objet…"
+                  className="w-full pl-9 pr-12 h-12 rounded-xl border border-gray-300 
+                           focus:ring-2 focus:ring-brand-500 focus:border-transparent 
+                           transition-colors bg-white/80 backdrop-blur-sm
+                           placeholder:text-gray-500 text-base"
+                  aria-label="Rechercher un objet"
+                  autoFocus
+                />
+                <button
+                  onClick={closeSearch}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  aria-label="Fermer la recherche"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Menu mobile avec AnimatePresence pour une meilleure gestion des animations */}
       <AnimatePresence>
