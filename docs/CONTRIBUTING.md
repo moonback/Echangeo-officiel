@@ -1,594 +1,351 @@
-# Guide de Contribution Échangeo 🤝
+# Guide de Contribution - Échangeo
+
+## 🤝 Bienvenue !
 
 Merci de votre intérêt pour contribuer à Échangeo ! Ce guide vous aidera à comprendre comment participer au développement de la plateforme.
 
-## 📋 Table des Matières
+## 🚀 Premiers Pas
 
-- [Code de Conduite](#code-de-conduite)
-- [Comment Contribuer](#comment-contribuer)
-- [Environnement de Développement](#environnement-de-développement)
-- [Standards de Code](#standards-de-code)
-- [Processus de Contribution](#processus-de-contribution)
-- [Types de Contributions](#types-de-contributions)
-- [Reporting de Bugs](#reporting-de-bugs)
-- [Suggestions de Fonctionnalités](#suggestions-de-fonctionnalités)
-- [Questions et Support](#questions-et-support)
+### Prérequis
+- **Node.js** 18+ et npm/yarn
+- **Git** pour la gestion de version
+- **Compte GitHub** pour les contributions
+- **Compte Supabase** (optionnel pour les tests)
 
-## 📜 Code de Conduite
-
-### Notre Engagement
-
-Nous nous engageons à créer un environnement accueillant et inclusif pour tous les contributeurs, indépendamment de leur âge, taille, handicap, ethnicité, identité et expression de genre, niveau d'expérience, nationalité, apparence, race, religion, identité ou orientation sexuelle.
-
-### Comportements Attendus
-
-- ✅ Utiliser un langage accueillant et inclusif
-- ✅ Respecter les points de vue et expériences différents
-- ✅ Accepter gracieusement les critiques constructives
-- ✅ Se concentrer sur ce qui est le mieux pour la communauté
-- ✅ Faire preuve d'empathie envers les autres membres
-
-### Comportements Inacceptables
-
-- ❌ Langage ou images sexualisés ou attention non désirée
-- ❌ Trolling, commentaires insultants ou désobligeants
-- ❌ Harcèlement public ou privé
-- ❌ Publication d'informations privées sans permission
-- ❌ Autres comportements non professionnels
-
-## 🚀 Comment Contribuer
-
-### 1. Fork et Clone
-
+### Fork et Clone
 ```bash
 # Fork le repository sur GitHub
 # Puis clonez votre fork
-git clone https://github.com/VOTRE-USERNAME/Échangeo.git
-cd Échangeo
+git clone https://github.com/votre-username/echangeo.git
+cd echangeo
 
 # Ajoutez le repository original comme remote
-git remote add upstream https://github.com/ORIGINAL-OWNER/Échangeo.git
+git remote add upstream https://github.com/original-owner/echangeo.git
 ```
 
-### 2. Configuration de l'Environnement
-
+### Installation
 ```bash
-# Installez les dépendances
+# Installer les dépendances
 npm install
 
-# Configurez les variables d'environnement
+# Configurer l'environnement
 cp .env.example .env.local
 # Éditez .env.local avec vos clés API
-
-# Lancez le serveur de développement
-npm run dev
 ```
 
-### 3. Créer une Branche
+## 🔧 Configuration de Développement
 
+### Variables d'Environnement
+Créez un fichier `.env.local` avec :
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_GEMINI_API_KEY=your_gemini_key (optionnel)
+VITE_MAPBOX_ACCESS_TOKEN=your_mapbox_token (optionnel)
+```
+
+### Base de Données de Test
 ```bash
-# Créez une nouvelle branche pour votre feature
-git checkout -b feature/nom-de-votre-feature
+# Option 1: Utiliser Supabase CLI
+supabase start
+supabase db reset
 
-# Ou pour un bug fix
-git checkout -b fix/description-du-bug
+# Option 2: Utiliser un projet Supabase de test
+# Créez un projet de test et appliquez les migrations
 ```
 
-## 🛠️ Environnement de Développement
+## 📋 Processus de Contribution
 
-### Prérequis
+### 1. Créer une Issue
+- Vérifiez qu'une issue similaire n'existe pas
+- Utilisez les templates d'issue appropriés
+- Décrivez clairement le problème ou la fonctionnalité
 
-- **Node.js** 18+ et npm/yarn
-- **Git** pour le versioning
-- **Compte Supabase** (gratuit)
-- **Clé API Gemini** (optionnel)
-- **Clé API Mapbox** (optionnel)
-
-### Structure du Projet
-
-```
-src/
-├── components/          # Composants React
-│   ├── ui/             # Composants UI de base
-│   ├── admin/          # Composants d'administration
-│   └── modals/         # Modales et overlays
-├── pages/              # Pages de l'application
-├── hooks/              # Hooks personnalisés
-├── services/           # Services externes
-├── store/              # État global (Zustand)
-├── types/              # Types TypeScript
-├── utils/              # Utilitaires
-└── test/               # Tests
-```
-
-### Scripts Disponibles
-
+### 2. Créer une Branche
 ```bash
-# Développement
-npm run dev              # Serveur de développement
-npm run build           # Build de production
-npm run preview         # Preview du build
-
-# Qualité du code
-npm run lint            # ESLint
-npm run lint:fix        # Correction automatique
-npm run type-check      # Vérification TypeScript
-
-# Tests
-npm run test            # Tests unitaires
-npm run test:ui         # Interface de test
-npm run test:coverage   # Couverture de tests
-```
-
-## 📏 Standards de Code
-
-### TypeScript
-
-- ✅ Utilisez TypeScript pour tous les nouveaux fichiers
-- ✅ Définissez des types explicites pour les props et états
-- ✅ Évitez `any`, préférez des types spécifiques
-- ✅ Utilisez les interfaces pour les objets complexes
-
-```typescript
-// ✅ Bon
-interface UserProps {
-  id: string;
-  name: string;
-  email: string;
-  onUpdate?: (user: User) => void;
-}
-
-const UserComponent: React.FC<UserProps> = ({ id, name, email, onUpdate }) => {
-  // ...
-};
-
-// ❌ Éviter
-const UserComponent = ({ id, name, email, onUpdate }: any) => {
-  // ...
-};
-```
-
-### React
-
-- ✅ Utilisez des composants fonctionnels avec hooks
-- ✅ Préférez la composition à l'héritage
-- ✅ Utilisez `useCallback` et `useMemo` pour l'optimisation
-- ✅ Gérez les états de loading et d'erreur
-
-```typescript
-// ✅ Bon
-const ItemCard: React.FC<ItemCardProps> = ({ item, onFavorite }) => {
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const handleFavorite = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      await onFavorite(item.id);
-    } catch (error) {
-      console.error('Error favoriting item:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [item.id, onFavorite]);
-
-  if (isLoading) {
-    return <ItemCardSkeleton />;
-  }
-
-  return (
-    <div className="item-card">
-      {/* ... */}
-    </div>
-  );
-};
-```
-
-### CSS et Styling
-
-- ✅ Utilisez Tailwind CSS pour le styling
-- ✅ Créez des composants réutilisables
-- ✅ Suivez le design system existant
-- ✅ Utilisez les classes utilitaires de Tailwind
-
-```typescript
-// ✅ Bon
-<Button 
-  variant="primary" 
-  size="lg" 
-  className="w-full md:w-auto"
-  leftIcon={<Plus className="w-4 h-4" />}
->
-  Ajouter un objet
-</Button>
-
-// ❌ Éviter
-<button style={{ backgroundColor: 'blue', padding: '10px' }}>
-  Ajouter un objet
-</button>
-```
-
-### Gestion d'État
-
-- ✅ Utilisez Zustand pour l'état global
-- ✅ Utilisez TanStack Query pour l'état serveur
-- ✅ Créez des hooks personnalisés pour la logique métier
-- ✅ Évitez le prop drilling
-
-```typescript
-// ✅ Bon - Hook personnalisé
-export function useItems() {
-  return useQuery({
-    queryKey: ['items'],
-    queryFn: async (): Promise<Item[]> => {
-      const { data, error } = await supabase
-        .from('items')
-        .select('*')
-        .eq('is_available', true);
-      
-      if (error) throw error;
-      return data || [];
-    },
-    staleTime: 1000 * 60 * 5,
-  });
-}
-
-// ✅ Bon - Store Zustand
-export const useAuthStore = create<AuthState>((set, get) => ({
-  user: null,
-  profile: null,
-  loading: true,
-  
-  signIn: async (email: string, password: string) => {
-    // Logique de connexion
-  },
-}));
-```
-
-## 🔄 Processus de Contribution
-
-### 1. Planifier votre Contribution
-
-- 📋 Consultez les [Issues](https://github.com/ORIGINAL-OWNER/Échangeo/issues) existantes
-- 💬 Discutez de votre idée dans les discussions GitHub
-- 🎯 Assurez-vous que votre contribution s'aligne avec la roadmap
-
-### 2. Développer
-
-```bash
-# Synchronisez avec le repository principal
+# Synchroniser avec upstream
 git fetch upstream
 git checkout main
 git merge upstream/main
 
-# Créez votre branche
-git checkout -b feature/votre-feature
-
-# Développez et testez
-npm run dev
-npm run test
-npm run lint
+# Créer une nouvelle branche
+git checkout -b feature/nom-de-la-fonctionnalite
+# ou
+git checkout -b fix/nom-du-bug
 ```
 
-### 3. Tester
-
-```bash
-# Tests unitaires
-npm run test
-
-# Tests de linting
-npm run lint
-
-# Vérification TypeScript
-npm run type-check
-
-# Tests de build
-npm run build
-```
+### 3. Développer
+- Suivez les conventions de code
+- Écrivez des tests pour vos modifications
+- Documentez les changements importants
+- Testez localement avant de commit
 
 ### 4. Commit et Push
-
 ```bash
-# Ajoutez vos changements
+# Ajouter les fichiers modifiés
 git add .
 
 # Commit avec un message descriptif
-git commit -m "feat: ajouter la fonctionnalité de recherche avancée"
+git commit -m "feat: ajouter système de dons"
 
 # Push vers votre fork
-git push origin feature/votre-feature
+git push origin feature/nom-de-la-fonctionnalite
 ```
 
 ### 5. Pull Request
+- Créez une PR vers la branche `main`
+- Utilisez le template de PR
+- Ajoutez des captures d'écran si nécessaire
+- Référencez les issues liées
 
-- 📝 Créez une Pull Request sur GitHub
-- 📋 Remplissez le template de PR
-- 🔍 Demandez une review
-- 🔄 Répondez aux commentaires
+## 📝 Conventions de Code
 
-## 📝 Types de Contributions
-
-### 🐛 Bug Fixes
-
-```bash
-git checkout -b fix/description-du-bug
-```
-
-**Template de commit :**
-```
-fix: corriger le bug de chargement des images
-
-- Résoudre le problème de chargement des images dans ItemCard
-- Ajouter un fallback pour les images manquantes
-- Améliorer la gestion d'erreur
-
-Fixes #123
-```
-
-### ✨ Nouvelles Fonctionnalités
+### Messages de Commit
+Utilisez le format [Conventional Commits](https://www.conventionalcommits.org/) :
 
 ```bash
-git checkout -b feature/nom-de-la-feature
+feat: ajouter nouvelle fonctionnalité
+fix: corriger un bug
+docs: mise à jour documentation
+style: formatage du code
+refactor: refactoring sans changement fonctionnel
+test: ajouter ou modifier tests
+chore: tâches de maintenance
 ```
 
-**Template de commit :**
-```
-feat: ajouter la recherche par géolocalisation
+### Structure des Composants
+```typescript
+// Ordre des imports
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Search } from 'lucide-react';
 
-- Implémenter la recherche d'objets par proximité
-- Ajouter des filtres de distance
-- Intégrer avec Mapbox pour la visualisation
+// Imports locaux
+import Button from '../ui/Button';
+import { useItems } from '../../hooks/useItems';
+import type { Item } from '../../types';
 
-Closes #456
-```
+// Interface du composant
+interface ComponentProps {
+  title: string;
+  onAction: () => void;
+}
 
-### 📚 Documentation
+// Composant
+const Component: React.FC<ComponentProps> = ({ title, onAction }) => {
+  // Hooks
+  const { data, loading } = useItems();
+  
+  // Handlers
+  const handleClick = () => {
+    onAction();
+  };
+  
+  // Render
+  return (
+    <div>
+      <h1>{title}</h1>
+      <Button onClick={handleClick}>Action</Button>
+    </div>
+  );
+};
 
-```bash
-git checkout -b docs/description-de-la-doc
-```
-
-**Template de commit :**
-```
-docs: améliorer la documentation de l'API
-
-- Ajouter des exemples d'utilisation
-- Documenter les nouveaux endpoints
-- Corriger les erreurs de typo
-```
-
-### 🎨 Améliorations UI/UX
-
-```bash
-git checkout -b ui/description-de-l-amélioration
-```
-
-**Template de commit :**
-```
-ui: améliorer l'interface de création d'objet
-
-- Simplifier le formulaire de création
-- Ajouter des animations de transition
-- Améliorer la responsivité mobile
-```
-
-### ⚡ Optimisations de Performance
-
-```bash
-git checkout -b perf/description-de-l-optimisation
+export default Component;
 ```
 
-**Template de commit :**
-```
-perf: optimiser le chargement des images
+### Nommage
+- **Composants** : PascalCase (`UserProfile`)
+- **Hooks** : camelCase avec `use` (`useUserData`)
+- **Fonctions** : camelCase (`getUserData`)
+- **Variables** : camelCase (`userData`)
+- **Constantes** : UPPER_SNAKE_CASE (`API_BASE_URL`)
+- **Types** : PascalCase (`UserProfile`)
 
-- Implémenter le lazy loading
-- Ajouter la compression d'images
-- Réduire la taille du bundle de 15%
-```
-
-## 🐛 Reporting de Bugs
-
-### Avant de Reporter
-
-1. 🔍 Vérifiez que le bug n'a pas déjà été reporté
-2. 🧪 Testez avec la dernière version
-3. 🔄 Essayez de reproduire le bug
-
-### Template de Bug Report
-
-```markdown
-## 🐛 Description du Bug
-
-Description claire et concise du bug.
-
-## 🔄 Étapes pour Reproduire
-
-1. Aller à '...'
-2. Cliquer sur '...'
-3. Faire défiler vers '...'
-4. Voir l'erreur
-
-## 🎯 Comportement Attendu
-
-Description claire de ce qui devrait se passer.
-
-## 📱 Environnement
-
-- OS: [e.g. iOS, Windows, Linux]
-- Navigateur: [e.g. Chrome, Safari, Firefox]
-- Version: [e.g. 22]
-- Version de l'app: [e.g. 1.0.0]
-
-## 📸 Captures d'Écran
-
-Si applicable, ajoutez des captures d'écran.
-
-## 📋 Informations Supplémentaires
-
-Toute autre information pertinente.
-```
-
-## 💡 Suggestions de Fonctionnalités
-
-### Avant de Suggérer
-
-1. 🔍 Vérifiez que la fonctionnalité n'existe pas déjà
-2. 📋 Consultez la roadmap
-3. 💬 Discutez dans les discussions GitHub
-
-### Template de Feature Request
-
-```markdown
-## 🚀 Fonctionnalité Suggérée
-
-Description claire de la fonctionnalité souhaitée.
-
-## 🎯 Problème à Résoudre
-
-Quel problème cette fonctionnalité résoudrait-elle ?
-
-## 💡 Solution Proposée
-
-Description détaillée de votre solution.
-
-## 🔄 Alternatives Considérées
-
-Autres solutions que vous avez considérées.
-
-## 📋 Contexte Supplémentaire
-
-Toute autre information pertinente.
-```
+### Styling
+- Utilisez **Tailwind CSS** pour le styling
+- Préférez les classes utilitaires
+- Créez des composants réutilisables pour les patterns répétitifs
+- Utilisez les design tokens définis dans `tailwind.config.js`
 
 ## 🧪 Tests
 
-### Écrire des Tests
-
+### Tests Unitaires
 ```typescript
-// Exemple de test pour un composant
-import { render, screen, fireEvent } from '@testing-library/react';
-import { ItemCard } from '../ItemCard';
+// Exemple de test avec Vitest
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import Button from './Button';
 
-describe('ItemCard', () => {
-  const mockItem = {
-    id: '1',
-    title: 'Test Item',
-    description: 'Test Description',
-    category: 'tools',
-    condition: 'good',
-    offer_type: 'loan',
-    is_available: true,
-  };
-
-  it('renders item information correctly', () => {
-    render(<ItemCard item={mockItem} />);
-    
-    expect(screen.getByText('Test Item')).toBeInTheDocument();
-    expect(screen.getByText('Test Description')).toBeInTheDocument();
-  });
-
-  it('handles favorite button click', () => {
-    const onFavorite = jest.fn();
-    render(<ItemCard item={mockItem} onFavorite={onFavorite} />);
-    
-    fireEvent.click(screen.getByRole('button', { name: /favorite/i }));
-    expect(onFavorite).toHaveBeenCalledWith('1');
+describe('Button', () => {
+  it('renders with correct text', () => {
+    render(<Button>Click me</Button>);
+    expect(screen.getByText('Click me')).toBeInTheDocument();
   });
 });
 ```
 
 ### Tests d'Intégration
-
 ```typescript
-// Exemple de test d'intégration
-import { render, screen, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ItemsPage } from '../ItemsPage';
+// Test d'un hook
+import { renderHook } from '@testing-library/react';
+import { useItems } from './useItems';
 
-const createTestQueryClient = () => new QueryClient({
-  defaultOptions: {
-    queries: { retry: false },
-    mutations: { retry: false },
-  },
-});
-
-describe('ItemsPage Integration', () => {
-  it('loads and displays items', async () => {
-    const queryClient = createTestQueryClient();
-    
-    render(
-      <QueryClientProvider client={queryClient}>
-        <ItemsPage />
-      </QueryClientProvider>
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText('Objets disponibles')).toBeInTheDocument();
-    });
+describe('useItems', () => {
+  it('returns items data', async () => {
+    const { result } = renderHook(() => useItems());
+    // Assertions...
   });
 });
 ```
 
-## 📚 Ressources Utiles
+### Exécuter les Tests
+```bash
+# Tous les tests
+npm run test
 
-### Documentation
+# Tests en mode watch
+npm run test:watch
 
-- 📖 [React Documentation](https://react.dev/)
-- 📖 [TypeScript Handbook](https://www.typescriptlang.org/docs/)
-- 📖 [Tailwind CSS Docs](https://tailwindcss.com/docs)
-- 📖 [Supabase Docs](https://supabase.com/docs)
-- 📖 [TanStack Query Docs](https://tanstack.com/query/latest)
+# Tests avec couverture
+npm run test:coverage
+
+# Tests UI
+npm run test:ui
+```
+
+## 🎨 Design System
+
+### Composants UI
+- Utilisez les composants de `src/components/ui/`
+- Respectez les props et interfaces définies
+- Ajoutez de nouveaux composants si nécessaire
+
+### Icônes
+- Utilisez **Lucide React** pour les icônes
+- Importez seulement les icônes nécessaires
+- Préférez les icônes cohérentes avec le design
+
+### Couleurs
+- Utilisez les couleurs définies dans `tailwind.config.js`
+- Respectez la palette de couleurs Échangeo
+- Utilisez les variants de couleurs (50, 100, 200, etc.)
+
+## 📚 Documentation
+
+### Code Documentation
+```typescript
+/**
+ * Hook pour gérer les données des objets
+ * @param filters - Filtres optionnels pour la recherche
+ * @returns Données des objets, état de chargement et erreurs
+ */
+export function useItems(filters?: ItemFilters) {
+  // Implementation...
+}
+```
+
+### README Updates
+- Mettez à jour le README si vous ajoutez des fonctionnalités
+- Documentez les nouvelles variables d'environnement
+- Ajoutez des exemples d'utilisation
+
+### Documentation Technique
+- Mettez à jour `docs/ARCHITECTURE.md` pour les changements architecturaux
+- Mettez à jour `docs/API_DOCS.md` pour les nouveaux endpoints
+- Mettez à jour `docs/DB_SCHEMA.md` pour les changements de base de données
+
+## 🐛 Débogage
 
 ### Outils de Développement
+- **React DevTools** : Inspection des composants
+- **TanStack Query DevTools** : Debug des requêtes
+- **Supabase Dashboard** : Inspection de la base de données
+- **Browser DevTools** : Debug JavaScript et réseau
 
-- 🛠️ [React DevTools](https://react.dev/learn/react-developer-tools)
-- 🛠️ [Supabase Dashboard](https://supabase.com/dashboard)
-- 🛠️ [Tailwind Play](https://play.tailwindcss.com/)
-- 🛠️ [TypeScript Playground](https://www.typescriptlang.org/play)
+### Logs
+```typescript
+// Utilisez console.log pour le debug
+console.log('Debug info:', data);
 
-### Communauté
+// Utilisez console.error pour les erreurs
+console.error('Error occurred:', error);
 
-- 💬 [Discussions GitHub](https://github.com/ORIGINAL-OWNER/Échangeo/discussions)
-- 💬 [Discord Community](https://discord.gg/Échangeo)
-- 📧 [Email Support](mailto:support@Échangeo.app)
+// Utilisez console.warn pour les avertissements
+console.warn('Deprecated feature used');
+```
 
-## ❓ Questions et Support
+### Problèmes Courants
+1. **Erreurs Supabase** : Vérifiez les variables d'environnement
+2. **Erreurs TypeScript** : Vérifiez les types et interfaces
+3. **Erreurs de build** : Vérifiez les imports et dépendances
+4. **Erreurs de test** : Vérifiez les mocks et setup
 
-### Obtenir de l'Aide
+## 🔍 Code Review
 
-1. 📚 Consultez la documentation
-2. 🔍 Recherchez dans les issues existantes
-3. 💬 Posez votre question dans les discussions GitHub
-4. 📧 Contactez l'équipe par email
+### Critères de Review
+- **Fonctionnalité** : Le code fait-il ce qu'il est censé faire ?
+- **Performance** : Y a-t-il des optimisations possibles ?
+- **Sécurité** : Y a-t-il des vulnérabilités ?
+- **Maintenabilité** : Le code est-il facile à comprendre ?
+- **Tests** : Y a-t-il des tests appropriés ?
 
-### Contact
+### Checklist PR
+- [ ] Code fonctionne et répond aux exigences
+- [ ] Tests passent et couvrent les nouveaux cas
+- [ ] Documentation mise à jour si nécessaire
+- [ ] Pas de console.log oubliés
+- [ ] Code respecte les conventions
+- [ ] Pas de code mort ou commenté
+- [ ] Gestion d'erreurs appropriée
 
-- 📧 **Email** : dev@Échangeo.app
-- 💬 **Discord** : [Serveur Échangeo](https://discord.gg/Échangeo)
-- 🐦 **Twitter** : [@ÉchangeoApp](https://twitter.com/ÉchangeoApp)
-- 💼 **LinkedIn** : [Échangeo](https://linkedin.com/company/Échangeo)
+## 🚀 Déploiement
 
-## 🎉 Reconnaissance
+### Environnements
+- **Development** : `npm run dev`
+- **Staging** : Déploiement automatique sur les PR
+- **Production** : Déploiement manuel après validation
 
-### Contributeurs
+### Processus de Release
+1. Mise à jour du numéro de version
+2. Génération du changelog
+3. Création d'un tag Git
+4. Déploiement en production
+5. Communication aux utilisateurs
 
-Nous reconnaissons tous les contributeurs qui aident à faire de Échangeo une meilleure plateforme :
+## 🤔 Questions Fréquentes
 
-- 👨‍💻 **Développeurs** : Code, tests, documentation
-- 🎨 **Designers** : UI/UX, illustrations, branding
-- 📝 **Rédacteurs** : Documentation, guides, traductions
-- 🐛 **Testeurs** : Bug reports, feedback utilisateur
-- 💡 **Innovateurs** : Idées, suggestions, améliorations
+### Comment ajouter une nouvelle fonctionnalité ?
+1. Créez une issue pour discuter de la fonctionnalité
+2. Créez une branche feature
+3. Développez avec des tests
+4. Créez une PR avec documentation
 
-### Système de Reconnaissance
+### Comment corriger un bug ?
+1. Reproduisez le bug localement
+2. Créez une branche fix
+3. Écrivez un test qui reproduit le bug
+4. Corrigez le bug
+5. Vérifiez que le test passe
 
-- 🏆 **Hall of Fame** : Contributeurs exceptionnels
-- 🎖️ **Badges** : Reconnaissance des contributions
-- 📜 **Certificats** : Attestation de participation
-- 🎁 **Récompenses** : Merchandise et accès premium
+### Comment contribuer à la documentation ?
+1. Identifiez les sections à améliorer
+2. Créez une branche docs
+3. Améliorez la documentation
+4. Créez une PR avec les changements
+
+## 📞 Support
+
+### Communication
+- **GitHub Issues** : Pour les bugs et fonctionnalités
+- **GitHub Discussions** : Pour les questions générales
+- **Email** : contact@echangeo.fr pour les questions privées
+
+### Ressources
+- [Documentation Supabase](https://supabase.com/docs)
+- [Documentation React](https://react.dev)
+- [Documentation Tailwind](https://tailwindcss.com/docs)
+- [Documentation TanStack Query](https://tanstack.com/query)
 
 ---
 
-Merci de contribuer à Échangeo ! Ensemble, nous construisons l'avenir du partage local. 🌱
-
-**Échangeo** - Révolutionnons la consommation locale ensemble ! 🚀
+Merci de contribuer à Échangeo ! Ensemble, nous créons une plateforme qui transforme la consommation locale et favorise l'économie circulaire. 🌱✨

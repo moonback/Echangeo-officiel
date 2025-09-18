@@ -1,207 +1,289 @@
-# Échangeo 🌱 - La plateforme communautaire pour des échanges locaux et durables
+# Échangeo 🌱
 
-![Échangeo Logo](public/logo.png) <!-- TODO: Ajouter un logo ou une capture d'écran ici -->
+**La plateforme communautaire pour des échanges locaux et durables**
 
-## ✨ Présentation
+Échangeo révolutionne la consommation en permettant aux voisins de partager, emprunter et donner leurs objets facilement. Notre mission : créer du lien social tout en réduisant les déchets et en favorisant l'économie circulaire.
 
-**Échangeo** est une plateforme communautaire innovante dédiée au **partage, à l'emprunt et à l'échange d'objets du quotidien entre voisins**. Notre mission est de révolutionner la consommation en favorisant l'économie circulaire, le désencombrement et le renforcement des liens sociaux au sein des quartiers. Grâce à l'intégration de l'**Intelligence Artificielle** et de la **géolocalisation**, Échangeo rend le partage d'objets plus simple, plus intelligent et plus convivial que jamais.
+## 🚀 Stack Technique
 
-### Pourquoi Échangeo ?
+### Frontend
+- **React 18** avec TypeScript
+- **Vite** pour le build et le dev server
+- **Tailwind CSS** pour le styling
+- **Framer Motion** pour les animations
+- **React Router** pour la navigation
+- **React Hook Form** + **Zod** pour les formulaires
+- **TanStack Query** pour la gestion d'état serveur
+- **Zustand** pour l'état global client
+- **Lucide React** pour les icônes
 
-*   **Économisez de l'argent :** Accédez à une multitude d'objets sans dépenser.
-*   **Réduisez votre empreinte écologique :** Donnez une seconde vie aux objets et participez à une consommation plus responsable.
-*   **Désencombrez votre espace :** Débarrassez-vous facilement de ce dont vous n'avez plus besoin.
-*   **Créez du lien social :** Rencontrez vos voisins et construisez une communauté d'entraide.
+### Backend & Base de données
+- **Supabase** (PostgreSQL + Auth + Storage + Realtime)
+- **Row Level Security** (RLS) pour la sécurité
+- **Migrations SQL** pour la gestion du schéma
 
-## 🚀 Fonctionnalités Clés
+### Services externes
+- **Google Gemini AI** pour l'analyse d'images et le chat
+- **Mapbox** pour la géolocalisation et les cartes
+- **Nominatim** (OpenStreetMap) pour la géocodification
 
-### 📦 Gestion Intelligente des Objets
-*   **Publication Facile :** Mettez en ligne vos objets avec photos et descriptions détaillées.
-*   **Catégorisation IA :** L'Intelligence Artificielle catégorise automatiquement vos objets (outils, électronique, livres, sports, etc.) pour une meilleure visibilité.
-*   **Prêt & Échange :** Proposez vos objets en prêt ou en échange, et gérez les demandes.
-*   **Recherche Avancée :** Trouvez rapidement ce dont vous avez besoin grâce à la recherche géolocalisée et par catégories.
-*   **Favoris & Évaluations :** Gardez une trace de vos objets préférés et évaluez les échanges.
+### Outils de développement
+- **ESLint** + **TypeScript** pour la qualité du code
+- **Vitest** pour les tests
+- **PostCSS** + **Autoprefixer**
 
-### 🏘️ Communautés de Quartier Dynamiques
-*   **Profils Utilisateurs :** Gérez votre profil, votre réputation et votre localisation.
-*   **Voisinage Géographique :** Rejoignez ou créez des communautés basées sur votre quartier.
-*   **Chat Intégré :** Communiquez facilement avec vos voisins grâce à une messagerie instantanée avec assistant IA.
-*   **Notifications en Temps Réel :** Restez informé des nouvelles opportunités et messages.
-*   **Modération & Signalement :** Un système robuste pour assurer la sécurité et le respect au sein de la communauté.
-*   **Événements Communautaires :** Organisez et participez à des rencontres, ateliers ou échanges au niveau local.
-*   **Forums de Discussion :** Échangez sur des sujets spécifiques à votre quartier.
+## ✨ Fonctionnalités Principales (MVP)
 
-### 🤖 Intelligence Artificielle au Service du Partage
-*   **Analyse d'Images :** L'IA analyse les photos de vos objets lors de la publication pour des suggestions de catégories et descriptions.
-*   **Suggestions Contextuelles :** Obtenez des suggestions de prix et des descriptions optimisées.
-*   **Assistant de Chat :** Un assistant IA vous aide dans vos négociations et requêtes.
-*   **Score de Compatibilité :** L'IA évalue la compatibilité entre utilisateurs et objets pour des échanges pertinents.
-*   **Médiation des Conflits :** Un support IA pour faciliter la résolution des désaccords.
+### 📦 Gestion des Objets
+- **Publication d'objets** avec photos multiples et analyse IA
+- **Catégorisation automatique** par intelligence artificielle
+- **Système de prêt, échange et don** entre voisins
+- **Recherche géolocalisée** et filtres avancés
+- **Favoris et évaluations** des objets
 
-### 🏆 Gamification Engageante
-*   **Niveaux & Points :** Gagnez des points et progressez en niveau en participant activement.
-*   **Badges de Réputation :** Obtenez des badges (ex: "Super Prêteur", "Voisin Fiable") pour reconnaître votre engagement.
-*   **Défis Communautaires :** Participez à des défis quotidiens/hebdomadaires pour dynamiser les échanges.
-*   **Classement :** Visualisez votre position et celle des autres membres dans le classement des utilisateurs les plus actifs.
+### 👥 Communauté Locale
+- **Profils utilisateurs** complets avec géolocalisation
+- **Communautés de quartier** avec événements et discussions
+- **Système de voisinage** géographique intelligent
+- **Chat intégré** avec assistant IA
+- **Notifications** en temps réel
 
-### 🎨 Interface Utilisateur Moderne & Intuitive
-*   **Design Responsive :** Une expérience fluide sur tous les appareils (mobile-first).
-*   **Navigation Intuitive :** Accédez facilement aux fonctionnalités grâce à une navigation claire.
-*   **Animations Fluides :** Des micro-interactions et animations pour une expérience agréable.
-*   **Cartes Interactives :** Explorez les objets et communautés autour de vous avec Mapbox.
-*   **Mode Sombre :** (En développement) Une option pour une interface plus reposante.
+### 🎮 Gamification
+- **Système de niveaux** et points (1-20+)
+- **Badges de réputation** (Super Prêteur, Voisin Fiable, etc.)
+- **Défis communautaires** quotidiens/hebdomadaires
+- **Classement** des utilisateurs les plus actifs
+- **Historique des récompenses**
 
-## 🛠️ Stack Technique
+### 🤖 Intelligence Artificielle
+- **Analyse d'images** pour catégoriser automatiquement les objets
+- **Suggestions de prix** et descriptions optimisées
+- **Assistant de chat** avec suggestions contextuelles
+- **Analyse de compatibilité** entre utilisateurs
+- **Médiation automatique** des conflits
 
-| Catégorie | Technologie | Description |
-| :-------- | :---------- | :---------- |
-| **Frontend** | `React 18` (TypeScript) | Interface utilisateur moderne et robuste. |
-| | `Vite` | Bundler ultra-rapide pour le développement et la production. |
-| | `Tailwind CSS` | Framework CSS utilitaire pour un design rapide et cohérent. |
-| | `Framer Motion` | Bibliothèque pour des animations fluides et déclaratives. |
-| | `React Router` | Gestion de la navigation au sein de l'application SPA. |
-| | `TanStack Query` | Gestion performante de l'état serveur, du cache et des requêtes. |
-| | `Zustand` | Solution légère et flexible pour la gestion de l'état global client. |
-| | `React Hook Form` + `Zod` | Gestion et validation des formulaires de manière efficace. |
-| | `Lucide React` | Bibliothèque d'icônes modulaires. |
-| **Backend & Services** | `Supabase` | Backend-as-a-Service complet (PostgreSQL, Authentification, Stockage, Temps réel). |
-| | `Google Gemini AI` | Services d'Intelligence Artificielle pour l'analyse d'images et les suggestions de chat. |
-| | `Mapbox` | Services de cartographie pour la géolocalisation et les cartes interactives. |
-| **Outils de Dev** | `ESLint` + `TypeScript` | Assure la qualité et la cohérence du code. |
-| | `Vitest` + `Testing Library` | Frameworks pour les tests unitaires et d'intégration. |
-| | `PostCSS` + `Autoprefixer` | Traitement et optimisation du CSS. |
+### 🛡️ Administration
+- **Dashboard admin** avec statistiques globales
+- **Gestion des utilisateurs** (bannissement, modération)
+- **Gestion des objets** (modération, suspension)
+- **Gestion des communautés** et événements
+- **Système de rapports** et logs
 
-## ⚙️ Installation et Configuration
+## 📋 Prérequis
 
-### Prérequis
-Assurez-vous d'avoir installé :
-*   **Node.js** (version 18 ou supérieure)
-*   **npm** ou **Yarn**
+- **Node.js** 18+ et npm/yarn
+- **Compte Supabase** (gratuit)
+- **Clé API Google Gemini** (optionnel pour l'IA)
+- **Clé API Mapbox** (optionnel pour les cartes)
 
-### Étapes
+## 🛠️ Installation et Configuration
 
-1.  **Cloner le dépôt :**
-    ```bash
-    git clone https://github.com/moonback/Échangeo-officiel.git
-    cd Échangeo-officiel
-    ```
+### 1. Cloner le projet
+```bash
+git clone <repository-url>
+cd echangeo
+```
 
-2.  **Installer les dépendances :**
-    ```bash
-    npm install
-    # ou
-    yarn install
-    ```
+### 2. Installer les dépendances
+```bash
+npm install
+# ou
+yarn install
+```
 
-3.  **Configuration Supabase :**
-    *   Créez un projet sur [Supabase](https://supabase.com) et récupérez votre `URL de projet` et votre `Clé Anon`.
-    *   Installez la CLI Supabase globalement : `npm install -g supabase`.
-    *   Liez votre projet local à Supabase : `supabase link --project-ref <votre-project-ref>`.
-    *   Appliquez les migrations de la base de données : `supabase db push`.
+### 3. Configuration Supabase
 
-4.  **Variables d'environnement :**
-    Créez un fichier `.env.local` à la racine du projet avec les informations suivantes :
-    ```env
-    # Supabase (obligatoire)
-    VITE_SUPABASE_URL="https://your-project.supabase.co"
-    VITE_SUPABASE_ANON_KEY="your-anon-key"
+#### Créer un projet Supabase
+1. Allez sur [supabase.com](https://supabase.com)
+2. Créez un nouveau projet
+3. Récupérez l'URL et la clé anonyme
 
-    # Google Gemini AI (optionnel, mais recommandé pour les fonctionnalités IA)
-    VITE_GEMINI_API_KEY="your-gemini-key"
+#### Configurer les variables d'environnement
+Créez un fichier `.env.local` à la racine :
 
-    # Mapbox (optionnel, mais recommandé pour les fonctionnalités de cartographie)
-    VITE_MAPBOX_TOKEN="your-mapbox-token"
-    ```
+```env
+# Supabase (obligatoire)
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-5.  **Lancer l'application :**
-    ```bash
-    # Pour le développement
-    npm run dev
+# Google Gemini AI (optionnel)
+VITE_GEMINI_API_KEY=your_gemini_api_key
 
-    # Pour un build de production
-    npm run build
+# Mapbox (optionnel)
+VITE_MAPBOX_ACCESS_TOKEN=your_mapbox_token
 
-    # Pour prévisualiser le build de production
-    npm run preview
-    ```
+# Fonctionnalités (optionnel)
+VITE_ENABLE_DONATIONS=false
+```
 
-## 📂 Structure du Projet
+### 4. Configuration de la base de données
+
+#### Option A : Via Supabase CLI (recommandé)
+```bash
+# Installer Supabase CLI
+npm install -g supabase
+
+# Initialiser le projet
+supabase init
+
+# Lier à votre projet Supabase
+supabase link --project-ref your_project_ref
+
+# Appliquer les migrations
+supabase db push
+```
+
+#### Option B : Via l'interface Supabase
+1. Allez dans l'onglet "SQL Editor" de votre projet Supabase
+2. Exécutez les fichiers SQL dans l'ordre :
+   - `supabase/migrations/20250916192035_old_bird.sql`
+   - `supabase/migrations/20250917130000_add_user_ratings_and_badges.sql`
+   - `supabase/migrations/20250917140000_add_offer_type.sql`
+   - `supabase/migrations/20250120000000_enhanced_gamification.sql`
+   - `supabase/migrations/20250120000001_notifications.sql`
+   - `supabase/migrations/20250120000003_communities_simple.sql`
+   - `supabase/migrations/20250120000004_user_bans.sql`
+   - `supabase/migrations/20250917150000_add_favorites.sql`
+
+### 5. Configuration du storage Supabase
+1. Allez dans "Storage" de votre projet Supabase
+2. Créez un bucket nommé `items` avec les permissions publiques
+3. Configurez les politiques RLS si nécessaire
+
+## 🚀 Lancement du projet
+
+### Développement
+```bash
+npm run dev
+# ou
+yarn dev
+```
+
+L'application sera accessible sur `http://localhost:5173`
+
+### Production
+```bash
+# Build
+npm run build
+# ou
+yarn build
+
+# Preview
+npm run preview
+# ou
+yarn preview
+```
+
+### Tests
+```bash
+npm run test
+# ou
+yarn test
+
+# Tests avec interface
+npm run test:ui
+# ou
+yarn test:ui
+```
+
+## 📁 Structure du Projet
 
 ```
 src/
-├── components/           # Composants réutilisables (UI, Admin, Modals, Layouts)
-├── pages/                # Vues principales de l'application (Accueil, Objets, Chat, Admin)
-├── hooks/                # Hooks React personnalisés pour la logique réutilisable
-├── services/             # Modules d'interaction avec les services externes (Supabase, IA)
-├── store/                # Gestion de l'état global avec Zustand
-├── types/                # Définitions de types TypeScript
-├── utils/                # Fonctions utilitaires (catégories, validation, géolocalisation)
-└── test/                 # Tests unitaires et d'intégration
+├── components/           # Composants réutilisables
+│   ├── admin/           # Composants d'administration
+│   ├── ui/              # Composants UI de base
+│   └── modals/          # Modales
+├── hooks/               # Hooks React personnalisés
+├── pages/               # Pages de l'application
+│   └── admin/           # Pages d'administration
+├── services/            # Services externes (Supabase, AI, etc.)
+├── store/               # État global (Zustand)
+├── types/               # Types TypeScript
+├── utils/               # Utilitaires et helpers
+└── test/                # Configuration des tests
+
+supabase/
+├── migrations/          # Migrations SQL
+└── *.sql               # Scripts SQL utilitaires
+
+public/                  # Assets statiques
+docs/                    # Documentation
 ```
 
-## 🔒 Sécurité et Conformité
+## 🔧 Variables d'Environnement
 
-*   **Sécurité au niveau des lignes (RLS) :** Protection des données via Supabase PostgreSQL.
-*   **Authentification Robuste :** Gérée par Supabase Auth.
-*   **Validation des Données :** Utilisation de Zod pour garantir l'intégrité des données.
-*   **Modération Active :** Système de signalement et de gestion des utilisateurs bannis.
-*   **RGPD :** Conception axée sur la protection des données personnelles (à confirmer par une politique de confidentialité détaillée).
+| Variable | Description | Obligatoire | Défaut |
+|----------|-------------|-------------|---------|
+| `VITE_SUPABASE_URL` | URL de votre projet Supabase | ✅ | - |
+| `VITE_SUPABASE_ANON_KEY` | Clé anonyme Supabase | ✅ | - |
+| `VITE_GEMINI_API_KEY` | Clé API Google Gemini | ❌ | - |
+| `VITE_MAPBOX_ACCESS_TOKEN` | Token Mapbox | ❌ | - |
+| `VITE_ENABLE_DONATIONS` | Activer les dons | ❌ | `false` |
 
-## 📊 Fonctionnalités d'Administration
+## 🎯 Bonnes Pratiques pour Contribuer
 
-Un tableau de bord complet pour les administrateurs incluant :
-*   **Statistiques Globales :** Vue d'ensemble de l'activité de la plateforme.
-*   **Gestion des Utilisateurs :** Modération, bannissement et gestion des comptes.
-*   **Gestion des Objets :** Supervision et modération des annonces.
-*   **Gestion des Communautés :** Création, modification et modération des communautés.
-*   **Rapports & Logs :** Suivi des signalements et des activités du système.
+### Code Style
+- Utilisez **TypeScript** strict
+- Suivez les conventions **ESLint** configurées
+- Préférez les **composants fonctionnels** avec hooks
+- Utilisez **Tailwind CSS** pour le styling
 
-## 🤝 Contribuer
+### Architecture
+- **Séparation des responsabilités** : hooks pour la logique, composants pour l'UI
+- **Gestion d'état** : TanStack Query pour le serveur, Zustand pour le client
+- **Validation** : Zod pour les schémas, React Hook Form pour les formulaires
+- **Types** : Interfaces TypeScript strictes
 
-Nous accueillons toutes les contributions ! Veuillez consulter notre [guide de contribution](./CONTRIBUTING.md) pour plus de détails sur la manière de participer au projet.
+### Base de données
+- **Migrations** : Toujours créer des migrations pour les changements de schéma
+- **RLS** : Utiliser Row Level Security pour la sécurité
+- **Index** : Ajouter des index pour les performances
 
-### Workflow de Contribution
-1.  **Fork** le dépôt.
-2.  Créez une branche pour votre fonctionnalité (`git checkout -b feature/nom-de-ma-fonctionnalite`).
-3.  Effectuez vos modifications et **commitez**-les (`git commit -m 'Ajout de ma super fonctionnalité'`).
-4.  **Poussez** votre branche (`git push origin feature/nom-de-ma-fonctionnalite`).
-5.  Ouvrez une **Pull Request** claire et détaillée.
+### Tests
+- **Tests unitaires** pour les utilitaires et hooks
+- **Tests d'intégration** pour les composants critiques
+- **Tests E2E** pour les flux utilisateur principaux
 
 ## 📚 Documentation Additionnelle
 
-*   [**ARCHITECTURE.md**](./ARCHITECTURE.md) : Détails de l'architecture technique.
-*   [**API_DOCS.md**](./API_DOCS.md) : Documentation des APIs utilisées.
-*   [**DB_SCHEMA.md**](./DB_SCHEMA.md) : Schéma détaillé de la base de données.
-*   [**ROADMAP.md**](./ROADMAP.md) : Feuille de route et évolutions futures du projet.
-*   [**CONTRIBUTING.md**](./CONTRIBUTING.md) : Guide complet pour les contributeurs.
+- [Architecture détaillée](./docs/ARCHITECTURE.md)
+- [Documentation API](./docs/API_DOCS.md)
+- [Schéma de base de données](./docs/DB_SCHEMA.md)
+- [Roadmap du projet](./docs/ROADMAP.md)
+- [Guide de contribution](./docs/CONTRIBUTING.md)
 
-## ⚠️ Problèmes Connus & Améliorations Futures
+## 🐛 Dépannage
 
-*   **Gamification :** Nécessite l'application des migrations RLS spécifiques à la gamification.
-*   **Intégration IA :** L'analyse d'images et certaines fonctionnalités IA dépendent d'une clé API Google Gemini valide.
-*   **Cartographie :** Les fonctionnalités de géolocalisation et de carte nécessitent une clé API Mapbox valide.
-*   **Communautés :** Certaines fonctionnalités avancées des communautés pourraient nécessiter des migrations ou des développements supplémentaires.
-*   **Optimisation des Performances :** Des optimisations continues sont prévues pour garantir une fluidité maximale.
-*   **Tests Automatisés :** Extension de la couverture des tests unitaires et d'intégration.
-*   **Mode Sombre :** Finalisation de l'implémentation du mode sombre.
-*   **Application Mobile Native :** Étude et développement d'applications iOS/Android dédiées.
+### Erreurs courantes
+
+#### "Missing Supabase environment variables"
+- Vérifiez que `.env.local` existe et contient les bonnes variables
+- Redémarrez le serveur de développement
+
+#### "Invalid enum value" pour les types d'offre
+- Exécutez le script `supabase/FIX_ALL_ENUM_ERRORS.sql` dans Supabase
+- Redémarrez l'application
+
+#### Problèmes de géolocalisation
+- Vérifiez que `VITE_MAPBOX_ACCESS_TOKEN` est configuré
+- Autorisez la géolocalisation dans votre navigateur
+
+### Logs et debugging
+- **Console du navigateur** : Erreurs frontend
+- **Supabase Dashboard** : Logs de la base de données
+- **Network tab** : Requêtes API
 
 ## 📄 Licence
 
-Ce projet est distribué sous la licence MIT. Voir le fichier [LICENSE](./LICENSE) pour plus d'informations.
+Ce projet est sous licence MIT. Voir le fichier [LICENSE](./LICENSE) pour plus de détails.
 
-## 🙏 Remerciements
+## 🤝 Support
 
-Nous tenons à remercier les projets et services open source qui rendent Échangeo possible :
-*   [Supabase](https://supabase.com)
-*   [Google Gemini](https://ai.google.dev)
-*   [Mapbox](https://mapbox.com)
-*   [Tailwind CSS](https://tailwindcss.com)
-*   [Framer Motion](https://www.framer.com/motion)
-*   Et toute la communauté open source !
+- **Issues** : Utilisez les GitHub Issues pour signaler des bugs
+- **Discussions** : GitHub Discussions pour les questions
+- **Email** : contact@echangeo.fr
 
 ---
 
-**Échangeo** - Ensemble, donnons une nouvelle vie à nos objets et à nos quartiers ! 🌱
-
-
+**Échangeo** - Révolutionnons ensemble la consommation locale ! 🌱✨
