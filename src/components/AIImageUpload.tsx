@@ -37,7 +37,7 @@ const AIImageUpload: React.FC<AIImageUploadProps> = ({
   error,
 }) => {
   const [dragActive, setDragActive] = useState(false);
-  const [aiEnabled, setAiEnabled] = useState(true);
+  const [aiEnabled] = useState(true);
   const [hasAnalyzed, setHasAnalyzed] = useState(false);
   
   const {
@@ -194,7 +194,7 @@ const AIImageUpload: React.FC<AIImageUploadProps> = ({
           </span>
         </div>
         
-        <div className="flex items-center gap-3">
+        {/* <div className="flex items-center gap-3">
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
@@ -207,12 +207,12 @@ const AIImageUpload: React.FC<AIImageUploadProps> = ({
               Analyse IA
             </span>
           </label>
-        </div>
+        </div> */}
       </div>
 
       {/* Zone d'upload */}
-      <Card className="p-0 overflow-hidden">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 p-4">
+      <Card className="p-0 overflow-hidden w-full">
+        <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 p-4">
           {/* Images existantes */}
           {imagePreviews.map((preview, index) => (
             <motion.div
@@ -282,7 +282,7 @@ const AIImageUpload: React.FC<AIImageUploadProps> = ({
             <motion.label
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              className={`aspect-square border-2 border-dashed rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all duration-200 ${
+              className={`aspect-square border-2 border-dashed rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all duration-200 w-full ${
                 dragActive
                   ? 'border-purple-500 bg-purple-50'
                   : 'border-gray-300 hover:border-purple-400 hover:bg-purple-50/50'

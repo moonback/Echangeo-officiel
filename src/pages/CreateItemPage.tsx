@@ -639,7 +639,7 @@ const CreateItemPage: React.FC = () => {
               <div className="text-center mb-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-2 flex items-center justify-center gap-2">
                   <Sparkles className="w-5 h-5 text-purple-600" />
-                  Ajoutez des photos pour une analyse IA automatique
+                  Ajoutez vos photos 
                 </h2>
                 <p className="text-gray-600">
                   Notre IA analysera vos photos pour pré-remplir automatiquement les informations de l'objet
