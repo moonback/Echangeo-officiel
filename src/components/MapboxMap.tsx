@@ -514,7 +514,7 @@ interface MapboxMapProps {
   showPopup?: boolean;
 }
 
-const MapboxMap: React.FC<MapboxMapProps> = ({
+const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
   accessToken = import.meta.env.VITE_MAPBOX_TOKEN || import.meta.env.VITE_MAPBOX_TOKEN,
   center,
   zoom = 11,
@@ -524,12 +524,15 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
   autoFit = false,
   userLocation,
   showUserLocation = false,
-  showPopup = true,
-}) => {
+  showPopup = true
+}, ref) => {
   const mapContainerRef = React.useRef<HTMLDivElement | null>(null);
   const mapRef = React.useRef<mapboxgl.Map | null>(null);
   const markersRef = React.useRef<mapboxgl.Marker[]>([]);
   const popupRef = React.useRef<mapboxgl.Popup | null>(null);
+
+  // Exposer la référence de la carte
+  React.useImperativeHandle(ref, () => mapRef.current as mapboxgl.Map);
 
   React.useEffect(() => {
     if (!accessToken) {
@@ -862,6 +865,8 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
       />
     </>
   );
-};
+});
+
+MapboxMap.displayName = 'MapboxMap';
 
 export default MapboxMap;
