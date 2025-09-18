@@ -2,54 +2,70 @@ import React from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
-// Fonction pour créer le contenu HTML du popup compact flottant
+// Fonction pour créer le contenu HTML du popup compact flottant amélioré
 function createCompactFloatingPopup(marker: MapboxMarker): string {
   
-  // Labels des catégories
-  const categoryLabels: Record<string, string> = {
-    tools: '🔨 Outils',
-    electronics: '📱 Électronique',
-    books: '📚 Livres',
-    sports: '⚽ Sport',
-    kitchen: '🍳 Cuisine',
-    garden: '🌱 Jardin',
-    toys: '🧸 Jouets',
-    fashion: '👗 Mode',
-    furniture: '🪑 Meubles',
-    music: '🎵 Musique',
-    baby: '👶 Bébé',
-    art: '🎨 Art',
-    beauty: '💄 Beauté',
-    auto: '🚗 Auto',
-    office: '💼 Bureau',
-    services: '🛠️ Services',
-    other: '📦 Autres',
+  // Labels des catégories avec couleurs
+  const categoryLabels: Record<string, {label: string, color: string}> = {
+    tools: {label: '🔨 Outils', color: '#EF4444'},
+    electronics: {label: '📱 Électronique', color: '#3B82F6'},
+    books: {label: '📚 Livres', color: '#8B5CF6'},
+    sports: {label: '⚽ Sport', color: '#10B981'},
+    kitchen: {label: '🍳 Cuisine', color: '#F59E0B'},
+    garden: {label: '🌱 Jardin', color: '#22C55E'},
+    toys: {label: '🧸 Jouets', color: '#EC4899'},
+    fashion: {label: '👗 Mode', color: '#A855F7'},
+    furniture: {label: '🪑 Meubles', color: '#6B7280'},
+    music: {label: '🎵 Musique', color: '#F97316'},
+    baby: {label: '👶 Bébé', color: '#FBBF24'},
+    art: {label: '🎨 Art', color: '#8B5CF6'},
+    beauty: {label: '💄 Beauté', color: '#EC4899'},
+    auto: {label: '🚗 Auto', color: '#374151'},
+    office: {label: '💼 Bureau', color: '#1F2937'},
+    services: {label: '🛠️ Services', color: '#6366F1'},
+    other: {label: '📦 Autres', color: '#6B7280'},
   };
 
-  // Labels des conditions
-  const conditionLabels: Record<string, string> = {
-    new: 'Neuf',
-    excellent: 'Excellent',
-    good: 'Bon',
-    fair: 'Correct',
-    poor: 'Usé',
+  // Labels des conditions avec couleurs
+  const conditionLabels: Record<string, {label: string, color: string, emoji: string}> = {
+    new: {label: 'Neuf', color: '#10B981', emoji: '✨'},
+    excellent: {label: 'Excellent', color: '#3B82F6', emoji: '🌟'},
+    good: {label: 'Bon', color: '#F59E0B', emoji: '⭐'},
+    fair: {label: 'Correct', color: '#EF4444', emoji: '⚠️'},
+    poor: {label: 'Usé', color: '#6B7280', emoji: '🔧'},
   };
+
+  // Fonction pour formater la date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) return 'Hier';
+    if (diffDays < 7) return `Il y a ${diffDays} jours`;
+    if (diffDays < 30) return `Il y a ${Math.ceil(diffDays / 7)} semaines`;
+    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+  };
+
+  const category = categoryLabels[marker.category || 'other'] || categoryLabels.other;
+  const condition = marker.condition ? conditionLabels[marker.condition] : null;
 
   let content = `
     <div class="compact-floating-popup" style="
-      width: 320px;
-      height: 384px;
+      width: 340px;
+      height: 420px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: white;
-      border-radius: 16px;
+      border-radius: 20px;
       overflow: hidden;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.3);
       position: relative;
     ">
   `;
 
-  // Image de fond
+  // Image de fond avec overlay amélioré
   if (marker.imageUrl) {
     content += `
       <div style="
@@ -60,16 +76,22 @@ function createCompactFloatingPopup(marker: MapboxMarker): string {
         background-position: center;
         background-color: #f3f4f6;
       "></div>
-      <!-- Overlay gradient pour la lisibilité -->
+      <!-- Overlay gradient amélioré -->
       <div style="
         position: absolute;
         inset: 0;
-        background: linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.2), transparent);
+        background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.1) 80%, transparent 100%);
+      "></div>
+      <!-- Overlay coloré selon la catégorie -->
+      <div style="
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, ${category.color}20 0%, transparent 70%);
       "></div>
     `;
   }
 
-  // Contenu flottant
+  // Contenu flottant amélioré
   content += `
     <div style="
       position: relative;
@@ -77,109 +99,114 @@ function createCompactFloatingPopup(marker: MapboxMarker): string {
       height: 100%;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      padding: 16px;
+      padding: 20px;
     ">
-      <!-- Header avec badges -->
-      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-        <!-- Badge catégorie -->
+      <!-- Header avec badges améliorés -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+        <!-- Badge catégorie avec couleur -->
         <div style="
-          background: rgba(255, 255, 255, 0.9);
-          backdrop-filter: blur(8px);
-          padding: 6px 12px;
-          border-radius: 20px;
-          font-size: 12px;
-          font-weight: 600;
-          color: #374151;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          background: linear-gradient(135deg, ${category.color}E6, ${category.color}CC);
+          backdrop-filter: blur(12px);
+          padding: 8px 16px;
+          border-radius: 25px;
+          font-size: 13px;
+          font-weight: 700;
+          color: white;
+          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+          border: 1px solid rgba(255, 255, 255, 0.2);
         ">
-          ${categoryLabels[marker.category || 'other'] || '📦 Autres'}
+          ${category.label}
         </div>
         
-        <!-- Badge type d'offre -->
+        <!-- Badge type d'offre amélioré -->
         ${marker.offerType ? `
           <div style="
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 13px;
             font-weight: 700;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             ${marker.offerType === 'loan' 
-              ? 'background: #3B82F6; color: white;' 
-              : 'background: #8B5CF6; color: white;'}
+              ? 'background: linear-gradient(135deg, #3B82F6E6, #1D4ED8CC); color: white;' 
+              : 'background: linear-gradient(135deg, #8B5CF6E6, #7C3AEDCC); color: white;'}
           ">
             ${marker.offerType === 'loan' ? '📤 PRÊT' : '🔄 ÉCHANGE'}
           </div>
         ` : ''}
       </div>
       
-      <!-- Contenu principal -->
+      <!-- Espace flexible pour le contenu principal -->
       <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
-        <!-- Titre -->
+        <!-- Titre amélioré -->
         <h3 style="
-          font-size: 20px;
-          font-weight: 700;
+          font-size: 22px;
+          font-weight: 800;
           color: white;
-          margin: 0 0 8px 0;
+          margin: 0 0 12px 0;
           line-height: 1.2;
-          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+          text-shadow: 0 3px 6px rgba(0, 0, 0, 0.6);
+          letter-spacing: -0.02em;
         ">
           ${marker.title || 'Objet sans titre'}
         </h3>
         
-        <!-- Description -->
+        <!-- Description améliorée -->
         ${marker.description ? `
           <p style="
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.9);
-            margin: 0 0 16px 0;
-            line-height: 1.4;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.95);
+            margin: 0 0 20px 0;
+            line-height: 1.5;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
+            font-weight: 400;
           ">
             ${marker.description}
           </p>
         ` : ''}
         
-        <!-- Informations compactes -->
+        <!-- Informations détaillées en grille améliorée -->
         <div style="
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 8px;
-          margin-bottom: 16px;
+          gap: 10px;
+          margin-bottom: 20px;
         ">
-          <!-- Propriétaire -->
+          <!-- Propriétaire avec avatar amélioré -->
           ${marker.owner ? `
-            <div style="
-              background: rgba(255, 255, 255, 0.2);
-              backdrop-filter: blur(8px);
-              border-radius: 8px;
-              padding: 8px;
+            <div class="info-item" style="
+              background: rgba(255, 255, 255, 0.25);
+              backdrop-filter: blur(12px);
+              border-radius: 12px;
+              padding: 10px;
               display: flex;
               align-items: center;
-              gap: 6px;
+              gap: 8px;
+              border: 1px solid rgba(255, 255, 255, 0.1);
             ">
               <div style="
-                width: 20px;
-                height: 20px;
-                background: rgba(255, 255, 255, 0.3);
+                width: 24px;
+                height: 24px;
+                background: linear-gradient(135deg, #10B981, #059669);
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 10px;
-                font-weight: 700;
+                font-size: 11px;
+                font-weight: 800;
                 color: white;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
               ">
                 ${marker.owner.charAt(0).toUpperCase()}
               </div>
               <span style="
-                font-size: 11px;
+                font-size: 12px;
                 color: white;
-                font-weight: 500;
+                font-weight: 600;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
@@ -187,77 +214,140 @@ function createCompactFloatingPopup(marker: MapboxMarker): string {
             </div>
           ` : ''}
           
-          <!-- Distance -->
+          <!-- Distance avec style amélioré -->
           ${marker.distance !== undefined ? `
-            <div style="
-              background: rgba(255, 255, 255, 0.2);
-              backdrop-filter: blur(8px);
-              border-radius: 8px;
-              padding: 8px;
+            <div class="info-item" style="
+              background: rgba(255, 255, 255, 0.25);
+              backdrop-filter: blur(12px);
+              border-radius: 12px;
+              padding: 10px;
               display: flex;
               align-items: center;
-              gap: 6px;
+              gap: 8px;
+              border: 1px solid rgba(255, 255, 255, 0.1);
             ">
-              <span style="font-size: 10px; color: white;">📍</span>
-              <span style="font-size: 11px; color: white; font-weight: 500;">
+              <div style="
+                width: 24px;
+                height: 24px;
+                background: linear-gradient(135deg, #22C55E, #16A34A);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 10px;
+              ">
+                📍
+              </div>
+              <span style="font-size: 12px; color: white; font-weight: 600;">
                 ${marker.distance < 1 ? `${Math.round(marker.distance * 1000)}m` : `${marker.distance.toFixed(1)}km`}
               </span>
             </div>
           ` : ''}
           
-          <!-- Condition -->
-          ${marker.condition ? `
-            <div style="
-              background: rgba(255, 255, 255, 0.2);
-              backdrop-filter: blur(8px);
-              border-radius: 8px;
-              padding: 8px;
+          <!-- Condition avec couleur dynamique -->
+          ${condition ? `
+            <div class="info-item" style="
+              background: rgba(255, 255, 255, 0.25);
+              backdrop-filter: blur(12px);
+              border-radius: 12px;
+              padding: 10px;
               display: flex;
               align-items: center;
-              gap: 6px;
+              gap: 8px;
+              border: 1px solid rgba(255, 255, 255, 0.1);
             ">
-              <span style="font-size: 10px; color: white;">⭐</span>
-              <span style="font-size: 11px; color: white; font-weight: 500;">
-                ${conditionLabels[marker.condition] || marker.condition}
+              <div style="
+                width: 24px;
+                height: 24px;
+                background: linear-gradient(135deg, ${condition.color}, ${condition.color}CC);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 10px;
+              ">
+                ${condition.emoji}
+              </div>
+              <span style="font-size: 12px; color: white; font-weight: 600;">
+                ${condition.label}
               </span>
             </div>
           ` : ''}
           
-          <!-- Prix -->
+          <!-- Prix avec style amélioré -->
           ${marker.price ? `
-            <div style="
-              background: rgba(255, 255, 255, 0.2);
-              backdrop-filter: blur(8px);
-              border-radius: 8px;
-              padding: 8px;
+            <div class="info-item" style="
+              background: rgba(255, 255, 255, 0.25);
+              backdrop-filter: blur(12px);
+              border-radius: 12px;
+              padding: 10px;
               display: flex;
               align-items: center;
-              gap: 6px;
+              gap: 8px;
+              border: 1px solid rgba(255, 255, 255, 0.1);
             ">
-              <span style="font-size: 10px; color: white;">€</span>
-              <span style="font-size: 11px; color: white; font-weight: 500;">${marker.price}€</span>
+              <div style="
+                width: 24px;
+                height: 24px;
+                background: linear-gradient(135deg, #F59E0B, #D97706);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 11px;
+                font-weight: 800;
+                color: white;
+              ">
+                €
+              </div>
+              <span style="font-size: 12px; color: white; font-weight: 600;">${marker.price}€</span>
             </div>
           ` : ''}
         </div>
+        
+        <!-- Date de création -->
+        ${marker.createdAt ? `
+          <div style="
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            border-radius: 10px;
+            padding: 8px 12px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+          ">
+            <div style="
+              display: flex;
+              align-items: center;
+              gap: 6px;
+              font-size: 11px;
+              color: rgba(255, 255, 255, 0.9);
+              font-weight: 500;
+            ">
+              <span>📅</span>
+              <span>Ajouté ${formatDate(marker.createdAt)}</span>
+            </div>
+          </div>
+        ` : ''}
       </div>
       
-      <!-- Bouton d'action -->
+      <!-- Bouton d'action amélioré -->
       <div>
         <button class="action-button" style="
           width: 100%;
-          background: rgba(255, 255, 255, 0.95);
-          backdrop-filter: blur(8px);
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9));
+          backdrop-filter: blur(16px);
           color: #1f2937;
-          padding: 12px 16px;
-          border-radius: 12px;
-          font-size: 14px;
+          padding: 14px 20px;
+          border-radius: 16px;
+          font-size: 15px;
           font-weight: 700;
           cursor: pointer;
-          transition: all 0.2s;
-          border: none;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          transition: all 0.3s ease;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+          letter-spacing: 0.02em;
         " onclick="window.location.href='/items/${marker.id}'">
-          Voir les détails
+          📖 Voir les détails
         </button>
       </div>
     </div>
@@ -804,32 +894,58 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
            }
 
-           /* Styles pour les popups compacts flottants */
+           /* Styles pour les popups compacts flottants améliorés */
            .compact-floating-popup {
-             animation: popupScaleIn 0.3s ease-out;
+             animation: popupScaleInEnhanced 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
            }
 
-           @keyframes popupScaleIn {
-             from {
+           @keyframes popupScaleInEnhanced {
+             0% {
                opacity: 0;
-               transform: scale(0.9) translateY(-10px);
+               transform: scale(0.8) translateY(-20px) rotateX(15deg);
              }
-             to {
+             50% {
+               opacity: 0.8;
+               transform: scale(1.02) translateY(-5px) rotateX(5deg);
+             }
+             100% {
                opacity: 1;
-               transform: scale(1) translateY(0);
+               transform: scale(1) translateY(0) rotateX(0deg);
              }
            }
 
-           /* Hover effect pour le bouton d'action */
+           /* Hover effect pour le bouton d'action amélioré */
            .compact-floating-popup .action-button:hover {
-             background: white !important;
-             transform: translateY(-1px);
-             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2) !important;
+             background: linear-gradient(135deg, rgba(255, 255, 255, 1), rgba(248, 250, 252, 0.95)) !important;
+             transform: translateY(-2px) scale(1.02);
+             box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25) !important;
            }
 
            .compact-floating-popup .action-button:active {
-             transform: translateY(0);
-             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+             transform: translateY(0) scale(0.98);
+             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+           }
+
+           /* Animation pour les éléments d'information */
+           .compact-floating-popup .info-item {
+             animation: slideInUp 0.6s ease-out;
+             animation-fill-mode: both;
+           }
+
+           .compact-floating-popup .info-item:nth-child(1) { animation-delay: 0.1s; }
+           .compact-floating-popup .info-item:nth-child(2) { animation-delay: 0.2s; }
+           .compact-floating-popup .info-item:nth-child(3) { animation-delay: 0.3s; }
+           .compact-floating-popup .info-item:nth-child(4) { animation-delay: 0.4s; }
+
+           @keyframes slideInUp {
+             from {
+               opacity: 0;
+               transform: translateY(20px);
+             }
+             to {
+               opacity: 1;
+               transform: translateY(0);
+             }
            }
          `}
        </style>
