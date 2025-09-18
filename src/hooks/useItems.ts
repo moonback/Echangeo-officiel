@@ -1,4 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useDebounce } from './useDebounce';
+import { errorHandler } from '../utils/errorHandler';
 import { supabase } from '../services/supabase';
 import type { Item, ItemCategory, OfferType } from '../types';
 
@@ -17,8 +19,10 @@ export function useItems(filters?: {
   favoritesOnly?: boolean;
   userId?: string;
 }) {
+  // Debouncer la recherche pour éviter trop de requêtes
+  const debouncedSearch = useDebounce(filters?.search, 300);
   return useQuery({
-    queryKey: ['items', filters],
+    queryKey: ['items', { ...filters, search: debouncedSearch }],
     queryFn: async () => {
       const selectImages = filters?.hasImages
         ? `images:item_images!inner(*)`
@@ -45,8 +49,8 @@ export function useItems(filters?: {
         query = query.eq('category', filters.category);
       }
 
-      if (filters?.search) {
-        query = query.ilike('title', `%${filters.search}%`);
+      if (debouncedSearch) {
+        query = query.ilike('title', `%${debouncedSearch}%`);
       }
 
       if (filters?.condition) {
@@ -84,8 +88,10 @@ export function useItems(filters?: {
 
       const { data, error } = await query;
       if (error) {
-        console.error('Erreur lors de la récupération des objets:', error);
-        throw error;
+        throw errorHandler.handleError(error, { 
+          action: 'fetchItems', 
+          filters: Object.keys(filters || {}) 
+        });
       }
 
       // Nettoyer projection favorites

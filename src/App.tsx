@@ -1,37 +1,43 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { lazy } from 'react';
 import Shell from './components/Shell';
 import ScrollToTop from './components/ScrollToTop';
-// import AuthGuard from './components/AuthGuard';
-import LoginPage from './pages/LoginPage';
-import HomePage from './pages/HomePage';
-import ItemsPage from './pages/ItemsPage';
-import ItemDetailPage from './pages/ItemDetailPage';
-import CreateItemPage from './pages/CreateItemPage';
-import EditItemPage from './pages/EditItemPage';
-import RequestsPage from './pages/RequestsPage';
-import ChatPage from './pages/ChatPage';
-import MessagesPage from './pages/MessagesPage';
-import NeighboursPage from './pages/NeighboursPage';
-import CommunitiesPage from './pages/CommunitiesPage';
-import CommunityDetailPage from './pages/CommunityDetailPage';
-import CreateCommunityPage from './pages/CreateCommunityPage';
-import ProfilePage from './pages/ProfilePage';
-import MyProfilePage from './pages/MyProfilePage';
-import SettingsPage from './pages/SettingsPage';
-import HelpPage from './pages/HelpPage';
-import AIFeaturesPage from './pages/AIFeaturesPage';
-import GamificationPage from './pages/GamificationPage';
+import LazyRoute from './components/LazyRoute';
+import ToastContainer from './components/ui/ToastContainer';
 import { useAuthStore } from './store/authStore';
-import LandingPage from './pages/LandingPage';
-import ProPage from './pages/ProPage';
-import AdminGuard from './components/admin/AdminGuard';
-import AdminDashboardPage from './pages/admin/AdminDashboardPage';
-import AdminUsersPage from './pages/admin/AdminUsersPage';
-import AdminItemsPage from './pages/admin/AdminItemsPage';
-import AdminCommunitiesPage from './pages/admin/AdminCommunitiesPage';
-import AdminReportsPage from './pages/admin/AdminReportsPage';
-import AdminLogsPage from './pages/admin/AdminLogsPage';
+
+// Lazy load des pages pour optimiser les performances
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const HomePage = lazy(() => import('./pages/HomePage'));
+const ItemsPage = lazy(() => import('./pages/ItemsPage'));
+const ItemDetailPage = lazy(() => import('./pages/ItemDetailPage'));
+const CreateItemPage = lazy(() => import('./pages/CreateItemPage'));
+const EditItemPage = lazy(() => import('./pages/EditItemPage'));
+const RequestsPage = lazy(() => import('./pages/RequestsPage'));
+const ChatPage = lazy(() => import('./pages/ChatPage'));
+const MessagesPage = lazy(() => import('./pages/MessagesPage'));
+const NeighboursPage = lazy(() => import('./pages/NeighboursPage'));
+const CommunitiesPage = lazy(() => import('./pages/CommunitiesPage'));
+const CommunityDetailPage = lazy(() => import('./pages/CommunityDetailPage'));
+const CreateCommunityPage = lazy(() => import('./pages/CreateCommunityPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const MyProfilePage = lazy(() => import('./pages/MyProfilePage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const HelpPage = lazy(() => import('./pages/HelpPage'));
+const AIFeaturesPage = lazy(() => import('./pages/AIFeaturesPage'));
+const GamificationPage = lazy(() => import('./pages/GamificationPage'));
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const ProPage = lazy(() => import('./pages/ProPage'));
+
+// Admin pages
+const AdminGuard = lazy(() => import('./components/admin/AdminGuard'));
+const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboardPage'));
+const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
+const AdminItemsPage = lazy(() => import('./pages/admin/AdminItemsPage'));
+const AdminCommunitiesPage = lazy(() => import('./pages/admin/AdminCommunitiesPage'));
+const AdminReportsPage = lazy(() => import('./pages/admin/AdminReportsPage'));
+const AdminLogsPage = lazy(() => import('./pages/admin/AdminLogsPage'));
 
 function App() {
   const { user, loading } = useAuthStore();
@@ -51,9 +57,9 @@ function App() {
   if (!user) {
     return (
       <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/pro" element={<ProPage />} />
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/" element={<LazyRoute><LandingPage /></LazyRoute>} />
+        <Route path="/pro" element={<LazyRoute><ProPage /></LazyRoute>} />
+        <Route path="/login" element={<LazyRoute><LoginPage /></LazyRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
@@ -62,61 +68,74 @@ function App() {
   return (
     <>
       <ScrollToTop />
+      <ToastContainer />
       <Routes>
         {/* Admin Routes - Outside Shell to use their own layout */}
       <Route path="/admin" element={
-        <AdminGuard>
-          <AdminDashboardPage />
-        </AdminGuard>
+        <LazyRoute>
+          <AdminGuard>
+            <AdminDashboardPage />
+          </AdminGuard>
+        </LazyRoute>
       } />
       <Route path="/admin/users" element={
-        <AdminGuard requiredPermission="canManageUsers">
-          <AdminUsersPage />
-        </AdminGuard>
+        <LazyRoute>
+          <AdminGuard requiredPermission="canManageUsers">
+            <AdminUsersPage />
+          </AdminGuard>
+        </LazyRoute>
       } />
       <Route path="/admin/items" element={
-        <AdminGuard requiredPermission="canManageItems">
-          <AdminItemsPage />
-        </AdminGuard>
+        <LazyRoute>
+          <AdminGuard requiredPermission="canManageItems">
+            <AdminItemsPage />
+          </AdminGuard>
+        </LazyRoute>
       } />
       <Route path="/admin/communities" element={
-        <AdminGuard requiredPermission="canManageCommunities">
-          <AdminCommunitiesPage />
-        </AdminGuard>
+        <LazyRoute>
+          <AdminGuard requiredPermission="canManageCommunities">
+            <AdminCommunitiesPage />
+          </AdminGuard>
+        </LazyRoute>
       } />
       <Route path="/admin/reports" element={
-        <AdminGuard requiredPermission="canViewReports">
-          <AdminReportsPage />
-        </AdminGuard>
+        <LazyRoute>
+          <AdminGuard requiredPermission="canViewReports">
+            <AdminReportsPage />
+          </AdminGuard>
+        </LazyRoute>
       } />
       <Route path="/admin/logs" element={
-        <AdminGuard requiredPermission="canViewSystemLogs">
-          <AdminLogsPage />
-        </AdminGuard>
+        <LazyRoute>
+          <AdminGuard requiredPermission="canViewSystemLogs">
+            <AdminLogsPage />
+          </AdminGuard>
+        </LazyRoute>
       } />
       
       {/* Regular App Routes - Inside Shell */}
       <Route path="/*" element={
         <Shell>
           <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/items" element={<ItemsPage />} />
-            <Route path="/items/:id" element={<ItemDetailPage />} />
-            <Route path="/items/:id/edit" element={<EditItemPage />} />
-            <Route path="/create" element={<CreateItemPage />} />
-            <Route path="/requests" element={<RequestsPage />} />
-            <Route path="/messages" element={<MessagesPage />} />
-            <Route path="/chat/:id" element={<ChatPage />} />
-            <Route path="/neighbours" element={<NeighboursPage />} />
-            <Route path="/communities" element={<CommunitiesPage />} />
-            <Route path="/communities/create" element={<CreateCommunityPage />} />
-            <Route path="/communities/:id" element={<CommunityDetailPage />} />
-            <Route path="/profile/:id" element={<ProfilePage />} />
-            <Route path="/me" element={<MyProfilePage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/help" element={<HelpPage />} />
-            <Route path="/ai-features" element={<AIFeaturesPage />} />
-            <Route path="/gamification" element={<GamificationPage />} />
+            <Route path="/" element={<LazyRoute><HomePage /></LazyRoute>} />
+            <Route path="/items" element={<LazyRoute><ItemsPage /></LazyRoute>} />
+            <Route path="/items/:id" element={<LazyRoute><ItemDetailPage /></LazyRoute>} />
+            <Route path="/items/:id/edit" element={<LazyRoute><EditItemPage /></LazyRoute>} />
+            <Route path="/create" element={<LazyRoute><CreateItemPage /></LazyRoute>} />
+            <Route path="/requests" element={<LazyRoute><RequestsPage /></LazyRoute>} />
+            <Route path="/messages" element={<LazyRoute><MessagesPage /></LazyRoute>} />
+            <Route path="/chat/:id" element={<LazyRoute><ChatPage /></LazyRoute>} />
+            <Route path="/neighbours" element={<LazyRoute><NeighboursPage /></LazyRoute>} />
+            <Route path="/communities" element={<LazyRoute><CommunitiesPage /></LazyRoute>} />
+            <Route path="/communities/create" element={<LazyRoute><CreateCommunityPage /></LazyRoute>} />
+            <Route path="/communities/:id" element={<LazyRoute><CommunityDetailPage /></LazyRoute>} />
+            <Route path="/profile/:id" element={<LazyRoute><ProfilePage /></LazyRoute>} />
+            <Route path="/me" element={<LazyRoute><MyProfilePage /></LazyRoute>} />
+            <Route path="/settings" element={<LazyRoute><SettingsPage /></LazyRoute>} />
+            <Route path="/help" element={<LazyRoute><HelpPage /></LazyRoute>} />
+            <Route path="/ai-features" element={<LazyRoute><AIFeaturesPage /></LazyRoute>} />
+            <Route path="/gamification" element={<LazyRoute><GamificationPage /></LazyRoute>} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Shell>
