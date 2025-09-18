@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { 
@@ -7,7 +7,8 @@ import {
   Users, 
   Calendar, 
   MessageCircle, 
-  UserPlus
+  UserPlus,
+  Navigation
 } from 'lucide-react';
 import { useCommunity, useJoinCommunity, useLeaveCommunity, useUserCommunities, useCommunityItems } from '../hooks/useCommunities';
 import { useAuthStore } from '../store/authStore';
@@ -29,9 +30,60 @@ const CommunityDetailPage: React.FC = () => {
   const joinCommunity = useJoinCommunity();
   const leaveCommunity = useLeaveCommunity();
 
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [distance, setDistance] = useState<number | null>(null);
+
   const isMember = userCommunities?.some(uc => uc.id === community?.id) || false;
   const isJoining = joinCommunity.isPending;
   const isLeaving = leaveCommunity.isPending;
+
+  // Fonction pour calculer la distance entre deux points
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371; // Rayon de la Terre en km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
+
+  // Géolocalisation de l'utilisateur
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      console.warn('La géolocalisation n\'est pas supportée');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation({ lat: latitude, lng: longitude });
+      },
+      (error) => {
+        console.warn('Erreur de géolocalisation:', error);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000 // 5 minutes
+      }
+    );
+  }, []);
+
+  // Calcul de la distance quand on a les coordonnées
+  useEffect(() => {
+    if (userLocation && community?.center_latitude && community?.center_longitude) {
+      const calculatedDistance = calculateDistance(
+        userLocation.lat,
+        userLocation.lng,
+        community.center_latitude,
+        community.center_longitude
+      );
+      setDistance(calculatedDistance);
+    }
+  }, [userLocation, community]);
 
   const handleJoinCommunity = async () => {
     if (!user || !community) return;
@@ -146,6 +198,15 @@ const CommunityDetailPage: React.FC = () => {
                 <span>{community.city}</span>
                 {community.postal_code && (
                   <span className="text-gray-400">• {community.postal_code}</span>
+                )}
+                {distance !== null && (
+                  <>
+                    <span className="text-gray-400">•</span>
+                    <div className="flex items-center gap-1">
+                      <Navigation className="w-3 h-3" />
+                      <span>{distance < 1 ? `${Math.round(distance * 1000)}m` : `${distance.toFixed(1)}km`}</span>
+                    </div>
+                  </>
                 )}
               </div>
               {community.description && (

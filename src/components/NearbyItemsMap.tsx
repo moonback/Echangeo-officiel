@@ -671,7 +671,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
           )}
 
           {/* Légende */}
-          <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
+          <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg max-w-xs">
             <div className="text-xs text-gray-600 space-y-1">
               {viewMode === 'communities' ? (
                 <>
@@ -698,7 +698,83 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
                       <span>Votre position</span>
                     </div>
                   )}
+                  
+                  {/* Légende des catégories */}
+                  <div className="border-t border-gray-200 pt-2 mt-2">
+                    <div className="text-xs font-medium text-gray-700 mb-1">Catégories :</div>
+                    <div className="grid grid-cols-1 gap-1 max-h-32 overflow-y-auto">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#EF4444' }}></div>
+                        <span>Outils</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#3B82F6' }}></div>
+                        <span>Électronique</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#8B5CF6' }}></div>
+                        <span>Livres</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#10B981' }}></div>
+                        <span>Sport</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#F59E0B' }}></div>
+                        <span>Cuisine</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#22C55E' }}></div>
+                        <span>Jardin</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#EC4899' }}></div>
+                        <span>Jouets</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#A855F7' }}></div>
+                        <span>Mode</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#6B7280' }}></div>
+                        <span>Meubles</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#F97316' }}></div>
+                        <span>Musique</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#FBBF24' }}></div>
+                        <span>Bébé</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#8B5CF6' }}></div>
+                        <span>Art</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#EC4899' }}></div>
+                        <span>Beauté</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#374151' }}></div>
+                        <span>Auto</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#1F2937' }}></div>
+                        <span>Bureau</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#6366F1' }}></div>
+                        <span>Services</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#6B7280' }}></div>
+                        <span>Autres</span>
+                      </div>
+                    </div>
+                  </div>
                 </>
+                
               )}
             </div>
           </div>
