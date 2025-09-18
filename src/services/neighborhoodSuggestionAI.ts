@@ -163,7 +163,9 @@ Répondez UNIQUEMENT avec le JSON, sans texte supplémentaire.`;
       confidence: Math.max(0, Math.min(1, suggestion.confidence || 0.5))
     })).filter(suggestion => 
       suggestion.name && 
+      suggestion.name.length > 0 &&
       suggestion.city && 
+      suggestion.city.length > 0 &&
       suggestion.confidence > 0.3
     );
 
@@ -182,13 +184,13 @@ export const validateNeighborhoodUniqueness = (
   suggestion: NeighborhoodSuggestion,
   existingCommunities: (Community | NearbyCommunity)[]
 ): boolean => {
-  const suggestionName = suggestion.name.toLowerCase();
-  const suggestionCity = suggestion.city.toLowerCase();
+  const suggestionName = suggestion.name?.toLowerCase() || '';
+  const suggestionCity = suggestion.city?.toLowerCase() || '';
   
   return !existingCommunities.some(community => {
     // Gérer les deux types : Community (avec 'name') et NearbyCommunity (avec 'community_name')
-    const existingName = ('community_name' in community ? community.community_name : community.name).toLowerCase();
-    const existingCity = community.city.toLowerCase();
+    const existingName = ('community_name' in community ? community.community_name : community.name)?.toLowerCase() || '';
+    const existingCity = community.city?.toLowerCase() || '';
     
     // Vérifier si le nom est trop similaire
     if (suggestionName.includes(existingName) || existingName.includes(suggestionName)) {
@@ -213,7 +215,14 @@ export const filterUniqueNeighborhoods = (
   suggestions: NeighborhoodSuggestion[],
   existingCommunities: (Community | NearbyCommunity)[]
 ): NeighborhoodSuggestion[] => {
+  // Filtrer les communautés existantes pour s'assurer qu'elles ont les propriétés nécessaires
+  const validExistingCommunities = existingCommunities.filter(community => 
+    community && 
+    (('community_name' in community && community.community_name) || ('name' in community && community.name)) &&
+    community.city
+  );
+  
   return suggestions.filter(suggestion => 
-    validateNeighborhoodUniqueness(suggestion, existingCommunities)
+    validateNeighborhoodUniqueness(suggestion, validExistingCommunities)
   );
 };

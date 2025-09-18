@@ -7,6 +7,7 @@ interface NeighborhoodSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectNeighborhood: (neighborhood: NeighborhoodSuggestion) => void;
+  onSuggestionsFound?: (suggestions: NeighborhoodSuggestion[]) => void; // Callback pour stocker toutes les suggestions
   existingCommunities: Community[];
   userLocation?: { lat: number; lng: number };
   searchInput?: string; // Entrée de recherche pré-remplie
@@ -16,6 +17,7 @@ const NeighborhoodSelectionModal: React.FC<NeighborhoodSelectionModalProps> = ({
   isOpen,
   onClose,
   onSelectNeighborhood,
+  onSuggestionsFound,
   existingCommunities,
   userLocation,
   searchInput = ''
@@ -65,6 +67,10 @@ const NeighborhoodSelectionModal: React.FC<NeighborhoodSelectionModalProps> = ({
         setError('Aucun quartier trouvé pour cette localisation. Essayez avec un autre code postal ou une autre ville.');
       } else {
         setSuggestions(uniqueSuggestions);
+        // Notifier le composant parent avec toutes les suggestions trouvées
+        if (onSuggestionsFound) {
+          onSuggestionsFound(uniqueSuggestions);
+        }
       }
     } catch (err: any) {
       console.error('Erreur lors de la recherche de quartiers:', err);

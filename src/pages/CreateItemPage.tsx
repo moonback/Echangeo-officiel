@@ -6,7 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ArrowLeft, Upload, X, Sparkles, AlertCircle, CheckCircle } from 'lucide-react';
 import { useCreateItem } from '../hooks/useItems';
-import { useNearbyCommunities } from '../hooks/useCommunities';
+import { useNearbyCommunities, useCreateCommunity } from '../hooks/useCommunities';
+import { supabase } from '../services/supabase';
 import { categories } from '../utils/categories';
 import { offerTypes } from '../utils/offerTypes';
 import type { ItemCategory, OfferType } from '../types';
@@ -54,6 +55,7 @@ const conditions = [
 const CreateItemPage: React.FC = () => {
   const navigate = useNavigate();
   const createItem = useCreateItem();
+  const createCommunity = useCreateCommunity();
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [imagesError, setImagesError] = useState<string | null>(null);
@@ -71,6 +73,8 @@ const CreateItemPage: React.FC = () => {
   const [selectedNeighborhood, setSelectedNeighborhood] = useState<NeighborhoodSuggestion | null>(null);
   const [isSearchingNeighborhoods, setIsSearchingNeighborhoods] = useState(false);
   const [detectedAddress, setDetectedAddress] = useState<string>('');
+  const [createdCommunityId, setCreatedCommunityId] = useState<string>('');
+  const [allSuggestions, setAllSuggestions] = useState<NeighborhoodSuggestion[]>([]);
 
   // Récupérer les quartiers proches si la position est disponible
   const { data: nearbyCommunities, isLoading: communitiesLoading } = useNearbyCommunities(
@@ -316,6 +320,9 @@ const CreateItemPage: React.FC = () => {
         const suggestions = await suggestNeighborhoods(address, nearbyCommunities || []);
         
         if (suggestions.length > 0) {
+          // Stocker toutes les suggestions pour création ultérieure
+          setAllSuggestions(suggestions);
+          
           // Prendre la première suggestion (la plus pertinente)
           const bestSuggestion = suggestions[0];
           handleSelectNeighborhood(bestSuggestion);
@@ -412,8 +419,68 @@ const CreateItemPage: React.FC = () => {
     );
   };
 
-  // Gérer la sélection d'un quartier suggéré
-  const handleSelectNeighborhood = (neighborhood: NeighborhoodSuggestion) => {
+  // Créer toutes les communautés suggérées en une seule fois
+  const createAllSuggestedCommunities = async (suggestions: NeighborhoodSuggestion[], selectedNeighborhood: NeighborhoodSuggestion) => {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) {
+        console.error('Utilisateur non connecté');
+        return;
+      }
+
+      console.log(`🏘️ Création de ${suggestions.length} communautés suggérées...`);
+      
+      // Créer toutes les communautés en parallèle
+      const communityPromises = suggestions.map(async (suggestion) => {
+        try {
+          const newCommunity = await createCommunity.mutateAsync({
+            name: suggestion.name,
+            description: `Quartier ${suggestion.name} à ${suggestion.city}. ${suggestion.description}`,
+            city: suggestion.city,
+            postal_code: suggestion.postalCode,
+            center_latitude: suggestion.coordinates?.latitude,
+            center_longitude: suggestion.coordinates?.longitude,
+            radius_km: 2, // Rayon par défaut de 2km
+            created_by: user.user.id
+          });
+          
+          console.log(`✅ Communauté créée: ${suggestion.name} (${suggestion.city})`);
+          return { suggestion, community: newCommunity };
+        } catch (error) {
+          console.error(`❌ Erreur création ${suggestion.name}:`, error);
+          return { suggestion, community: null };
+        }
+      });
+
+      // Attendre que toutes les créations se terminent
+      const results = await Promise.all(communityPromises);
+      
+      // Trouver la communauté correspondant au quartier sélectionné
+      const selectedResult = results.find(r => r.suggestion.name === selectedNeighborhood.name);
+      
+      if (selectedResult && selectedResult.community) {
+        setCreatedCommunityId(selectedResult.community.id);
+        setSelectedCommunity(selectedResult.community.id);
+        console.log(`🎯 Quartier sélectionné: ${selectedNeighborhood.name} (ID: ${selectedResult.community.id})`);
+      }
+
+      // Compter les succès
+      const successCount = results.filter(r => r.community !== null).length;
+      console.log(`📊 Résultat: ${successCount}/${suggestions.length} communautés créées avec succès`);
+      
+    } catch (error) {
+      console.error('Erreur lors de la création des communautés:', error);
+    }
+  };
+
+  // Callback pour stocker toutes les suggestions trouvées dans le modal
+  const handleSuggestionsFound = (suggestions: NeighborhoodSuggestion[]) => {
+    setAllSuggestions(suggestions);
+    console.log(`📋 ${suggestions.length} suggestions stockées pour création en masse`);
+  };
+
+  // Gérer la sélection d'un quartier suggéré et créer toutes les communautés
+  const handleSelectNeighborhood = async (neighborhood: NeighborhoodSuggestion) => {
     setSelectedNeighborhood(neighborhood);
     setSelectedCommunity(''); // Réinitialiser la sélection de communauté existante
     
@@ -425,6 +492,11 @@ const CreateItemPage: React.FC = () => {
       });
       setValue('latitude', neighborhood.coordinates.latitude);
       setValue('longitude', neighborhood.coordinates.longitude);
+    }
+
+    // Créer toutes les communautés suggérées
+    if (allSuggestions.length > 0) {
+      await createAllSuggestedCommunities(allSuggestions, neighborhood);
     }
   };
 
@@ -1049,6 +1121,18 @@ const CreateItemPage: React.FC = () => {
                 <p className="text-xs text-purple-600 mt-1">
                   {selectedNeighborhood.city} • {selectedNeighborhood.postalCode || 'N/A'} • {selectedNeighborhood.description}
                 </p>
+                {createdCommunityId && (
+                  <div className="mt-1">
+                    <p className="text-xs text-green-600 font-medium">
+                      ✅ Communauté sélectionnée créée automatiquement
+                    </p>
+                    {allSuggestions.length > 1 && (
+                      <p className="text-xs text-blue-600 mt-1">
+                        📊 {allSuggestions.length} communautés créées en masse pour économiser les appels API
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
@@ -1132,9 +1216,23 @@ const CreateItemPage: React.FC = () => {
                         }
                       </p>
                       {selectedNeighborhood && (
-                        <p className="text-xs text-purple-600 mt-1">
-                          ✨ Suggéré par IA
-                        </p>
+                        <div className="mt-1">
+                          <p className="text-xs text-purple-600">
+                            ✨ Suggéré par IA
+                          </p>
+                          {createdCommunityId && (
+                            <div>
+                              <p className="text-xs text-green-600 font-medium">
+                                ✅ Communauté créée automatiquement
+                              </p>
+                              {allSuggestions.length > 1 && (
+                                <p className="text-xs text-blue-600 mt-1">
+                                  📊 +{allSuggestions.length - 1} autres communautés créées en masse
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
                   )}
@@ -1185,6 +1283,7 @@ const CreateItemPage: React.FC = () => {
         isOpen={isNeighborhoodModalOpen}
         onClose={() => setIsNeighborhoodModalOpen(false)}
         onSelectNeighborhood={handleSelectNeighborhood}
+        onSuggestionsFound={handleSuggestionsFound}
         existingCommunities={nearbyCommunities || []}
         userLocation={userLocation || undefined}
         searchInput={detectedAddress}
