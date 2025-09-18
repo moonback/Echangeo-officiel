@@ -195,7 +195,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
       animate={{ opacity: 1, y: 0 }}
       className={className}
     >
-      <Card className={`p-0 glass ${isExpanded ? 'fixed inset-4 z-50' : ''}`}>
+      <Card className={`p-0 glass ${isExpanded ? 'fixed inset-4 z-50' : ''} ${className.includes('h-full') ? 'h-full flex flex-col' : ''} ${className.includes('w-full') ? 'w-full' : ''}`}>
         {/* Header */}
         <div className="p-4 border-b border-gray-200/50">
           <div className="flex items-center justify-between mb-3">
@@ -337,11 +337,11 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
         </div>
 
         {/* Carte */}
-        <div className="relative">
+        <div className={`relative ${className.includes('h-full') ? 'flex-1' : ''} ${className.includes('w-full') ? 'w-full' : ''}`}>
           {(isLoading || (viewMode === 'items' && communityItemsLoading)) ? (
             <div 
-              className="flex items-center justify-center bg-gray-50"
-              style={{ height: height }}
+              className={`flex items-center justify-center bg-gray-50 ${className.includes('h-full') ? 'h-full' : ''}`}
+              style={className.includes('h-full') ? {} : { height: height }}
             >
               <div className="text-center">
                 <motion.div
@@ -360,7 +360,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
             <MapboxMap
               center={mapCenter}
               zoom={zoom}
-              height={height}
+              height={className.includes('h-full') ? '100%' : height}
               autoFit={autoFit}
               showUserLocation={!!userLoc}
               userLocation={userLoc || undefined}
@@ -369,8 +369,8 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
             />
           ) : (
             <div 
-              className="flex items-center justify-center bg-gray-50"
-              style={{ height: height }}
+              className={`flex items-center justify-center bg-gray-50 ${className.includes('h-full') ? 'h-full' : ''}`}
+              style={className.includes('h-full') ? {} : { height: height }}
             >
               <EmptyState
                 icon={viewMode === 'communities' ? <Users className="w-12 h-12" /> : <MapPin className="w-12 h-12" />}
