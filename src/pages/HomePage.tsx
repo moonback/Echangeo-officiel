@@ -191,18 +191,135 @@ const HomePage: React.FC = () => {
       </motion.section>
 
       {/* Objets récents */}
-      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-gray-900">Objets récemment ajoutés</h2>
-          <Link to="/items" className="text-brand-700 hover:text-brand-800 font-medium text-sm">Voir tout</Link>
+      <motion.section 
+        initial={{ opacity: 0, y: 20 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        className="space-y-6 relative"
+      >
+        {/* Décorations de fond animées */}
+        <motion.div 
+          className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand-200/20 to-purple-200/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none"
+          animate={{ 
+            scale: [1, 1.1, 1],
+            opacity: [0.3, 0.5, 0.3]
+          }}
+          transition={{ 
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div 
+          className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-200/20 to-brand-200/20 rounded-full blur-xl translate-y-1/2 -translate-x-1/2 pointer-events-none"
+          animate={{ 
+            scale: [1, 1.2, 1],
+            opacity: [0.2, 0.4, 0.2]
+          }}
+          transition={{ 
+            duration: 5,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1
+          }}
+        />
+        
+        {/* Petites particules flottantes */}
+        <motion.div 
+          className="absolute top-1/4 left-1/4 w-2 h-2 bg-brand-300/30 rounded-full pointer-events-none"
+          animate={{ 
+            y: [-10, 10, -10],
+            opacity: [0.3, 0.7, 0.3]
+          }}
+          transition={{ 
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div 
+          className="absolute top-3/4 right-1/3 w-1.5 h-1.5 bg-purple-300/40 rounded-full pointer-events-none"
+          animate={{ 
+            y: [10, -10, 10],
+            opacity: [0.4, 0.8, 0.4]
+          }}
+          transition={{ 
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 0.5
+          }}
+        />
+        <div className="flex items-center justify-between relative z-10">
+          <div>
+            <h2 className="text-2xl font-bold mb-1">
+              <span className="bg-gradient-to-r from-gray-900 via-brand-700 to-gray-900 bg-clip-text text-transparent">
+                Objets récemment ajoutés
+              </span>
+            </h2>
+            <p className="text-sm text-gray-600">Découvrez les dernières trouvailles de vos voisins</p>
+          </div>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Link 
+              to="/items" 
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-brand-500 to-brand-600 text-white rounded-xl hover:from-brand-600 hover:to-brand-700 transition-all duration-300 hover:shadow-lg font-medium text-sm shadow-md"
+            >
+              Voir tout
+              <motion.div
+                animate={{ x: [0, 2, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              >
+                <Search className="w-4 h-4" />
+              </motion.div>
+            </Link>
+          </motion.div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch relative z-10">
           {itemsLoading ? (
-            <ItemCardSkeleton count={4} />
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="col-span-full"
+            >
+              <div className="text-center mb-4">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                  className="inline-block"
+                >
+                  <div className="w-8 h-8 border-4 border-brand-200 border-t-brand-500 rounded-full mx-auto mb-2" />
+                </motion.div>
+                <p className="text-sm text-gray-600">Chargement des objets...</p>
+              </div>
+              <ItemCardSkeleton count={4} />
+            </motion.div>
           ) : recentItems.length > 0 ? (
-            recentItems.map((item) => (
-              <ItemCard key={item.id} item={item} userLocation={userLoc || undefined} />
-            ))
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="contents"
+            >
+              {recentItems.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ 
+                    delay: index * 0.15, 
+                    duration: 0.6, 
+                    ease: "easeOut" 
+                  }}
+                  className="h-full"
+                >
+                  <ItemCard item={item} userLocation={userLoc || undefined} />
+                </motion.div>
+              ))}
+            </motion.div>
           ) : (
             <EmptyState
               icon={<Search className="w-10 h-10" />}
