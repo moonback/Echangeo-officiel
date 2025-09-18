@@ -1,4 +1,4 @@
-# TrocAll 🎯
+# TrocAll 🌱
 
 **Plateforme communautaire de partage et d'emprunt d'objets entre voisins**
 
@@ -19,7 +19,7 @@ TrocAll révolutionne la consommation en permettant aux voisins de partager, emp
 
 ### Backend & Services
 - **Supabase** comme Backend-as-a-Service (PostgreSQL + Auth + Storage + Realtime)
-- **Mistral AI** pour l'analyse d'images et suggestions de chat
+- **Gemini AI** pour l'analyse d'images et suggestions de chat
 - **Mapbox** pour la géolocalisation et cartes interactives
 
 ### Outils de Développement
@@ -34,12 +34,14 @@ TrocAll révolutionne la consommation en permettant aux voisins de partager, emp
 - Catégorisation automatique par IA (outils, électronique, livres, sports, etc.)
 - Système de prêt et d'échange
 - Recherche géolocalisée et par catégories
+- Système de favoris et d'évaluations
 
 ### 👥 **Système Communautaire**
-- Profils utilisateurs avec réputation
-- Système de voisinage géographique
-- Chat intégré pour les négociations
+- Profils utilisateurs avec réputation et géolocalisation
+- Système de voisinage géographique avec communautés
+- Chat intégré pour les négociations avec assistant IA
 - Notifications en temps réel
+- Système de modération et de signalement
 
 ### 🎮 **Gamification Avancée**
 - Système de niveaux et points
@@ -50,21 +52,29 @@ TrocAll révolutionne la consommation en permettant aux voisins de partager, emp
 
 ### 🤖 **Intelligence Artificielle**
 - Analyse automatique d'images pour catégoriser les objets
-- Suggestions de prix et descriptions
+- Suggestions de prix et descriptions optimisées
 - Assistant de chat avec suggestions contextuelles
 - Analyse de compatibilité entre utilisateurs
+- Médiation automatique des conflits
+
+### 🗺️ **Communautés de Quartier**
+- Création et gestion de communautés géographiques
+- Événements communautaires (rencontres, ateliers, échanges)
+- Forums de discussion par quartier
+- Statistiques d'activité communautaire
 
 ### 📱 **Interface Moderne**
 - Design responsive (mobile-first)
 - Navigation intuitive avec bottom navigation
 - Animations fluides et micro-interactions
+- Cartes interactives avec Mapbox
 - Mode sombre (en développement)
 
 ## 📋 Prérequis
 
 - **Node.js** 18+ et npm/yarn
 - **Compte Supabase** (gratuit)
-- **Clé API Mistral** (optionnel pour l'IA)
+- **Clé API Gemini** (optionnel pour l'IA)
 - **Clé API Mapbox** (optionnel pour les cartes)
 
 ## 🛠️ Installation et Configuration
@@ -108,8 +118,8 @@ Créez un fichier `.env.local` :
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
 
-# Mistral AI (optionnel)
-VITE_MISTRAL_API_KEY=your-mistral-key
+# Gemini AI (optionnel)
+VITE_GEMINI_API_KEY=your-gemini-key
 
 # Mapbox (optionnel)
 VITE_MAPBOX_TOKEN=your-mapbox-token
@@ -133,6 +143,8 @@ npm run preview
 src/
 ├── components/           # Composants réutilisables
 │   ├── ui/              # Composants UI de base (Button, Card, Input...)
+│   ├── admin/           # Composants d'administration
+│   ├── modals/          # Modales et overlays
 │   ├── Shell.tsx        # Layout principal avec navigation
 │   ├── Topbar.tsx       # Barre de navigation desktop
 │   ├── BottomNavigation.tsx # Navigation mobile
@@ -140,6 +152,7 @@ src/
 │   ├── MapboxMap.tsx    # Carte interactive
 │   ├── ChatAIAssistant.tsx # Assistant IA pour le chat
 │   ├── GamificationPage.tsx # Système de gamification
+│   ├── NotificationSystem.tsx # Système de notifications
 │   └── ...
 ├── pages/               # Pages de l'application
 │   ├── HomePage.tsx     # Page d'accueil avec dashboard
@@ -147,25 +160,36 @@ src/
 │   ├── CreateItemPage.tsx # Création d'objet avec IA
 │   ├── GamificationPage.tsx # Système de niveaux et badges
 │   ├── ChatPage.tsx     # Messagerie intégrée
+│   ├── CommunitiesPage.tsx # Gestion des communautés
+│   ├── admin/           # Pages d'administration
 │   └── ...
 ├── hooks/               # Hooks personnalisés
 │   ├── useItems.ts      # Gestion des objets
 │   ├── useGamification.ts # Système de gamification
 │   ├── useChatAI.ts     # Assistant IA
-│   ├── useAuth.ts       # Authentification
+│   ├── useCommunities.ts # Gestion des communautés
+│   ├── useAdmin.ts      # Fonctionnalités admin
 │   └── ...
 ├── services/            # Services externes
 │   ├── supabase.ts      # Configuration Supabase
-│   ├── aiService.ts     # Services IA (Mistral)
+│   ├── aiService.ts     # Services IA (Gemini)
 │   ├── chatAI.ts        # Assistant de chat
-│   └── ...
+│   ├── categoryDetection.ts # Détection de catégories
+│   ├── compatibilityAI.ts # Analyse de compatibilité
+│   └── mediationAI.ts   # Médiation des conflits
 ├── store/               # État global
 │   └── authStore.ts     # Store d'authentification (Zustand)
 ├── types/               # Types TypeScript
 │   ├── index.ts         # Types principaux
-│   └── database.ts      # Types générés Supabase
-└── utils/               # Utilitaires
-    ├── categories.ts    # Catégories d'objets
+│   ├── database.ts      # Types générés Supabase
+│   └── admin.ts         # Types d'administration
+├── utils/               # Utilitaires
+│   ├── categories.ts    # Catégories d'objets
+│   ├── validation.ts    # Schémas de validation
+│   ├── geolocation.ts  # Utilitaires géolocalisation
+│   └── formatting.ts    # Formatage des données
+└── test/                # Tests
+    ├── setup.ts         # Configuration des tests
     └── ...
 ```
 
@@ -207,6 +231,24 @@ npm run build
 # Les fichiers sont dans dist/
 ```
 
+## 🔒 Sécurité
+
+- **Row Level Security (RLS)** activé sur toutes les tables
+- **Authentification** via Supabase Auth
+- **Validation** des données avec Zod
+- **Sanitisation** des entrées utilisateur
+- **Système de modération** et signalement
+- **Gestion des utilisateurs bannis**
+
+## 📊 Fonctionnalités d'Administration
+
+- **Dashboard** avec statistiques globales
+- **Gestion des utilisateurs** (bannissement, modération)
+- **Gestion des objets** (modération, suspension)
+- **Gestion des communautés** (validation, modération)
+- **Système de rapports** et logs
+- **Analytics** avancées
+
 ## 🤝 Contribuer
 
 Voir [CONTRIBUTING.md](./CONTRIBUTING.md) pour les guidelines détaillées.
@@ -229,8 +271,24 @@ Voir [CONTRIBUTING.md](./CONTRIBUTING.md) pour les guidelines détaillées.
 ## 🐛 Problèmes Connus
 
 - **Gamification** : Les tables de gamification nécessitent l'application des migrations RLS
-- **IA** : L'analyse d'images nécessite une clé API Mistral
+- **IA** : L'analyse d'images nécessite une clé API Gemini
 - **Cartes** : La géolocalisation nécessite une clé API Mapbox
+- **Communautés** : Certaines fonctionnalités nécessitent des migrations supplémentaires
+
+## 🚀 Roadmap
+
+### Phase Actuelle (MVP)
+- ✅ Système de base complet
+- ✅ Gamification avancée
+- ✅ IA intégrée
+- ✅ Communautés de quartier
+- ✅ Administration complète
+
+### Prochaines étapes
+- 🔄 Optimisation des performances
+- 🔄 Tests automatisés complets
+- 🔄 Mode sombre
+- 🔄 Application mobile native
 
 ## 📄 Licence
 
@@ -239,9 +297,10 @@ Ce projet est sous licence MIT. Voir [LICENSE](./LICENSE) pour plus de détails.
 ## 🙏 Remerciements
 
 - [Supabase](https://supabase.com) pour l'infrastructure backend
-- [Mistral AI](https://mistral.ai) pour les services d'IA
+- [Google Gemini](https://ai.google.dev) pour les services d'IA
 - [Mapbox](https://mapbox.com) pour les services de cartographie
 - [Tailwind CSS](https://tailwindcss.com) pour le système de design
+- [Framer Motion](https://framer.com/motion) pour les animations
 
 ---
 

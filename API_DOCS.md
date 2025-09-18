@@ -10,8 +10,9 @@ TrocAll utilise **Supabase** comme Backend-as-a-Service, fournissant une API RES
 
 ```typescript
 import { createClient } from '@supabase/supabase-js';
+import type { Database } from '../types/database';
 
-const supabase = createClient(
+const supabase = createClient<Database>(
   process.env.VITE_SUPABASE_URL!,
   process.env.VITE_SUPABASE_ANON_KEY!
 );
@@ -23,7 +24,12 @@ const supabase = createClient(
 ```typescript
 const { data, error } = await supabase.auth.signUp({
   email: 'user@example.com',
-  password: 'password123'
+  password: 'password123',
+  options: {
+    data: {
+      full_name: 'John Doe'
+    }
+  }
 });
 ```
 
@@ -43,6 +49,13 @@ const { error } = await supabase.auth.signOut();
 #### Récupération de session
 ```typescript
 const { data: { session } } = await supabase.auth.getSession();
+```
+
+#### Vérification de bannissement
+```typescript
+const { data: banStatus } = await supabase.rpc('is_user_banned', {
+  target_user_id: userId
+});
 ```
 
 ## 👤 Profils Utilisateurs
@@ -98,6 +111,19 @@ const { data, error } = await supabase
   .limit(10);
 ```
 
+##### Recherche géolocalisée
+```typescript
+const { data, error } = await supabase
+  .from('profiles')
+  .select('*')
+  .not('latitude', 'is', null)
+  .not('longitude', 'is', null)
+  .gte('latitude', minLat)
+  .lte('latitude', maxLat)
+  .gte('longitude', minLng)
+  .lte('longitude', maxLng);
+```
+
 ## 📦 Objets
 
 ### Table: `items`
@@ -123,11 +149,12 @@ interface Item {
   latitude?: number;            // Latitude GPS
   longitude?: number;           // Longitude GPS
   is_available: boolean;        // Disponibilité
+  suspended_by_admin: boolean;  // Suspendu par admin
   created_at: string;          // Date de création
   updated_at: string;          // Date de mise à jour
 }
 
-type ItemCategory = 'tools' | 'electronics' | 'books' | 'sports' | 'kitchen' | 'garden' | 'toys' | 'services' | 'other';
+type ItemCategory = 'tools' | 'electronics' | 'books' | 'sports' | 'kitchen' | 'garden' | 'toys' | 'fashion' | 'furniture' | 'music' | 'baby' | 'art' | 'beauty' | 'auto' | 'office' | 'services' | 'other';
 type ItemCondition = 'excellent' | 'good' | 'fair' | 'poor';
 type OfferType = 'loan' | 'trade';
 ```
@@ -144,6 +171,7 @@ const { data, error } = await supabase
     images:item_images(*)
   `)
   .eq('is_available', true)
+  .eq('suspended_by_admin', false)
   .order('created_at', { ascending: false });
 ```
 
@@ -169,23 +197,33 @@ const { data, error } = await supabase
 ```typescript
 const { data, error } = await supabase
   .from('items')
-  .select('*')
+  .select(`
+    *,
+    owner:profiles(*),
+    images:item_images(*)
+  `)
   .ilike('title', '%perceuse%')
   .eq('category', 'tools')
-  .eq('is_available', true);
+  .eq('is_available', true)
+  .eq('suspended_by_admin', false);
 ```
 
 ##### Recherche géolocalisée
 ```typescript
 const { data, error } = await supabase
   .from('items')
-  .select('*')
+  .select(`
+    *,
+    owner:profiles(*),
+    images:item_images(*)
+  `)
   .not('latitude', 'is', null)
   .not('longitude', 'is', null)
   .gte('latitude', minLat)
   .lte('latitude', maxLat)
   .gte('longitude', minLng)
-  .lte('longitude', maxLng);
+  .lte('longitude', maxLng)
+  .eq('is_available', true);
 ```
 
 ##### Mettre à jour un objet
@@ -244,6 +282,26 @@ const { data, error } = await supabase
   .select('*')
   .eq('item_id', itemId)
   .order('is_primary', { ascending: false });
+```
+
+##### Upload d'image vers Storage
+```typescript
+const uploadImage = async (file: File, itemId: string) => {
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${itemId}/${Date.now()}.${fileExt}`;
+  
+  const { data, error } = await supabase.storage
+    .from('item-images')
+    .upload(fileName, file);
+    
+  if (error) throw error;
+  
+  const { data: { publicUrl } } = supabase.storage
+    .from('item-images')
+    .getPublicUrl(fileName);
+    
+  return publicUrl;
+};
 ```
 
 ## 📝 Demandes d'Emprunt/Échange
@@ -566,6 +624,106 @@ const { data, error } = await supabase
   .eq('item_id', itemId);
 ```
 
+## 🏘️ Communautés
+
+### Tables: `communities`, `community_members`, `community_events`
+
+#### Structure
+```typescript
+interface Community {
+  id: string;
+  name: string;
+  description?: string;
+  city: string;
+  postal_code?: string;
+  country: string;
+  center_latitude?: number;
+  center_longitude?: number;
+  radius_km: number;
+  is_active: boolean;
+  activity_level?: 'active' | 'moderate' | 'inactive';
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface CommunityMember {
+  id: string;
+  community_id: string;
+  user_id: string;
+  role: 'member' | 'moderator' | 'admin';
+  joined_at: string;
+  is_active: boolean;
+}
+
+interface CommunityEvent {
+  id: string;
+  community_id: string;
+  title: string;
+  description?: string;
+  event_type: 'meetup' | 'swap' | 'workshop' | 'social' | 'other';
+  location?: string;
+  latitude?: number;
+  longitude?: number;
+  start_date: string;
+  end_date?: string;
+  max_participants?: number;
+  created_by?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+```
+
+#### Endpoints
+
+##### Lister les communautés
+```typescript
+const { data, error } = await supabase
+  .from('communities')
+  .select(`
+    *,
+    stats:community_stats(*)
+  `)
+  .eq('is_active', true)
+  .order('created_at', { ascending: false });
+```
+
+##### Trouver les communautés proches
+```typescript
+const { data, error } = await supabase.rpc('find_nearby_communities', {
+  p_latitude: userLat,
+  p_longitude: userLng,
+  p_radius_km: 10
+});
+```
+
+##### Rejoindre une communauté
+```typescript
+const { data, error } = await supabase
+  .from('community_members')
+  .insert({
+    community_id: communityId,
+    user_id: userId,
+    role: 'member'
+  });
+```
+
+##### Créer un événement communautaire
+```typescript
+const { data, error } = await supabase
+  .from('community_events')
+  .insert({
+    community_id: communityId,
+    title: 'Atelier de réparation',
+    description: 'Apprenez à réparer vos objets',
+    event_type: 'workshop',
+    start_date: '2024-02-15T14:00:00Z',
+    max_participants: 20,
+    created_by: userId
+  });
+```
+
 ## 🔔 Notifications
 
 ### Table: `notifications`
@@ -604,6 +762,57 @@ const { data, error } = await supabase
   .eq('id', notificationId);
 ```
 
+## 🛡️ Administration
+
+### Table: `admin_profiles`
+
+#### Structure
+```typescript
+interface AdminProfile {
+  id: string;
+  profile_id: string;
+  is_admin: boolean;
+  permissions: {
+    canManageUsers: boolean;
+    canManageItems: boolean;
+    canManageCommunities: boolean;
+    canViewReports: boolean;
+    canViewSystemLogs: boolean;
+  };
+  created_at: string;
+  updated_at: string;
+}
+```
+
+#### Endpoints
+
+##### Vérifier les permissions admin
+```typescript
+const { data, error } = await supabase
+  .from('admin_profiles')
+  .select('*')
+  .eq('profile_id', userId)
+  .eq('is_admin', true)
+  .single();
+```
+
+##### Bannir un utilisateur
+```typescript
+const { error } = await supabase.rpc('ban_user', {
+  target_user_id: userId,
+  reason: 'Violation des conditions',
+  duration_days: 30
+});
+```
+
+##### Suspendre un objet
+```typescript
+const { data, error } = await supabase
+  .from('items')
+  .update({ suspended_by_admin: true })
+  .eq('id', itemId);
+```
+
 ## 🔍 Recherche Avancée
 
 ### Requêtes Complexes
@@ -620,6 +829,7 @@ const { data, error } = await supabase
   .or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`)
   .eq('category', category)
   .eq('is_available', true)
+  .eq('suspended_by_admin', false)
   .gte('estimated_value', minValue)
   .lte('estimated_value', maxValue)
   .order('created_at', { ascending: false });
@@ -631,7 +841,20 @@ const { data, error } = await supabase
   .from('items')
   .select('category, count(*)')
   .eq('is_available', true)
+  .eq('suspended_by_admin', false)
   .group('category');
+```
+
+#### Recherche avec géolocalisation et distance
+```typescript
+const { data, error } = await supabase.rpc('search_items_nearby', {
+  p_latitude: userLat,
+  p_longitude: userLng,
+  p_radius_km: 5,
+  p_category: 'tools',
+  p_min_value: 0,
+  p_max_value: 1000
+});
 ```
 
 ## 🚨 Gestion des Erreurs
@@ -658,6 +881,11 @@ if (error?.code === '23505') {
 if (error?.code === 'PGRST116') {
   // Aucune donnée trouvée
 }
+
+// Erreurs de bannissement
+if (error?.message?.includes('suspendu')) {
+  // Utilisateur banni
+}
 ```
 
 ### Gestion des Erreurs dans les Hooks
@@ -669,8 +897,13 @@ export function useItems() {
     queryFn: async (): Promise<Item[]> => {
       const { data, error } = await supabase
         .from('items')
-        .select('*')
-        .eq('is_available', true);
+        .select(`
+          *,
+          owner:profiles(*),
+          images:item_images(*)
+        `)
+        .eq('is_available', true)
+        .eq('suspended_by_admin', false);
 
       if (error) {
         if (error.code === 'PGRST116') return [];
@@ -724,6 +957,22 @@ const channel = supabase
   .subscribe();
 ```
 
+#### Notifications
+```typescript
+const channel = supabase
+  .channel('notifications')
+  .on('postgres_changes', {
+    event: 'INSERT',
+    schema: 'public',
+    table: 'notifications',
+    filter: `user_id=eq.${userId}`
+  }, (payload) => {
+    // Nouvelle notification
+    console.log('Nouvelle notification:', payload.new);
+  })
+  .subscribe();
+```
+
 ## 📊 Vues et Fonctions
 
 ### Vues Disponibles
@@ -732,6 +981,8 @@ const channel = supabase
 - `gamification_stats` - Statistiques de gamification
 - `leaderboard` - Classement des utilisateurs
 - `item_rating_stats` - Statistiques d'évaluation des objets
+- `community_overview` - Vue d'ensemble des communautés
+- `admin_dashboard_stats` - Statistiques pour l'administration
 
 ### Fonctions Stockées
 
@@ -739,7 +990,53 @@ const channel = supabase
 - `get_level_title(level)` - Titre du niveau
 - `add_user_points(profile_id, points, reason, source_type, source_id)` - Ajouter des points
 - `check_and_award_badges(profile_id)` - Vérifier et attribuer des badges
+- `find_nearby_communities(latitude, longitude, radius_km)` - Trouver les communautés proches
+- `search_items_nearby(latitude, longitude, radius_km, category, min_value, max_value)` - Recherche géolocalisée
+- `ban_user(target_user_id, reason, duration_days)` - Bannir un utilisateur
+- `is_user_banned(target_user_id)` - Vérifier si un utilisateur est banni
+- `update_community_stats(community_id)` - Mettre à jour les statistiques communautaires
+
+## 🔐 Sécurité et Permissions
+
+### Row Level Security (RLS)
+
+Toutes les tables sont protégées par des politiques RLS :
+
+```sql
+-- Exemple de politique pour les profils
+CREATE POLICY "Users can view their own profile" ON public.profiles
+  FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Users can update their own profile" ON public.profiles
+  FOR UPDATE USING (auth.uid() = id);
+
+-- Politique pour les objets
+CREATE POLICY "Users can view available items" ON public.items
+  FOR SELECT USING (is_available = true AND suspended_by_admin = false);
+
+CREATE POLICY "Users can manage their own items" ON public.items
+  FOR ALL USING (auth.uid() = owner_id);
+
+-- Politique pour les communautés
+CREATE POLICY "Users can view active communities" ON public.communities
+  FOR SELECT USING (is_active = true);
+```
+
+### Validation des Données
+
+```typescript
+// Validation côté client avec Zod
+const createItemSchema = z.object({
+  title: z.string().min(1, 'Le titre est requis').max(80, 'Titre trop long'),
+  description: z.string().max(500, 'Description trop longue').optional(),
+  category: z.enum(['tools', 'electronics', 'books', 'sports', 'kitchen', 'garden', 'toys', 'fashion', 'furniture', 'music', 'baby', 'art', 'beauty', 'auto', 'office', 'services', 'other']),
+  condition: z.enum(['excellent', 'good', 'fair', 'poor']),
+  offer_type: z.enum(['loan', 'trade']),
+  estimated_value: z.number().positive().max(100000).optional(),
+  tags: z.array(z.string()).max(10).optional(),
+});
+```
 
 ---
 
-Cette documentation couvre tous les endpoints disponibles dans l'API TrocAll. Pour plus de détails sur l'implémentation côté client, consultez les hooks dans `src/hooks/`.
+Cette documentation couvre tous les endpoints disponibles dans l'API TrocAll. Pour plus de détails sur l'implémentation côté client, consultez les hooks dans `src/hooks/` et les services dans `src/services/`.
