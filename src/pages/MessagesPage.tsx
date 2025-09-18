@@ -58,28 +58,35 @@ const MessagesPage: React.FC = () => {
             receiver_id,
             content,
             created_at,
-            profiles!messages_sender_id_fkey (
+            sender:sender_id (
               id,
               full_name,
               avatar_url
             ),
-            profiles!messages_receiver_id_fkey (
+            receiver:receiver_id (
               id,
               full_name,
               avatar_url
             )
           `)
           .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-          .order('created_at', { ascending: false });
+          .order('created_at', { ascending: false })
+          .limit(100); // Limiter pour éviter les problèmes de performance
 
-        if (error) throw error;
+        if (error) {
+          console.error('Erreur de requête Supabase:', error);
+          throw error;
+        }
+
+        console.log('Messages récupérés:', data?.length || 0);
+        console.log('Données brutes:', data);
 
         // Grouper les messages par conversation
         const conversationMap = new Map<string, Conversation>();
 
         data?.forEach((message) => {
           const otherUserId = message.sender_id === user.id ? message.receiver_id : message.sender_id;
-          const otherUser = message.sender_id === user.id ? message.profiles : message.profiles;
+          const otherUser = message.sender_id === user.id ? message.receiver : message.sender;
           
           if (!conversationMap.has(otherUserId)) {
             conversationMap.set(otherUserId, {
@@ -115,7 +122,10 @@ const MessagesPage: React.FC = () => {
           }
         });
 
-        setConversations(Array.from(conversationMap.values()));
+        const finalConversations = Array.from(conversationMap.values());
+        console.log('Conversations finales:', finalConversations.length);
+        console.log('Conversations:', finalConversations);
+        setConversations(finalConversations);
       } catch (error) {
         console.error('Erreur lors du chargement des conversations:', error);
       } finally {
