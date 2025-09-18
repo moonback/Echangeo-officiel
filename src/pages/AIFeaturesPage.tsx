@@ -15,6 +15,7 @@ import { Link } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
+import MistralStatusCard from '../components/MistralStatusCard';
 
 const AIFeaturesPage: React.FC = () => {
   const [activeDemo, setActiveDemo] = useState<string | null>(null);
@@ -163,6 +164,17 @@ const AIFeaturesPage: React.FC = () => {
               </div>
             </div>
           </Card>
+        </motion.div>
+      )}
+
+      {/* Statut de l'API Mistral */}
+      {hasAI && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <MistralStatusCard />
         </motion.div>
       )}
 

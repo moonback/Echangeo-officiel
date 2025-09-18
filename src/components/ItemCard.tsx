@@ -35,8 +35,20 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation 
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { toggle } = useFavorites();
-  const { data: isFavorited = false, isLoading } = useIsItemFavorited(item.id);
+  const { data: isFavorited = false } = useIsItemFavorited(item.id);
   const deleteItem = useDeleteItem();
+  
+  const desiredItemsList = React.useMemo(() => {
+    if (item.offer_type !== 'trade' || !item.desired_items) return { items: [] as string[], total: 0 };
+    const allItems = item.desired_items
+      .split(/[,;\n]/g)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+    return {
+      items: allItems.slice(0, 6),
+      total: allItems.length
+    };
+  }, [item.offer_type, item.desired_items]);
   
   // Vérifier si l'utilisateur est le propriétaire de l'objet
   const isOwner = user?.id === item.owner_id;
@@ -47,7 +59,9 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation 
     if (!user) { navigate('/login'); return; }
     try {
       await toggle(item.id);
-    } catch {}
+    } catch {
+      // Erreur silencieuse pour les favoris
+    }
   };
 
   const onDeleteItem = async (e: React.MouseEvent) => {
@@ -72,135 +86,220 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation 
 
   return (
     <motion.div 
-      whileHover={{ y: -8, scale: 1.02 }} 
-      whileTap={{ scale: 0.98 }} 
-      transition={{ duration: 0.2, ease: "easeOut" }}
-      className={className}
+      whileHover={{ y: -12, scale: 1.03 }} 
+      whileTap={{ scale: 0.97 }} 
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className={`h-full ${className}`}
     >
-      <Link to={`/items/${item.id}`}>
-        <Card className="relative overflow-hidden p-0 group">
-          {/* Image Container with Gradient Overlay */}
-          <div className="relative bg-gradient-to-br from-gray-100 to-gray-200" style={{ aspectRatio: '4 / 3' }}>
+      <Link to={`/items/${item.id}`} className="h-full block">
+        <Card className="relative overflow-hidden p-0 group h-full flex flex-col bg-white/95 backdrop-blur-sm border border-gray-200/60 shadow-lg hover:shadow-2xl transition-all duration-300 card-hover">
+          {/* Image Container with Enhanced Gradient Overlay */}
+          <motion.div 
+            className="relative bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden" 
+            style={{ aspectRatio: '4 / 3' }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
             {item.images && item.images.length > 0 ? (
               <img
                 src={item.images[0].url}
                 alt={item.title}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                className="w-full h-full object-cover transition-all duration-700 group-hover:scale-115 group-hover:brightness-110"
                 loading="lazy"
               />
             ) : (
-              <div className="flex items-center justify-center h-full">
-                <CategoryIcon className="w-16 h-16 text-gray-400 group-hover:scale-110 transition-transform duration-300" />
+              <div className="flex items-center justify-center h-full bg-gradient-to-br from-brand-50 to-purple-50">
+                <CategoryIcon className="w-16 h-16 text-gray-400 group-hover:scale-110 group-hover:text-brand-500 transition-all duration-300" />
               </div>
             )}
             
-            {/* Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            {/* Enhanced Gradient Overlays */}
+            <motion.div 
+              className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+            />
+            <motion.div 
+              className="absolute inset-0 bg-gradient-to-br from-brand-500/10 via-transparent to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+            />
+            
+          {/* Subtle shine effect */}
+          <motion.div 
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+          />
             
             {/* Category Badge */}
-            <div className="absolute top-3 left-3">
-              <Badge className="bg-white/95 backdrop-blur-sm text-gray-700 shadow-lg border border-white/20">
-                <CategoryIcon className="w-3 h-3 mr-1.5" />
+            <motion.div 
+              className="absolute top-3 left-3"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Badge className="bg-white/95 backdrop-blur-md text-gray-700 shadow-xl border border-white/30 group-hover:bg-white group-hover:shadow-2xl transition-all duration-300">
+                <CategoryIcon className="w-3 h-3 mr-1.5 group-hover:scale-110 transition-transform duration-200" />
                 {getCategoryLabel(item.category)}
               </Badge>
-            </div>
+            </motion.div>
             
             {/* Offer Type Badge */}
-            <div className="absolute top-3 left-3 mt-8">
+            <motion.div 
+              className="absolute top-3 left-3 mt-8"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
               <Badge 
-                className={`shadow-lg border border-white/20 ${
+                className={`shadow-xl border border-white/30 backdrop-blur-md group-hover:shadow-2xl transition-all duration-300 ${
                   item.offer_type === 'trade' 
-                    ? 'bg-orange-100/95 text-orange-700' 
-                    : 'bg-blue-100/95 text-blue-700'
-                } backdrop-blur-sm`}
+                    ? 'bg-orange-100/95 text-orange-700 group-hover:bg-orange-200/95' 
+                    : 'bg-blue-100/95 text-blue-700 group-hover:bg-blue-200/95'
+                }`}
               >
-                <OfferTypeIcon className="w-3 h-3 mr-1.5" />
+                <OfferTypeIcon className="w-3 h-3 mr-1.5 group-hover:scale-110 transition-transform duration-200" />
                 {getOfferTypeLabel(item.offer_type)}
               </Badge>
-            </div>
+            </motion.div>
             
             {/* Action Buttons */}
-            <div className="absolute top-3 right-3 flex gap-2">
+            <motion.div 
+              className="absolute top-3 right-3 flex gap-2"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
               {/* Delete Button (seulement pour le propriétaire) */}
               {isOwner && (
-                <button
+                <motion.button
                   onClick={onDeleteItem}
                   aria-label="Supprimer l'objet"
-                  className="inline-flex items-center justify-center w-9 h-9 rounded-full border backdrop-blur-sm shadow-soft transition-all bg-red-500 text-white border-red-400 hover:bg-red-600 opacity-0 group-hover:opacity-100"
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-full border backdrop-blur-md shadow-xl transition-all bg-red-500 text-white border-red-400 hover:bg-red-600 hover:scale-110 opacity-0 group-hover:opacity-100 hover:shadow-2xl"
                   title="Supprimer"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                 >
                   <Trash2 size={16} />
-                </button>
+                </motion.button>
               )}
               
               {/* Favorite Button */}
-              <button
+              <motion.button
                 onClick={onToggleFavorite}
                 aria-label={isFavorited ? 'Retirer des favoris' : 'Ajouter aux favoris'}
                 aria-pressed={isFavorited}
-                className={`inline-flex items-center justify-center w-9 h-9 rounded-full border backdrop-blur-sm shadow-soft transition-all ${
+                className={`inline-flex items-center justify-center w-9 h-9 rounded-full border backdrop-blur-md shadow-xl transition-all hover:scale-110 hover:shadow-2xl ${
                   isFavorited
                     ? 'bg-red-500 text-white border-red-400 hover:bg-red-600'
-                    : 'bg-white/90 text-gray-700 border-gray-200 hover:bg-white'
+                    : 'bg-white/95 text-gray-700 border-gray-200 hover:bg-white'
                 }`}
                 title="Favori"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                animate={isFavorited ? { scale: [1, 1.2, 1] } : {}}
+                transition={{ duration: 0.3 }}
               >
                 <Heart size={18} className={isFavorited ? 'fill-current' : ''} />
-              </button>
-            </div>
+              </motion.button>
+            </motion.div>
 
             {/* Availability Status */}
             {!item.is_available && (
-              <div className="absolute bottom-3 left-3">
-                <Badge variant="danger" className="shadow-lg">Indisponible</Badge>
-              </div>
+              <motion.div 
+                className="absolute bottom-3 left-3"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Badge variant="danger" className="shadow-xl backdrop-blur-md">Indisponible</Badge>
+              </motion.div>
             )}
             
             {/* Rating Overlay */}
             {typeof item.average_rating === 'number' && item.ratings_count ? (
-              <div className="absolute bottom-3 right-3">
-                <div className="flex items-center bg-white/95 backdrop-blur-sm rounded-full px-2.5 py-1 shadow-lg">
-                  <Star className="w-3.5 h-3.5 text-yellow-500 mr-1" />
+              <motion.div 
+                className="absolute bottom-3 right-3"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <div className="flex items-center bg-white/95 backdrop-blur-md rounded-full px-2.5 py-1 shadow-xl border border-white/30 group-hover:shadow-2xl transition-all duration-300">
+                  <Star className="w-3.5 h-3.5 text-yellow-500 mr-1 group-hover:scale-110 transition-transform duration-200" />
                   <span className="text-xs font-semibold text-gray-800">{item.average_rating.toFixed(1)}</span>
                 </div>
-              </div>
+              </motion.div>
             ) : null}
-          </div>
+          </motion.div>
 
           {/* Content */}
-          <div className="p-5">
-            <h3 className="font-bold text-gray-900 mb-2 line-clamp-2 text-lg group-hover:text-brand-600 transition-colors duration-200">
+          <motion.div 
+            className="p-5 flex-1 flex flex-col"
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+          >
+            <motion.h3 
+              className="font-bold text-gray-900 mb-2 line-clamp-2 text-lg group-hover:text-brand-600 transition-colors duration-300"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
               {item.title}
-            </h3>
+            </motion.h3>
             
             {item.description && (
-              <p className="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">{item.description}</p>
+              <motion.p 
+                className="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed group-hover:text-gray-700 transition-colors duration-300"
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+              >
+                {item.description}
+              </motion.p>
             )}
             
-            {item.offer_type === 'trade' && item.desired_items && (
-              <div className="mb-4 p-3 bg-orange-50 rounded-lg border-l-4 border-orange-200">
-                <p className="text-xs font-medium text-orange-700 mb-1">Recherche en échange :</p>
-                <p className="text-sm text-orange-600 line-clamp-2">{item.desired_items}</p>
-              </div>
+            {desiredItemsList.items.length > 0 && (
+              <motion.div 
+                className="mb-4 p-3 bg-gradient-to-r from-orange-50 to-orange-100/50 rounded-lg border border-orange-200 group-hover:from-orange-100 group-hover:to-orange-200/50 transition-all duration-300"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <div className="flex items-center gap-2 mb-2 text-orange-800">
+                  <OfferTypeIcon className="w-4 h-4" />
+                  <span className="text-xs font-semibold tracking-wide">Recherche en échange</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {desiredItemsList.items.map((d, i) => (
+                    <span key={`${d}-${i}`} className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-white/90 text-orange-700 border border-orange-200">
+                      {d}
+                    </span>
+                  ))}
+                  {desiredItemsList.total > desiredItemsList.items.length && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-orange-200 text-orange-800 border border-orange-300">
+                      +{desiredItemsList.total - desiredItemsList.items.length}
+                    </span>
+                  )}
+                </div>
+              </motion.div>
             )}
             
             {/* Footer */}
-            <div className="flex items-center justify-between">
+            <motion.div 
+              className="flex items-center justify-between mt-auto"
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+            >
               <div className="flex items-center text-sm text-gray-500">
-                <div 
+                <motion.div 
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     navigate(`/profile/${item.owner_id}`);
                   }}
                   className="block mr-2 cursor-pointer"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                 >
-                  <div className="relative w-7 h-7 rounded-full overflow-hidden bg-gradient-to-br from-brand-400 to-brand-600 border border-white shadow-md hover:shadow-lg hover:scale-110 transition-all duration-200">
+                  <div className="relative w-7 h-7 rounded-full overflow-hidden bg-gradient-to-br from-brand-400 to-brand-600 border border-white shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300">
                     {item.owner?.avatar_url ? (
                       <img
                         src={item.owner.avatar_url}
                         alt={`Avatar de ${item.owner.full_name || 'Propriétaire'}`}
-                        className="w-full h-full object-cover hover:scale-110 transition-transform duration-200"
+                        className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
@@ -210,34 +309,51 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation 
                     
                     {/* Indicateur de profil vérifié */}
                     {item.owner?.avatar_url && item.owner?.full_name && item.owner?.phone && (
-                      <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border border-white rounded-full" 
+                      <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border border-white rounded-full shadow-lg" 
                            title="Profil vérifié" />
                     )}
                   </div>
-                </div>
-                <span 
+                </motion.div>
+                <motion.span 
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     navigate(`/profile/${item.owner_id}`);
                   }}
-                  className="font-medium hover:text-brand-600 transition-colors duration-200 cursor-pointer"
+                  className="font-medium hover:text-brand-600 transition-colors duration-300 cursor-pointer"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   {item.owner?.full_name || 'Anonyme'}
-                </span>
+                </motion.span>
               </div>
               
-              <div className="flex items-center text-sm text-gray-500 bg-gray-50/80 rounded-full px-2.5 py-1">
-                <MapPin className="w-3.5 h-3.5 mr-1" />
-                <span className="font-medium">
+              <motion.div 
+                className="flex items-center text-sm text-gray-500 bg-gradient-to-r from-gray-50/90 to-gray-100/90 rounded-full px-2.5 py-1 backdrop-blur-sm border border-gray-200/50 group-hover:from-brand-50/90 group-hover:to-brand-100/90 group-hover:border-brand-200/50 transition-all duration-300"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <MapPin className="w-3.5 h-3.5 mr-1 group-hover:text-brand-600 transition-colors duration-300" />
+                <span className="font-medium group-hover:text-brand-700 transition-colors duration-300">
                   {distanceKm != null ? `${distanceKm.toFixed(1)} km` : 'À proximité'}
                 </span>
-              </div>
-            </div>
-          </div>
+              </motion.div>
+            </motion.div>
+          </motion.div>
           
-          {/* Hover Glow Effect */}
-          <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-brand-400/0 via-brand-500/0 to-brand-600/0 group-hover:from-brand-400/5 group-hover:via-brand-500/5 group-hover:to-brand-600/5 transition-all duration-300 pointer-events-none" />
+          {/* Enhanced Hover Glow Effect */}
+          <motion.div 
+            className="absolute inset-0 rounded-3xl bg-gradient-to-r from-brand-400/0 via-brand-500/0 to-brand-600/0 group-hover:from-brand-400/8 group-hover:via-brand-500/8 group-hover:to-brand-600/8 transition-all duration-500 pointer-events-none"
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+          />
+          
+          {/* Subtle border glow */}
+          <motion.div 
+            className="absolute inset-0 rounded-3xl border border-transparent group-hover:border-brand-200/30 transition-all duration-500 pointer-events-none"
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+          />
         </Card>
       </Link>
     </motion.div>

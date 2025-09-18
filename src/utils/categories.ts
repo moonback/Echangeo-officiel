@@ -7,7 +7,15 @@ import {
   Flower2, 
   Gamepad2,
   Package,
-  Users
+  Users,
+  Shirt,
+  Sofa,
+  Music,
+  Baby,
+  Palette,
+  Sparkles,
+  Car,
+  Briefcase
 } from 'lucide-react';
 import type { ItemCategory } from '../types';
 
@@ -20,6 +28,14 @@ export function getCategoryIcon(category: ItemCategory) {
     kitchen: ChefHat,
     garden: Flower2,
     toys: Gamepad2,
+    fashion: Shirt,
+    furniture: Sofa,
+    music: Music,
+    baby: Baby,
+    art: Palette,
+    beauty: Sparkles,
+    auto: Car,
+    office: Briefcase,
     services: Users,
     other: Package,
   };
@@ -36,6 +52,14 @@ export function getCategoryLabel(category: ItemCategory) {
     kitchen: 'Cuisine',
     garden: 'Jardin',
     toys: 'Jouets',
+    fashion: 'Mode',
+    furniture: 'Mobilier',
+    music: 'Musique',
+    baby: 'Bébé',
+    art: 'Art & Loisirs créatifs',
+    beauty: 'Beauté & Bien-être',
+    auto: 'Auto & Moto',
+    office: 'Bureau',
     services: 'Services',
     other: 'Autre',
   };
@@ -51,6 +75,14 @@ export const categories: { value: ItemCategory; label: string }[] = [
   { value: 'kitchen', label: 'Cuisine' },
   { value: 'garden', label: 'Jardin' },
   { value: 'toys', label: 'Jouets' },
+  { value: 'fashion', label: 'Mode' },
+  { value: 'furniture', label: 'Mobilier' },
+  { value: 'music', label: 'Musique' },
+  { value: 'baby', label: 'Bébé' },
+  { value: 'art', label: 'Art & Loisirs créatifs' },
+  { value: 'beauty', label: 'Beauté & Bien-être' },
+  { value: 'auto', label: 'Auto & Moto' },
+  { value: 'office', label: 'Bureau' },
   { value: 'services', label: 'Services' },
   { value: 'other', label: 'Autre' },
 ];

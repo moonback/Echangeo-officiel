@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   ArrowLeft, 
+
   MapPin, 
   User, 
   Calendar,
@@ -13,7 +14,9 @@ import {
   X,
   AlertCircle,
   Sparkles,
-  Wand2
+  Wand2,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useItem, useUpdateItem } from '../hooks/useItems';
 import { useFavorites, useIsItemFavorited } from '../hooks/useFavorites';
@@ -44,11 +47,14 @@ const ItemDetailPage: React.FC = () => {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const touchStartXRef = useRef<number | null>(null);
   const [showRatingForm, setShowRatingForm] = useState(false);
   const [ratingScore, setRatingScore] = useState<number>(5);
   const [ratingComment, setRatingComment] = useState<string>('');
   const { generateMessage, isGenerating } = useRequestMessageGenerator();
   const { data: currentUserProfile } = useProfile(user?.id);
+  const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const hasCompletedBorrow = !!(item && allRequests?.some(
     (r) => r.requester_id === user?.id && r.item_id === item.id && r.status === 'completed'
   ));
@@ -56,6 +62,45 @@ const ItemDetailPage: React.FC = () => {
   const hasPendingRequest = !!(item && allRequests?.some(
     (r) => r.requester_id === user?.id && r.item_id === item.id && r.status === 'pending'
   ));
+
+  const goPrevImage = useCallback(() => {
+    if (!item?.images || item.images.length === 0) return;
+    setCurrentImageIndex((prev) => (prev - 1 + item.images!.length) % item.images!.length);
+  }, [item?.images]);
+
+  const goNextImage = useCallback(() => {
+    if (!item?.images || item.images.length === 0) return;
+    setCurrentImageIndex((prev) => (prev + 1) % item.images!.length);
+  }, [item?.images]);
+
+  // Obtenir la position de l'utilisateur
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.log('Erreur géolocalisation:', error);
+        }
+      );
+    }
+  }, []);
+
+  // Gestion des événements clavier pour la lightbox
+  useEffect(() => {
+    if (!isLightboxOpen || !item?.images) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsLightboxOpen(false);
+      if (e.key === 'ArrowLeft') goPrevImage();
+      if (e.key === 'ArrowRight') goNextImage();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isLightboxOpen, item?.images, goPrevImage, goNextImage]);
 
   if (isLoading) {
     return (
@@ -126,30 +171,42 @@ const ItemDetailPage: React.FC = () => {
       >
         <Link
           to="/items"
-          className="flex items-center text-gray-600 hover:text-gray-900 mr-4"
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-white hover:shadow-sm transition-all mr-4 bg-white/70 backdrop-blur-sm"
         >
-          <ArrowLeft size={20} />
+          <ArrowLeft size={18} />
+          <span className="text-sm font-medium">Retour</span>
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900 flex-1">
-          Détails de l'objet
+        <h1 className="text-2xl font-bold flex-1">
+          <span className="bg-gradient-to-r from-gray-900 via-brand-700 to-gray-900 bg-clip-text text-transparent">Détails de l'objet</span>
         </h1>
-        <div className="flex space-x-2">
+        <div className="flex items-center gap-2">
           <button
-            className={`p-2 rounded-lg transition-colors ${isFavorited ? 'text-red-600 bg-red-50' : 'text-gray-400 hover:text-gray-600'}`}
+            className={`inline-flex items-center justify-center w-10 h-10 rounded-xl border transition-all backdrop-blur-sm shadow-sm hover:shadow ${isFavorited ? 'bg-red-500 text-white border-red-400 hover:bg-red-600' : 'bg-white/80 text-gray-700 border-gray-200 hover:bg-white'}`}
             onClick={async () => { if (!id) return; if (!user) { window.location.href = '/login'; return; } await toggle(id); }}
             aria-pressed={isFavorited}
             aria-label={isFavorited ? 'Retirer des favoris' : 'Ajouter aux favoris'}
             title="Favori"
           >
-            <Heart size={20} className={isFavorited ? 'fill-red-600' : ''} />
+            <Heart size={18} className={isFavorited ? 'fill-current' : ''} />
           </button>
-          <button className="p-2 text-gray-400 hover:text-gray-600">
-            <Share2 size={20} />
+          <button
+            className="inline-flex items-center justify-center w-10 h-10 rounded-xl border bg-white/80 text-gray-700 border-gray-200 hover:bg-white backdrop-blur-sm shadow-sm hover:shadow"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(window.location.href);
+              } catch {
+                // Erreur silencieuse pour la copie
+              }
+            }}
+            title="Copier le lien"
+            aria-label="Copier le lien"
+          >
+            <Share2 size={18} />
           </button>
           {isOwner && (
             <Link
               to={`/items/${id}/edit`}
-              className="px-3 py-1.5 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700"
+              className="px-3 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-sm hover:shadow"
             >
               Modifier
             </Link>
@@ -164,12 +221,12 @@ const ItemDetailPage: React.FC = () => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="aspect-square bg-gray-100 overflow-hidden mb-4 glass">
+          <Card className="aspect-square overflow-hidden mb-4 glass-strong cursor-zoom-in" onClick={() => item.images && item.images.length > 0 && setIsLightboxOpen(true)}>
             {item.images && item.images.length > 0 ? (
               <img
                 src={item.images[currentImageIndex]?.url || item.images[0].url}
                 alt={item.title}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-all duration-700 hover:scale-[1.03]"
               />
             ) : (
               <div className="flex items-center justify-center h-full">
@@ -184,9 +241,9 @@ const ItemDetailPage: React.FC = () => {
                 <button
                   key={image.id}
                   onClick={() => setCurrentImageIndex(index)}
-                  className={`aspect-square rounded-lg overflow-hidden transition-transform hover:scale-[1.02] ${
-                    currentImageIndex === index ? 'ring-2 ring-blue-500' : ''
-                  }`}
+                  className={`aspect-square rounded-lg overflow-hidden transition-all hover:scale-[1.03] border ${
+                    currentImageIndex === index ? 'border-blue-500 ring-2 ring-blue-300' : 'border-gray-200'
+                  } bg-white/70 backdrop-blur-sm`}
                 >
                   <img
                     src={image.url}
@@ -209,50 +266,76 @@ const ItemDetailPage: React.FC = () => {
           {/* Category & Status */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Badge variant="info"><CategoryIcon className="w-4 h-4 mr-2 inline" />{getCategoryLabel(item.category)}</Badge>
+              <Badge variant="info" className="bg-white/90 backdrop-blur-sm border border-gray-200"><CategoryIcon className="w-4 h-4 mr-2 inline" />{getCategoryLabel(item.category)}</Badge>
               <Badge 
                 className={`${
                   item.offer_type === 'trade' 
-                    ? 'bg-orange-100 text-orange-700 border-orange-200' 
-                    : 'bg-blue-100 text-blue-700 border-blue-200'
+                    ? 'bg-orange-100/90 text-orange-700 border-orange-200' 
+                    : 'bg-blue-100/90 text-blue-700 border-blue-200'
                 }`}
               >
                 <OfferTypeIcon className="w-4 h-4 mr-2 inline" />
                 {getOfferTypeLabel(item.offer_type)}
               </Badge>
             </div>
-            <Badge variant={item.is_available ? 'success' : 'danger'}>
+            <Badge variant={item.is_available ? 'success' : 'danger'} className="shadow">
               {item.is_available ? 'Disponible' : 'Non disponible'}
             </Badge>
           </div>
 
-          {typeof (item as any).average_rating === 'number' && (item as any).ratings_count ? (
+          {typeof (item as { average_rating?: number; ratings_count?: number }).average_rating === 'number' && (item as { average_rating?: number; ratings_count?: number }).ratings_count ? (
             <div className="flex items-center text-sm text-gray-700">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-yellow-500 mr-1"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.285a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.802 2.034a1 1 0 00-.364 1.118l1.07 3.286c.3.92-.755 1.688-1.54 1.118l-2.802-2.034a1 1 0 00-1.175 0l-2.802 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.286a1 1 0 00-.364-1.118L2.98 8.712c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.285z" /></svg>
-              <span className="font-medium">{(item as any).average_rating.toFixed(1)}</span>
-              <span className="ml-1 text-gray-500">({(item as any).ratings_count})</span>
+              <span className="font-medium">{(item as { average_rating: number }).average_rating.toFixed(1)}</span>
+              <span className="ml-1 text-gray-500">({(item as { ratings_count: number }).ratings_count})</span>
             </div>
           ) : null}
 
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">{item.title}</h1>
+            <h1 className="text-3xl font-bold mb-2">
+              <span className="bg-gradient-to-r from-gray-900 via-brand-700 to-gray-900 bg-clip-text text-transparent">{item.title}</span>
+            </h1>
             {item.description && (
-              <p className="text-gray-600 leading-relaxed mb-4">{item.description}</p>
+              <p className="text-gray-700 leading-relaxed mb-4">{item.description}</p>
             )}
             
             {item.offer_type === 'trade' && item.desired_items && (
-              <div className="p-4 bg-orange-50 rounded-lg border-l-4 border-orange-300">
+              <div className="p-4 bg-gradient-to-r from-orange-50 to-orange-100/60 rounded-lg border border-orange-200">
                 <h3 className="font-semibold text-orange-800 mb-2 flex items-center">
                   <OfferTypeIcon className="w-5 h-5 mr-2" />
-                  Recherche en échange :
+                  Recherche en échange
                 </h3>
-                <p className="text-orange-700 leading-relaxed">{item.desired_items}</p>
+                <div className="flex flex-wrap gap-2">
+                  {(() => {
+                    const allItems = item.desired_items
+                      .split(/[,;\n]/g)
+                      .map((s) => s.trim())
+                      .filter((s) => s.length > 0);
+                    const visibleItems = allItems.slice(0, 12);
+                    const remainingCount = allItems.length - visibleItems.length;
+                    
+                    return (
+                      <>
+                        {visibleItems.map((d, i) => (
+                          <span key={`${d}-${i}`} className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-white text-orange-700 border border-orange-200">
+                            {d}
+                          </span>
+                        ))}
+                        {remainingCount > 0 && (
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-orange-200 text-orange-800 border border-orange-300">
+                            +{remainingCount}
+                          </span>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
               </div>
             )}
           </div>
 
           {/* Owner Info */}
-          <Card className="p-4 bg-gray-50 glass">
+          <Card className="p-4 bg-white/70 glass-card">
             <h3 className="font-semibold text-gray-900 mb-3">Propriétaire</h3>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -299,81 +382,6 @@ const ItemDetailPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Additional fields */}
-          {(item.brand || item.model || item.estimated_value || (item.tags && item.tags.length) || item.available_from || item.available_to || item.location_hint) && (
-            <div className="bg-gray-50 rounded-xl p-4 space-y-3 glass">
-              <h3 className="font-semibold text-gray-900">Informations supplémentaires</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                {item.brand && (
-                  <div>
-                    <span className="text-gray-500">Marque :</span>
-                    <p className="font-medium text-gray-900">{item.brand}</p>
-                  </div>
-                )}
-                {item.model && (
-                  <div>
-                    <span className="text-gray-500">Modèle :</span>
-                    <p className="font-medium text-gray-900">{item.model}</p>
-                  </div>
-                )}
-                {typeof item.estimated_value === 'number' && !isNaN(item.estimated_value) && (
-                  <div>
-                    <span className="text-gray-500">Valeur estimée :</span>
-                    <p className="font-medium text-gray-900">{item.estimated_value.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</p>
-                  </div>
-                )}
-                {(item.available_from || item.available_to) && (
-                  <div className="sm:col-span-2">
-                    <span className="text-gray-500">Période de disponibilité :</span>
-                    <p className="font-medium text-gray-900 flex items-center">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      <span>
-                        {item.available_from ? new Date(item.available_from).toLocaleDateString('fr-FR') : '—'}
-                        {' '}→{' '}
-                        {item.available_to ? new Date(item.available_to).toLocaleDateString('fr-FR') : '—'}
-                      </span>
-                    </p>
-                  </div>
-                )}
-                {item.location_hint && (
-                  <div className="sm:col-span-2">
-                    <span className="text-gray-500">Indication de localisation :</span>
-                    <p className="font-medium text-gray-900 flex items-center">
-                      <MapPin className="w-4 h-4 mr-2" />
-                      {item.location_hint}
-                    </p>
-                  </div>
-                )}
-                {(item.latitude !== undefined && item.longitude !== undefined) && (
-                  <div className="sm:col-span-2">
-                    <span className="text-gray-500">Position :</span>
-                    <p className="font-medium text-gray-900">
-                      {item.latitude?.toFixed(6)}, {item.longitude?.toFixed(6)}{' '}
-                      <a
-                        className="text-blue-600 hover:text-blue-700 ml-2"
-                        href={`https://www.google.com/maps?q=${item.latitude},${item.longitude}`}
-                        target="_blank" rel="noreferrer"
-                      >
-                        Ouvrir la carte
-                      </a>
-                    </p>
-                  </div>
-                )}
-                {item.tags && item.tags.length > 0 && (
-                  <div className="sm:col-span-2">
-                    <span className="text-gray-500">Tags :</span>
-                    <div className="mt-1 flex flex-wrap gap-2">
-                      {item.tags.map((t) => (
-                        <span key={t} className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-200 text-gray-700">
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
 
           {/* Message de succès */}
           {showSuccessMessage && (
@@ -476,7 +484,7 @@ const ItemDetailPage: React.FC = () => {
                   </Button>
                   <Link
                     to={`/profile/${item.owner_id}`}
-                    className="flex items-center px-4 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex items-center px-4 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-white transition-colors bg-white/70 backdrop-blur-sm"
                   >
                     <MessageCircle size={20} />
                   </Link>
@@ -630,6 +638,175 @@ const ItemDetailPage: React.FC = () => {
           )}
         </motion.div>
       </div>
+
+      {/* Informations supplémentaires - Pleine largeur */}
+      {(item.brand || item.model || item.estimated_value || (item.tags && item.tags.length) || item.available_from || item.available_to || item.location_hint) && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mt-8"
+        >
+          <div className="bg-white/70 rounded-xl p-6 space-y-4 glass-card">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Informations supplémentaires</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 text-sm">
+              {item.brand && (
+                <div>
+                  <span className="text-gray-500 block mb-1">Marque</span>
+                  <p className="font-medium text-gray-900">{item.brand}</p>
+                </div>
+              )}
+              {item.model && (
+                <div>
+                  <span className="text-gray-500 block mb-1">Modèle</span>
+                  <p className="font-medium text-gray-900">{item.model}</p>
+                </div>
+              )}
+              {typeof item.estimated_value === 'number' && !isNaN(item.estimated_value) && (
+                <div>
+                  <span className="text-gray-500 block mb-1">Valeur estimée</span>
+                  <p className="font-medium text-gray-900">{item.estimated_value.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</p>
+                </div>
+              )}
+              {(item.available_from || item.available_to) && (
+                <div className="sm:col-span-2 lg:col-span-3 xl:col-span-4">
+                  <span className="text-gray-500 block mb-1">Période de disponibilité</span>
+                  <p className="font-medium text-gray-900 flex items-center">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    <span>
+                      {item.available_from ? new Date(item.available_from).toLocaleDateString('fr-FR') : '—'}
+                      {' '}→{' '}
+                      {item.available_to ? new Date(item.available_to).toLocaleDateString('fr-FR') : '—'}
+                    </span>
+                  </p>
+                </div>
+              )}
+              {item.location_hint && (
+                <div className="sm:col-span-2 lg:col-span-3 xl:col-span-4">
+                  <span className="text-gray-500 block mb-1">Indication de localisation</span>
+                  <p className="font-medium text-gray-900 flex items-center">
+                    <MapPin className="w-4 h-4 mr-2" />
+                    {item.location_hint}
+                  </p>
+                </div>
+              )}
+               {(item.latitude !== undefined && item.longitude !== undefined) && (
+                 <div className="sm:col-span-2 lg:col-span-3 xl:col-span-4">
+                   <span className="text-gray-500 block mb-3">Position</span>
+                   <div className="space-y-3">
+                     {/* Carte Mapbox interactive - hauteur augmentée */}
+                     <div className="relative rounded-lg overflow-hidden border border-gray-200 shadow-lg bg-gray-100">
+                       <div className="w-full h-96 bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center relative">
+                         {/* Carte Mapbox avec deux marqueurs */}
+                           <iframe
+                             src={(() => {
+                               if (userLocation) {
+                                 // Carte avec deux marqueurs : utilisateur (bleu) et objet (rouge)
+                                 const centerLng = (userLocation.lng + item.longitude) / 2;
+                                 const centerLat = (userLocation.lat + item.latitude) / 2;
+                                 const pins = `pin-s+3b82f6(${userLocation.lng},${userLocation.lat}),pin-s+ff0000(${item.longitude},${item.latitude})`;
+                                 return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${pins}/${centerLng},${centerLat},13,0/800x600@2x?access_token=${import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw'}`;
+                               } else {
+                                 // Carte avec seulement le marqueur de l'objet
+                                 return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+ff0000(${item.longitude},${item.latitude})/${item.longitude},${item.latitude},15,0/800x600@2x?access_token=${import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw'}`;
+                               }
+                             })()}
+                             width="100%"
+                             height="100%"
+                             style={{ border: 0 }}
+                             allowFullScreen
+                             loading="lazy"
+                             referrerPolicy="no-referrer-when-downgrade"
+                             className="w-full h-full rounded-lg"
+                             title="Position de l'objet et de l'utilisateur"
+                           />
+                         
+                         {/* Overlay avec légende */}
+                         <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border border-gray-200">
+                           <div className="flex items-center gap-3">
+                             {userLocation && (
+                               <div className="flex items-center gap-1">
+                                 <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                 <span className="text-xs font-medium text-gray-800">Vous</span>
+                               </div>
+                             )}
+                             <div className="flex items-center gap-1">
+                               <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                               <span className="text-xs font-medium text-gray-800">Objet</span>
+                             </div>
+                           </div>
+                         </div>
+                         
+                         {/* Coordonnées en overlay */}
+                         {/* <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border border-gray-200">
+                           <div className="text-xs font-mono text-gray-600">
+                             <div className="font-semibold text-gray-800 mb-1">Coordonnées</div>
+                             {userLocation && (
+                               <div className="mb-1">
+                                 <div className="text-blue-600 font-medium">Votre position:</div>
+                                 <div>Lat: {userLocation.lat.toFixed(6)}</div>
+                                 <div>Lng: {userLocation.lng.toFixed(6)}</div>
+                               </div>
+                             )}
+                             <div>
+                               <div className="text-red-600 font-medium">Position objet:</div>
+                               <div>Lat: {item.latitude?.toFixed(6)}</div>
+                               <div>Lng: {item.longitude?.toFixed(6)}</div>
+                             </div>
+                           </div>
+                         </div> */}
+                         
+                         {/* Boutons d'action */}
+                         <div className="absolute top-3 right-3 flex gap-2">
+                           {userLocation && (
+                             <div className="bg-white/95 backdrop-blur-sm rounded-lg px-2 py-1 shadow-lg border border-gray-200">
+                               <div className="text-xs font-medium text-gray-800">
+                                 Distance: {(() => {
+                                   const R = 6371; // Rayon de la Terre en km
+                                   const dLat = (item.latitude - userLocation.lat) * Math.PI / 180;
+                                   const dLng = (item.longitude - userLocation.lng) * Math.PI / 180;
+                                   const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                                     Math.cos(userLocation.lat * Math.PI / 180) * Math.cos(item.latitude * Math.PI / 180) *
+                                     Math.sin(dLng/2) * Math.sin(dLng/2);
+                                   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                                   return (R * c).toFixed(1);
+                                 })()} km
+                               </div>
+                             </div>
+                           )}
+                           <button
+                             onClick={() => window.open(`https://www.mapbox.com/maps?q=${item.latitude},${item.longitude}`, '_blank')}
+                             className="bg-white/95 backdrop-blur-sm rounded-lg p-2 shadow-lg border border-gray-200 hover:bg-white transition-colors duration-200"
+                             title="Ouvrir en plein écran"
+                           >
+                             <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                             </svg>
+                           </button>
+                         </div>
+                       </div>
+                     </div>
+                     
+                     
+                   </div>
+                 </div>
+               )}
+              {item.tags && item.tags.length > 0 && (
+                <div className="sm:col-span-2 lg:col-span-3 xl:col-span-4">
+                  <span className="text-gray-500 block mb-1">Tags</span>
+                  <div className="flex flex-wrap gap-2">
+                    {item.tags.map((t) => (
+                      <span key={t} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      )}
       {/* Floating CTA for borrow request */}
       {!isOwner && item.is_available && !hasPendingRequest && (
         <div className="fixed inset-x-0 bottom-16 md:bottom-6 z-40 flex justify-center pointer-events-none">
@@ -649,6 +826,65 @@ const ItemDetailPage: React.FC = () => {
             ) : null}
           </div>
         </div>
+      )}
+
+      {/* Lightbox */}
+      {isLightboxOpen && item.images && item.images.length > 0 && (
+        <motion.div
+          key="lightbox"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center"
+          onClick={() => setIsLightboxOpen(false)}
+        >
+          <div
+            className="relative w-full h-full max-w-5xl max-h-[90vh] p-4"
+            onClick={(e) => e.stopPropagation()}
+            onTouchStart={(e) => { touchStartXRef.current = e.touches[0].clientX; }}
+            onTouchEnd={(e) => {
+              const startX = touchStartXRef.current;
+              if (startX == null) return;
+              const deltaX = e.changedTouches[0].clientX - startX;
+              if (deltaX > 40) goPrevImage();
+              if (deltaX < -40) goNextImage();
+              touchStartXRef.current = null;
+            }}
+          >
+            <button
+              className="absolute top-2 right-2 p-2 rounded-full bg-white/90 text-gray-800 hover:bg-white shadow"
+              onClick={() => setIsLightboxOpen(false)}
+              aria-label="Fermer"
+            >
+              <X size={18} />
+            </button>
+
+            <button
+              className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/90 text-gray-800 hover:bg-white shadow"
+              onClick={goPrevImage}
+              aria-label="Précédente"
+            >
+              <ChevronLeft size={20} />
+            </button>
+
+            <button
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/90 text-gray-800 hover:bg-white shadow"
+              onClick={goNextImage}
+              aria-label="Suivante"
+            >
+              <ChevronRight size={20} />
+            </button>
+
+            <div className="w-full h-full flex items-center justify-center">
+              <img
+                src={item.images[currentImageIndex]?.url || item.images[0].url}
+                alt={item.title}
+                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                draggable={false}
+              />
+            </div>
+          </div>
+        </motion.div>
       )}
     </div>
   );

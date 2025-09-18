@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Shell from './components/Shell';
+import ScrollToTop from './components/ScrollToTop';
 // import AuthGuard from './components/AuthGuard';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
@@ -57,8 +58,10 @@ function App() {
   }
 
   return (
-    <Routes>
-      {/* Admin Routes - Outside Shell to use their own layout */}
+    <>
+      <ScrollToTop />
+      <Routes>
+        {/* Admin Routes - Outside Shell to use their own layout */}
       <Route path="/admin" element={
         <AdminGuard>
           <AdminDashboardPage />
@@ -115,6 +118,7 @@ function App() {
         </Shell>
       } />
     </Routes>
+    </>
   );
 }
 
