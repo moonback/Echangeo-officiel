@@ -434,6 +434,73 @@ function createCompactFloatingPopup(marker: MapboxMarker): string {
   return content;
 }
 
+// Fonction pour créer le contenu HTML du popup de communauté au survol
+function createCommunityHoverPopup(marker: MapboxMarker): string {
+  return `
+    <div style="
+      background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      min-width: 200px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    ">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <span style="font-weight: 700; font-size: 14px;">Communauté</span>
+      </div>
+      
+      <div style="margin-bottom: 8px;">
+        <h3 style="
+          font-size: 16px;
+          font-weight: 700;
+          margin: 0 0 4px 0;
+          line-height: 1.3;
+        ">
+          ${marker.title || 'Quartier'}
+        </h3>
+        ${marker.description ? `
+          <p style="
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.9);
+            margin: 0;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          ">
+            ${marker.description}
+          </p>
+        ` : ''}
+      </div>
+      
+      <div style="
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.8);
+        padding-top: 8px;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+      ">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+          <circle cx="12" cy="10" r="3"></circle>
+        </svg>
+        <span>${marker.distance ? `${marker.distance.toFixed(1)} km` : 'Proche'}</span>
+      </div>
+    </div>
+  `;
+}
+
 // Fonction pour créer le contenu HTML du popup simple
 function createSimplePopup(marker: MapboxMarker): string {
   const markerStyle = getMarkerStyle(marker);
@@ -802,6 +869,7 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
   const mapRef = React.useRef<mapboxgl.Map | null>(null);
   const markersRef = React.useRef<mapboxgl.Marker[]>([]);
   const popupRef = React.useRef<mapboxgl.Popup | null>(null);
+  const [hoveredCommunity, setHoveredCommunity] = React.useState<MapboxMarker | null>(null);
 
   // Exposer la référence de la carte
   React.useImperativeHandle(ref, () => mapRef.current as mapboxgl.Map);
@@ -839,26 +907,40 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
               .addTo(map);
 
             // Ajouter l'événement de clic pour ouvrir le popup
-              el.addEventListener('click', () => {
-                // Fermer le popup existant
-                if (popupRef.current) {
-                  popupRef.current.remove();
-                }
-                
-             // Créer le nouveau popup au clic
-                const popup = new mapboxgl.Popup({
-               closeButton: true,
-                  closeOnClick: false,
-               closeOnMove: true,
-                  offset: 15,
-                  className: 'custom-popup'
-                })
-                  .setLngLat([marker.longitude, marker.latitude])
-                  .setHTML(createPopupContent(marker))
-                  .addTo(map);
-                
-                popupRef.current = popup;
+            el.addEventListener('click', () => {
+              // Fermer le popup existant
+              if (popupRef.current) {
+                popupRef.current.remove();
+              }
+              
+              // Créer le nouveau popup au clic
+              const popup = new mapboxgl.Popup({
+                closeButton: true,
+                closeOnClick: false,
+                closeOnMove: true,
+                offset: 15,
+                className: 'custom-popup'
+              })
+                .setLngLat([marker.longitude, marker.latitude])
+                .setHTML(createPopupContent(marker))
+                .addTo(map);
+              
+              popupRef.current = popup;
+            });
+
+            // Ajouter les événements de survol pour les communautés
+            if (marker.type === 'community') {
+              el.addEventListener('mouseenter', () => {
+                setHoveredCommunity(marker);
               });
+
+              el.addEventListener('mouseleave', () => {
+                // Délai pour éviter la fermeture immédiate
+                setTimeout(() => {
+                  setHoveredCommunity(null);
+                }, 150);
+              });
+            }
 
             markersRef.current.push(mapboxMarker);
           }
@@ -946,26 +1028,40 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
           .addTo(mapRef.current!);
 
          // Ajouter l'événement de clic pour ouvrir le popup
-          el.addEventListener('click', () => {
-            // Fermer le popup existant
-            if (popupRef.current) {
-              popupRef.current.remove();
-            }
-            
+         el.addEventListener('click', () => {
+           // Fermer le popup existant
+           if (popupRef.current) {
+             popupRef.current.remove();
+           }
+           
            // Créer le nouveau popup au clic
-            const popup = new mapboxgl.Popup({
+           const popup = new mapboxgl.Popup({
              closeButton: true,
-              closeOnClick: false,
+             closeOnClick: false,
              closeOnMove: true,
-              offset: 15,
-              className: 'custom-popup'
-            })
-              .setLngLat([marker.longitude, marker.latitude])
-              .setHTML(createPopupContent(marker))
-              .addTo(mapRef.current!);
-            
-            popupRef.current = popup;
-          });
+             offset: 15,
+             className: 'custom-popup'
+           })
+             .setLngLat([marker.longitude, marker.latitude])
+             .setHTML(createPopupContent(marker))
+             .addTo(mapRef.current!);
+           
+           popupRef.current = popup;
+         });
+
+         // Ajouter les événements de survol pour les communautés
+         if (marker.type === 'community') {
+           el.addEventListener('mouseenter', () => {
+             setHoveredCommunity(marker);
+           });
+
+           el.addEventListener('mouseleave', () => {
+             // Délai pour éviter la fermeture immédiate
+             setTimeout(() => {
+               setHoveredCommunity(null);
+             }, 150);
+           });
+         }
 
         markersRef.current.push(mapboxMarker);
       }
@@ -1127,6 +1223,18 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
            .marker:hover svg {
              transform: scale(1.1);
            }
+
+           /* Animation pour le popup de survol des communautés */
+           @keyframes fadeInSlide {
+             from {
+               opacity: 0;
+               transform: translateY(-10px) translateX(-10px);
+             }
+             to {
+               opacity: 1;
+               transform: translateY(0) translateX(0);
+             }
+           }
         `}
       </style>
       <div
@@ -1134,6 +1242,17 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
         style={{ height: typeof height === 'number' ? `${height}px` : height }}
         className="rounded-xl overflow-hidden border border-gray-200 relative"
       >
+        {/* Popup de survol pour les communautés */}
+        {hoveredCommunity && (
+          <div 
+            className="absolute top-4 left-4 z-50 pointer-events-none"
+            style={{
+              animation: 'fadeInSlide 0.3s ease-out'
+            }}
+          >
+            <div dangerouslySetInnerHTML={{ __html: createCommunityHoverPopup(hoveredCommunity) }} />
+          </div>
+        )}
       </div>
     </>
   );
