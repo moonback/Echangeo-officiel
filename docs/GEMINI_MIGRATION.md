@@ -2,7 +2,7 @@
 
 ## Résumé des changements
 
-Cette migration remplace l'API Mistral par l'API Google Gemini dans l'application TrocAll.
+Cette migration remplace l'API Mistral par l'API Google Gemini dans l'application Échangeo.
 
 ## Changements effectués
 

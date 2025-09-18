@@ -1,8 +1,8 @@
-# Améliorations Design UI/UX - TrocAll 🎨
+# Améliorations Design UI/UX - Échangeo 🎨
 
 ## Vue d'ensemble
 
-Ce document présente les améliorations design appliquées aux pages principales de TrocAll pour créer une expérience utilisateur moderne, fluide et engageante.
+Ce document présente les améliorations design appliquées aux pages principales de Échangeo pour créer une expérience utilisateur moderne, fluide et engageante.
 
 ## 🎯 Philosophie Design
 
@@ -202,4 +202,4 @@ whileTap={{ scale: 0.98 }}
 
 ---
 
-Ces améliorations transforment TrocAll en une application moderne et engageante, alignée sur les standards de design contemporains. 🎨✨
+Ces améliorations transforment Échangeo en une application moderne et engageante, alignée sur les standards de design contemporains. 🎨✨

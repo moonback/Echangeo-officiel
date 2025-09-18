@@ -1,4 +1,4 @@
--- TrocAll Database Schema
+-- Échangeo Database Schema
 -- ⚠️ WARNING: RLS is disabled for MVP purposes. Enable it in production!
 
 -- Enable UUID extension

@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble
 
-Le système de détection de catégories a été considérablement amélioré pour offrir une précision maximale dans la classification automatique des objets TrocAll.
+Le système de détection de catégories a été considérablement amélioré pour offrir une précision maximale dans la classification automatique des objets Échangeo.
 
 ## 🚀 Nouvelles Fonctionnalités
 
@@ -179,7 +179,7 @@ import SmartCategorySelector from '../components/SmartCategorySelector';
 - [ ] **Validation communautaire** des classifications
 
 ### Moyen Terme
-- [ ] **Modèle IA spécialisé** pour les objets TrocAll
+- [ ] **Modèle IA spécialisé** pour les objets Échangeo
 - [ ] **Analyse multi-images** pour validation croisée
 - [ ] **Détection de sous-catégories** automatique
 - [ ] **Intégration avec les données** de la communauté
@@ -257,4 +257,4 @@ const useCategoryDetection = (title, description) => {
 - **Satisfaction** : +35% d'approbation utilisateur
 - **Efficacité** : +40% de réduction des erreurs
 
-Cette implémentation positionne TrocAll comme une plateforme avec la **détection de catégories la plus précise** du marché, offrant une expérience utilisateur optimale et des résultats fiables ! 🎉
+Cette implémentation positionne Échangeo comme une plateforme avec la **détection de catégories la plus précise** du marché, offrant une expérience utilisateur optimale et des résultats fiables ! 🎉

@@ -101,7 +101,7 @@ const AIFeaturesPage: React.FC = () => {
           </h1>
         </div>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Découvrez comment l'intelligence artificielle révolutionne votre expérience TrocAll
+          Découvrez comment l'intelligence artificielle révolutionne votre expérience Échangeo
         </p>
         
         {/* Statut de l'IA */}

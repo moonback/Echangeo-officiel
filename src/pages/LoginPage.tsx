@@ -97,7 +97,7 @@ const LoginPage: React.FC = () => {
             transition={{ delay: 0.4, duration: 0.5 }}
             className="text-3xl font-bold text-gray-900 mb-3 gradient-text"
           >
-            TrocAll
+            Échangeo
           </motion.h1>
           
           <motion.p 

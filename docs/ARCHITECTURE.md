@@ -1,8 +1,8 @@
-# Architecture Technique - TrocAll
+# Architecture Technique - Échangeo
 
 ## Vue d'ensemble
 
-TrocAll est une application web moderne construite avec une architecture full-stack utilisant React et Supabase. L'application suit les principes de l'architecture hexagonale avec une séparation claire entre les couches de présentation, logique métier et données.
+Échangeo est une application web moderne construite avec une architecture full-stack utilisant React et Supabase. L'application suit les principes de l'architecture hexagonale avec une séparation claire entre les couches de présentation, logique métier et données.
 
 ## Architecture Générale
 
@@ -413,7 +413,7 @@ VITE_MAPBOX_TOKEN=your-mapbox-token
 
 ## Conclusion
 
-L'architecture de TrocAll est conçue pour être :
+L'architecture de Échangeo est conçue pour être :
 - **Modulaire** : Composants réutilisables
 - **Scalable** : Architecture cloud-native
 - **Maintenable** : Code TypeScript strict

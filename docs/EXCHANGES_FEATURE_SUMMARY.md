@@ -2,7 +2,7 @@
 
 ## 🎯 **Nouvelle fonctionnalité : Gestion des Échanges & Troc**
 
-J'ai ajouté une section complète pour gérer les échanges et trocs dans votre application TrocAll.
+J'ai ajouté une section complète pour gérer les échanges et trocs dans votre application Échangeo.
 
 ### 📱 **Page RequestsPage.tsx (Améliorée)**
 
@@ -100,6 +100,6 @@ J'ai ajouté une section complète pour gérer les échanges et trocs dans votre
 
 ---
 
-**La section Échanges est maintenant pleinement intégrée dans votre application TrocAll ! 🎉**
+**La section Échanges est maintenant pleinement intégrée dans votre application Échangeo ! 🎉**
 
 Les utilisateurs peuvent facilement gérer tous leurs échanges et trocs depuis la topbar et la bottom navigation, avec une interface claire et intuitive.

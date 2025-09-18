@@ -1,12 +1,12 @@
-# TrocAll 🌱 - La plateforme communautaire pour des échanges locaux et durables
+# Échangeo 🌱 - La plateforme communautaire pour des échanges locaux et durables
 
-![TrocAll Logo](https://your-image-url/logo.png) <!-- TODO: Ajouter un logo ou une capture d'écran ici -->
+![Échangeo Logo](https://your-image-url/logo.png) <!-- TODO: Ajouter un logo ou une capture d'écran ici -->
 
 ## ✨ Présentation
 
-**TrocAll** est une plateforme communautaire innovante dédiée au **partage, à l'emprunt et à l'échange d'objets du quotidien entre voisins**. Notre mission est de révolutionner la consommation en favorisant l'économie circulaire, le désencombrement et le renforcement des liens sociaux au sein des quartiers. Grâce à l'intégration de l'**Intelligence Artificielle** et de la **géolocalisation**, TrocAll rend le partage d'objets plus simple, plus intelligent et plus convivial que jamais.
+**Échangeo** est une plateforme communautaire innovante dédiée au **partage, à l'emprunt et à l'échange d'objets du quotidien entre voisins**. Notre mission est de révolutionner la consommation en favorisant l'économie circulaire, le désencombrement et le renforcement des liens sociaux au sein des quartiers. Grâce à l'intégration de l'**Intelligence Artificielle** et de la **géolocalisation**, Échangeo rend le partage d'objets plus simple, plus intelligent et plus convivial que jamais.
 
-### Pourquoi TrocAll ?
+### Pourquoi Échangeo ?
 
 *   **Économisez de l'argent :** Accédez à une multitude d'objets sans dépenser.
 *   **Réduisez votre empreinte écologique :** Donnez une seconde vie aux objets et participez à une consommation plus responsable.
@@ -82,8 +82,8 @@ Assurez-vous d'avoir installé :
 
 1.  **Cloner le dépôt :**
     ```bash
-    git clone https://github.com/moonback/TrocAll-officiel.git
-    cd TrocAll-officiel
+    git clone https://github.com/moonback/Échangeo-officiel.git
+    cd Échangeo-officiel
     ```
 
 2.  **Installer les dépendances :**
@@ -192,7 +192,7 @@ Ce projet est distribué sous la licence MIT. Voir le fichier [LICENSE](./LICENS
 
 ## 🙏 Remerciements
 
-Nous tenons à remercier les projets et services open source qui rendent TrocAll possible :
+Nous tenons à remercier les projets et services open source qui rendent Échangeo possible :
 *   [Supabase](https://supabase.com)
 *   [Google Gemini](https://ai.google.dev)
 *   [Mapbox](https://mapbox.com)
@@ -202,6 +202,6 @@ Nous tenons à remercier les projets et services open source qui rendent TrocAll
 
 ---
 
-**TrocAll** - Ensemble, donnons une nouvelle vie à nos objets et à nos quartiers ! 🌱
+**Échangeo** - Ensemble, donnons une nouvelle vie à nos objets et à nos quartiers ! 🌱
 
 

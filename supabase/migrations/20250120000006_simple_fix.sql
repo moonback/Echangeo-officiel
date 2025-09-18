@@ -43,5 +43,5 @@ UPDATE communities SET activity_level = 'active' WHERE name IN ('Montmartre', 'M
 UPDATE communities SET activity_level = 'moderate' WHERE name IN ('Belleville', 'Canal Saint-Martin');
 
 -- Commentaire
-COMMENT ON TABLE communities IS 'Quartiers de la plateforme TrocAll';
+COMMENT ON TABLE communities IS 'Quartiers de la plateforme Échangeo';
 COMMENT ON TABLE community_stats IS 'Statistiques des quartiers';

@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble
 
-Cette implémentation étend TrocAll avec un système de **communautés de quartier** organisées géographiquement, permettant aux utilisateurs de créer et rejoindre des communautés locales pour faciliter les échanges et renforcer les liens sociaux.
+Cette implémentation étend Échangeo avec un système de **communautés de quartier** organisées géographiquement, permettant aux utilisateurs de créer et rejoindre des communautés locales pour faciliter les échanges et renforcer les liens sociaux.
 
 ## 🎯 Fonctionnalités implémentées
 
@@ -218,4 +218,4 @@ community_stats (id, community_id, total_members, active_members, total_items, t
 
 ---
 
-Cette implémentation pose les fondations solides pour un système de communautés de quartier robuste et évolutif, parfaitement intégré à l'écosystème TrocAll existant. 🚀
+Cette implémentation pose les fondations solides pour un système de communautés de quartier robuste et évolutif, parfaitement intégré à l'écosystème Échangeo existant. 🚀

@@ -2,7 +2,7 @@
 
 ## 🎯 **Nouvelle fonctionnalité : Choix de Quartier lors de l'Ajout d'Objet**
 
-J'ai ajouté une fonctionnalité complète pour permettre aux utilisateurs de choisir un quartier lors de l'ajout d'un objet dans votre application TrocAll.
+J'ai ajouté une fonctionnalité complète pour permettre aux utilisateurs de choisir un quartier lors de l'ajout d'un objet dans votre application Échangeo.
 
 ### 📱 **Page CreateItemPage.tsx (Améliorée)**
 
@@ -160,6 +160,6 @@ const getCurrentLocation = () => {
 
 ---
 
-**La sélection de quartier est maintenant pleinement intégrée dans votre application TrocAll ! 🎉**
+**La sélection de quartier est maintenant pleinement intégrée dans votre application Échangeo ! 🎉**
 
 Les utilisateurs peuvent facilement choisir un quartier lors de l'ajout d'un objet, avec une interface intuitive et des informations détaillées sur chaque quartier disponible.

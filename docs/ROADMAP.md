@@ -1,4 +1,4 @@
-# Roadmap TrocAll 🗺️
+# Roadmap Échangeo 🗺️
 
 ## Phase MVP (Actuelle) ✅
 
@@ -119,7 +119,7 @@
 - 📱 Mode hors-ligne
 
 #### 💰 **Système de Crédits Virtuels**
-- 🪙 Monnaie virtuelle TrocAll
+- 🪙 Monnaie virtuelle Échangeo
 - 💳 Système de paiement intégré
 - 🎁 Récompenses monétaires
 - 💰 Assurance des objets de valeur
@@ -320,4 +320,4 @@
 
 Cette roadmap évolue selon les retours utilisateurs et les opportunités du marché. Votre feedback est essentiel pour orienter le développement ! 🌱
 
-**TrocAll** - Construisons ensemble l'avenir du partage local ! 🚀
+**Échangeo** - Construisons ensemble l'avenir du partage local ! 🚀

@@ -17,9 +17,9 @@ const LandingPage: React.FC = () => {
       <header className="relative max-w-7xl mx-auto px-6 py-8 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3 group">
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-500/25 group-hover:scale-105 transition-transform duration-200">
-            <img src="/vite.svg" alt="TrocAll" className="w-5 h-5 text-white" />
+            <img src="/vite.svg" alt="Échangeo" className="w-5 h-5 text-white" />
           </div>
-          <span className="font-bold text-xl text-gray-900 group-hover:text-brand-600 transition-colors duration-200">TrocAll</span>
+          <span className="font-bold text-xl text-gray-900 group-hover:text-brand-600 transition-colors duration-200">Échangeo</span>
         </Link>
         <div className="flex items-center gap-4">
           <Link to="/pro" className="text-sm font-semibold text-gray-700 hover:text-brand-600 transition-colors duration-200">Pro</Link>
@@ -53,7 +53,7 @@ const LandingPage: React.FC = () => {
                 transition={{ delay: 0.4, duration: 0.6 }}
                 className="text-xl text-gray-600 leading-relaxed"
               >
-                Économisez, désencombrez et créez du lien social. Rejoignez la communauté TrocAll et découvrez une nouvelle façon de consommer.
+                Économisez, désencombrez et créez du lien social. Rejoignez la communauté Échangeo et découvrez une nouvelle façon de consommer.
               </motion.p>
               
               <motion.div 
@@ -137,7 +137,7 @@ const LandingPage: React.FC = () => {
       </main>
 
       <footer className="max-w-7xl mx-auto px-4 py-10 text-sm text-gray-600 flex items-center justify-between">
-        <span>© {new Date().getFullYear()} TrocAll</span>
+        <span>© {new Date().getFullYear()} Échangeo</span>
         <Link to="/pro" className="inline-flex items-center gap-1 hover:text-gray-900">
           <Sparkles className="w-4 h-4" /> Offres Pro
         </Link>

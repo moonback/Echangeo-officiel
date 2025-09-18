@@ -170,7 +170,7 @@ VITE_GEMINI_API_KEY=votre_cle_api_gemini_ici
 
 ### 🎉 **Résultat**
 
-La fonctionnalité de suggestion de quartiers avec IA est maintenant pleinement intégrée dans votre application TrocAll ! 
+La fonctionnalité de suggestion de quartiers avec IA est maintenant pleinement intégrée dans votre application Échangeo ! 
 
 Les utilisateurs peuvent :
 - ✅ Découvrir des quartiers en saisissant un code postal ou une ville

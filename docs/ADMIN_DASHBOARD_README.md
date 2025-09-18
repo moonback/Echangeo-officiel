@@ -1,8 +1,8 @@
-# Tableau de Bord Administrateur TrocAll
+# Tableau de Bord Administrateur Échangeo
 
 ## Vue d'ensemble
 
-Le tableau de bord administrateur est une interface complète et moderne pour gérer la plateforme TrocAll. Il offre une interface utilisateur intuitive avec des composants réutilisables et une architecture maintenable.
+Le tableau de bord administrateur est une interface complète et moderne pour gérer la plateforme Échangeo. Il offre une interface utilisateur intuitive avec des composants réutilisables et une architecture maintenable.
 
 ## Fonctionnalités
 

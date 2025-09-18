@@ -1,4 +1,4 @@
-# Implémentation de l'Analyse IA - TrocAll 🤖
+# Implémentation de l'Analyse IA - Échangeo 🤖
 
 ## Vue d'ensemble
 
@@ -8,7 +8,7 @@ Le système d'analyse IA utilise l'API Mistral pour analyser automatiquement les
 
 ### 1. **Reconnaissance d'Objets Automatique**
 - **Titre intelligent** : Génération automatique de titres descriptifs
-- **Catégorisation** : Classification automatique dans les 9 catégories TrocAll
+- **Catégorisation** : Classification automatique dans les 9 catégories Échangeo
 - **Détection d'état** : Évaluation visuelle de la condition (excellent, bon, correct, usé)
 - **Extraction de marque/modèle** : Reconnaissance des marques et modèles visibles
 - **Estimation de valeur** : Estimation du prix basée sur l'analyse visuelle
@@ -76,13 +76,13 @@ VITE_MISTRAL_API_KEY=your_mistral_api_key
 Le système utilise un prompt structuré qui demande à Mistral de :
 - Analyser l'image avec précision
 - Retourner un JSON strictement formaté
-- Respecter les catégories TrocAll
+- Respecter les catégories Échangeo
 - Estimer les valeurs pour le marché français
 - Générer des tags pertinents en français
 
 ### Validation des Réponses
 - **Nettoyage automatique** des réponses IA
-- **Validation des catégories** contre l'enum TrocAll
+- **Validation des catégories** contre l'enum Échangeo
 - **Limitation des caractères** pour éviter les débordements
 - **Fallbacks** en cas de données invalides
 
@@ -122,7 +122,7 @@ Le système utilise un prompt structuré qui demande à Mistral de :
 - **Suggestions contextuelles** améliorées
 
 ### Moyen Terme
-- **Fine-tuning** du modèle sur les objets TrocAll
+- **Fine-tuning** du modèle sur les objets Échangeo
 - **Analyse de sentiment** des descriptions
 - **Détection de défauts** automatique
 - **Recommandations de prix** basées sur l'historique
@@ -150,4 +150,4 @@ Le système utilise un prompt structuré qui demande à Mistral de :
 
 ---
 
-Cette implémentation positionne TrocAll comme une plateforme innovante utilisant l'IA pour simplifier l'expérience utilisateur, tout en maintenant la flexibilité et le contrôle manuel. 🎯
+Cette implémentation positionne Échangeo comme une plateforme innovante utilisant l'IA pour simplifier l'expérience utilisateur, tout en maintenant la flexibilité et le contrôle manuel. 🎯

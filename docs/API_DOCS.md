@@ -1,8 +1,8 @@
-# Documentation API - TrocAll
+# Documentation API - Échangeo
 
 ## Vue d'ensemble
 
-TrocAll utilise Supabase comme Backend-as-a-Service, fournissant une API REST complète avec authentification, base de données PostgreSQL, storage et realtime. Cette documentation couvre les endpoints principaux et les patterns d'utilisation.
+Échangeo utilise Supabase comme Backend-as-a-Service, fournissant une API REST complète avec authentification, base de données PostgreSQL, storage et realtime. Cette documentation couvre les endpoints principaux et les patterns d'utilisation.
 
 ## Configuration
 
@@ -625,4 +625,4 @@ const { data } = await supabase
   .order('created_at', { ascending: false });
 ```
 
-Cette documentation couvre les principaux patterns d'utilisation de l'API TrocAll. Pour plus de détails sur des endpoints spécifiques, consultez la documentation Supabase officielle.
+Cette documentation couvre les principaux patterns d'utilisation de l'API Échangeo. Pour plus de détails sur des endpoints spécifiques, consultez la documentation Supabase officielle.

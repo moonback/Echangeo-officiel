@@ -2,7 +2,7 @@
 
 ## 🎯 **Nouvelle fonctionnalité : Page des Messages**
 
-J'ai créé une section complète pour voir et gérer les messages reçus dans votre application TrocAll.
+J'ai créé une section complète pour voir et gérer les messages reçus dans votre application Échangeo.
 
 ### 📱 **Page MessagesPage.tsx**
 
@@ -101,6 +101,6 @@ Les utilisateurs peuvent maintenant :
 
 ---
 
-**La section Messages est maintenant pleinement intégrée dans votre application TrocAll ! 🎉**
+**La section Messages est maintenant pleinement intégrée dans votre application Échangeo ! 🎉**
 
 Les utilisateurs peuvent facilement voir et gérer tous leurs messages depuis la topbar et la bottom navigation.

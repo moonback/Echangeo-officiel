@@ -213,7 +213,7 @@ const Topbar: React.FC = () => {
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center">
                   <Package className="w-5 h-5 text-white" />
                 </div>
-                <span className="font-bold text-lg text-gray-900">TrocAll</span>
+                <span className="font-bold text-lg text-gray-900">Échangeo</span>
               </Link>
               <button onClick={closeMobile} className="p-2 rounded-lg hover:bg-gray-100"><X size={20} /></button>
             </div>
@@ -307,7 +307,7 @@ const Topbar: React.FC = () => {
                 <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-500/25 group-hover:scale-105 transition-transform">
                   <Package className="w-5 h-5 text-white" />
                 </div>
-                <span className="font-bold text-xl text-gray-900 group-hover:text-brand-600 transition-colors">TrocAll</span>
+                <span className="font-bold text-xl text-gray-900 group-hover:text-brand-600 transition-colors">Échangeo</span>
               </Link>
               <nav className="flex items-center gap-1 text-sm text-gray-700">
                 {mainNavLinks.map(({ to, label }) => (
@@ -345,7 +345,7 @@ const Topbar: React.FC = () => {
                   <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center">
                     <Package className="w-5 h-5 text-white" />
                   </div>
-                  <span className="font-bold text-lg text-gray-900">TrocAll</span>
+                  <span className="font-bold text-lg text-gray-900">Échangeo</span>
               </Link>
               <div className="flex items-center gap-1">
                   <button onClick={() => setIsSearchOpen(true)} className="p-2.5 rounded-lg hover:bg-gray-100 text-gray-600"><Search size={20} /></button>

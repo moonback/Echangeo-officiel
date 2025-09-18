@@ -1,8 +1,8 @@
-# Assistant IA Conversationnel - TrocAll 🤖💬
+# Assistant IA Conversationnel - Échangeo 🤖💬
 
 ## Vue d'ensemble
 
-Implémentation d'un **assistant IA conversationnel complet** utilisant Mistral AI pour améliorer la communication entre voisins dans TrocAll. Cette fonctionnalité révolutionnaire transforme l'expérience de messagerie en ajoutant de l'intelligence artificielle pour faciliter les échanges.
+Implémentation d'un **assistant IA conversationnel complet** utilisant Mistral AI pour améliorer la communication entre voisins dans Échangeo. Cette fonctionnalité révolutionnaire transforme l'expérience de messagerie en ajoutant de l'intelligence artificielle pour faciliter les échanges.
 
 ## 🚀 Fonctionnalités Implémentées
 
@@ -230,7 +230,7 @@ const useNewAIFeature = () => {
 
 ---
 
-Cette implémentation positionne TrocAll comme la **première plateforme d'économie collaborative avec IA conversationnelle intégrée**, offrant une expérience utilisateur révolutionnaire dans le domaine. 🎯✨
+Cette implémentation positionne Échangeo comme la **première plateforme d'économie collaborative avec IA conversationnelle intégrée**, offrant une expérience utilisateur révolutionnaire dans le domaine. 🎯✨
 
 ## 🎉 **Résumé des Nouvelles Fonctionnalités IA**
 

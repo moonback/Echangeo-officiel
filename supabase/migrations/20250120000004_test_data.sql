@@ -135,7 +135,7 @@ INSERT INTO community_discussions (id, community_id, title, content, author_id, 
 );
 
 -- Commentaires sur les tables
-COMMENT ON TABLE communities IS 'Quartiers de la plateforme TrocAll';
+COMMENT ON TABLE communities IS 'Quartiers de la plateforme Échangeo';
 COMMENT ON TABLE community_members IS 'Membres des quartiers avec leurs rôles';
 COMMENT ON TABLE community_events IS 'Événements organisés dans les quartiers';
 COMMENT ON TABLE community_discussions IS 'Discussions entre membres des quartiers';

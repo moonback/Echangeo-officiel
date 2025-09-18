@@ -122,7 +122,7 @@ npx supabase db push
 
 ## 🎉 **Résultat**
 
-L'application TrocAll avec les fonctionnalités de quartiers est maintenant :
+L'application Échangeo avec les fonctionnalités de quartiers est maintenant :
 - ✅ **Sans erreurs** DOM et base de données
 - ✅ **Fonctionnelle** pour rejoindre/quitter des quartiers
 - ✅ **Stable** avec une interface utilisateur propre

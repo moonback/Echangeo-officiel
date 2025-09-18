@@ -1,15 +1,15 @@
-# Analyse du projet TrocAll-officiel
+# Analyse du projet Échangeo-officiel
 
 ## 1. Compréhension du projet
 
 ### Objectif principal
-L'objectif de TrocAll est de faciliter le **prêt, l'emprunt et l'échange d'objets entre voisins**. L'application vise à promouvoir une consommation plus responsable en réduisant la surconsommation, en permettant aux utilisateurs d'économiser de l'argent et en renforçant les liens sociaux au sein des communautés locales.
+L'objectif de Échangeo est de faciliter le **prêt, l'emprunt et l'échange d'objets entre voisins**. L'application vise à promouvoir une consommation plus responsable en réduisant la surconsommation, en permettant aux utilisateurs d'économiser de l'argent et en renforçant les liens sociaux au sein des communautés locales.
 
 ### Public cible
 Le public cible est constitué des **résidents d'un même quartier ou d'une même localité** qui souhaitent partager des ressources matérielles. Cela inclut des individus soucieux de l'environnement, des personnes cherchant à réduire leurs dépenses, et ceux désireux de s'engager davantage dans leur communauté.
 
 ### Fonctionnalités actuelles (MVP)
-Le Minimum Viable Product (MVP) de TrocAll inclut les fonctionnalités suivantes :
+Le Minimum Viable Product (MVP) de Échangeo inclut les fonctionnalités suivantes :
 
 *   **Authentification** : Inscription (avec confirmation par e-mail), connexion et déconnexion sécurisées.
 *   **Gestion de profil** : Affichage et mise à jour des informations de base de l'utilisateur.
@@ -74,7 +74,7 @@ L'analyse des concurrents a permis d'identifier plusieurs plateformes de prêt, 
 
 ### Enseignements clés
 
-*   **Modèles économiques variés** : Les concurrents ont adopté des approches différentes pour la monétisation, allant de la location à l'abonnement en passant par la monnaie virtuelle. TrocAll, dans sa version actuelle, ne semble pas avoir de modèle de monétisation défini.
+*   **Modèles économiques variés** : Les concurrents ont adopté des approches différentes pour la monétisation, allant de la location à l'abonnement en passant par la monnaie virtuelle. Échangeo, dans sa version actuelle, ne semble pas avoir de modèle de monétisation défini.
 *   **Importance de la confiance et de la sécurité** : Des fonctionnalités comme les systèmes d'avis, les rappels et l'assistance en cas de problème sont essentielles pour rassurer les utilisateurs et encourager le partage.
 *   **Différenciation par l'expérience utilisateur** : Poppins se démarque par son design moderne et son expérience utilisateur ludique, tandis que Partage Club met l'accent sur la simplicité et la sécurité. MyTroc mise sur l'aspect communautaire et la gamification.
 *   **Innovation technologique** : L'utilisation de l'IA par Poppins pour générer des images d'annonces est une fonctionnalité innovante qui simplifie le processus de création d'annonces et améliore l'expérience utilisateur.
@@ -84,7 +84,7 @@ L'analyse des concurrents a permis d'identifier plusieurs plateformes de prêt, 
 
 ## 4. Recommandations d'amélioration
 
-Sur la base de l'analyse du projet TrocAll et du benchmarking des applications similaires, voici une série de recommandations visant à enrichir l'expérience utilisateur, innover sur le plan fonctionnel et renforcer la proposition de valeur du service.
+Sur la base de l'analyse du projet Échangeo et du benchmarking des applications similaires, voici une série de recommandations visant à enrichir l'expérience utilisateur, innover sur le plan fonctionnel et renforcer la proposition de valeur du service.
 
 ### 4.1. Fonctionnalités innovantes et pertinentes
 
@@ -109,7 +109,7 @@ Sur la base de l'analyse du projet TrocAll et du benchmarking des applications s
     *   **Exemple concret** : Un groupe "Parents du Parc Central" où les membres peuvent échanger des jouets, des vêtements pour enfants ou des équipements de puériculture.
 
 *   **Monétisation optionnelle (Monétisation)**
-    *   **Description** : Introduire une option pour les propriétaires de proposer leurs objets à la location pour une somme modique (ex: 1€/jour pour une perceuse), en plus du prêt gratuit. TrocAll pourrait prendre une petite commission. Cela offrirait une flexibilité et un potentiel de revenus pour les utilisateurs, tout en diversifiant l'offre.
+    *   **Description** : Introduire une option pour les propriétaires de proposer leurs objets à la location pour une somme modique (ex: 1€/jour pour une perceuse), en plus du prêt gratuit. Échangeo pourrait prendre une petite commission. Cela offrirait une flexibilité et un potentiel de revenus pour les utilisateurs, tout en diversifiant l'offre.
     *   **Exemple concret** : Lors de la création d'une annonce, le propriétaire peut choisir entre "Prêt gratuit" et "Location (prix/jour)". Un système de paiement sécurisé serait intégré (ex: Stripe).
 
 *   **Notifications intelligentes (UX, Technique)**
@@ -164,7 +164,7 @@ Sur la base de l'analyse du projet TrocAll et du benchmarking des applications s
 
 ### 5. Exemples concrets (Maquettes conceptuelles, Workflows utilisateurs, Idées de micro-interactions, Inspirations d’apps similaires)
 
-Cette section sera intégrée dans le rapport final, en illustrant les recommandations avec des maquettes conceptuelles (wireframes ou mockups simples), des descriptions de workflows utilisateurs pas à pas, et des exemples de micro-interactions. Pour les inspirations, les applications comme Poppins et Partage Club serviront de base, en soulignant les éléments réussis et les opportunités d'amélioration pour TrocAll.
+Cette section sera intégrée dans le rapport final, en illustrant les recommandations avec des maquettes conceptuelles (wireframes ou mockups simples), des descriptions de workflows utilisateurs pas à pas, et des exemples de micro-interactions. Pour les inspirations, les applications comme Poppins et Partage Club serviront de base, en soulignant les éléments réussis et les opportunités d'amélioration pour Échangeo.
 
 *   **Workflow de demande de prêt amélioré** :
     1.  L'utilisateur trouve un objet et clique sur "Demander à emprunter".
@@ -184,4 +184,4 @@ Cette section sera intégrée dans le rapport final, en illustrant les recommand
     *   **Airbnb** : Pour la gestion des calendriers de réservation et la clarté des informations sur les profils des hôtes/voyageurs.
     *   **Vinted/Leboncoin** : Pour la facilité de création d'annonces et les filtres de recherche avancés.
 
-Ces recommandations visent à transformer TrocAll en une plateforme plus robuste, engageante et différenciée, capable de créer une forte valeur ajoutée pour ses utilisateurs et de se positionner comme un acteur majeur de l'économie du partage local.
+Ces recommandations visent à transformer Échangeo en une plateforme plus robuste, engageante et différenciée, capable de créer une forte valeur ajoutée pour ses utilisateurs et de se positionner comme un acteur majeur de l'économie du partage local.

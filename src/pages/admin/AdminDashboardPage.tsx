@@ -99,7 +99,7 @@ export default function AdminDashboardPage() {
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Tableau de bord</h1>
-          <p className="text-gray-600 mt-2">Vue d'ensemble de la plateforme TrocAll</p>
+          <p className="text-gray-600 mt-2">Vue d'ensemble de la plateforme Échangeo</p>
         </div>
 
         {/* Stats Cards */}

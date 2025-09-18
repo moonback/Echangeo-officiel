@@ -97,7 +97,7 @@ const CreateItemPage: React.FC = () => {
         setIsSearchingAddress(true);
         const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(q)}&addressdetails=1&limit=5`; 
         const res = await fetch(url, {
-          headers: { 'Accept-Language': 'fr', 'User-Agent': 'TrocAll App (contact@example.com)' },
+          headers: { 'Accept-Language': 'fr', 'User-Agent': 'Échangeo App (contact@example.com)' },
           signal: controller.signal,
         });
         const json = await res.json();
@@ -277,7 +277,7 @@ const CreateItemPage: React.FC = () => {
         {
           headers: {
             'Accept-Language': 'fr',
-            'User-Agent': 'TrocAll App (contact@example.com)'
+            'User-Agent': 'Échangeo App (contact@example.com)'
           }
         }
       );

@@ -68,7 +68,7 @@ Critères de conflit :
 Suggestions de résolution :
 - Solutions pratiques et réalistes
 - Ton diplomatique et bienveillant
-- Rappel des bonnes pratiques TrocAll`;
+- Rappel des bonnes pratiques Échangeo`;
 
     const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
       method: 'POST',
@@ -164,7 +164,7 @@ ${context ? `Contexte : ${context}` : ''}
 Générez un message qui :
 - Est diplomatique et bienveillant
 - Propose des solutions concrètes
-- Rappelle l'esprit communautaire de TrocAll
+- Rappelle l'esprit communautaire de Échangeo
 - Encourage la communication positive
 - Maximum 200 caractères
 

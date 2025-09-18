@@ -61,7 +61,7 @@ const CreateCommunityPage: React.FC = () => {
         {
           headers: {
             'Accept-Language': 'fr',
-            'User-Agent': 'TrocAll App (contact@example.com)'
+            'User-Agent': 'Échangeo App (contact@example.com)'
           }
         }
       );

@@ -1,6 +1,6 @@
-# Guide de Contribution TrocAll 🤝
+# Guide de Contribution Échangeo 🤝
 
-Merci de votre intérêt pour contribuer à TrocAll ! Ce guide vous aidera à comprendre comment participer au développement de la plateforme.
+Merci de votre intérêt pour contribuer à Échangeo ! Ce guide vous aidera à comprendre comment participer au développement de la plateforme.
 
 ## 📋 Table des Matières
 
@@ -43,11 +43,11 @@ Nous nous engageons à créer un environnement accueillant et inclusif pour tous
 ```bash
 # Fork le repository sur GitHub
 # Puis clonez votre fork
-git clone https://github.com/VOTRE-USERNAME/trocall.git
-cd trocall
+git clone https://github.com/VOTRE-USERNAME/Échangeo.git
+cd Échangeo
 
 # Ajoutez le repository original comme remote
-git remote add upstream https://github.com/ORIGINAL-OWNER/trocall.git
+git remote add upstream https://github.com/ORIGINAL-OWNER/Échangeo.git
 ```
 
 ### 2. Configuration de l'Environnement
@@ -248,7 +248,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
 ### 1. Planifier votre Contribution
 
-- 📋 Consultez les [Issues](https://github.com/ORIGINAL-OWNER/trocall/issues) existantes
+- 📋 Consultez les [Issues](https://github.com/ORIGINAL-OWNER/Échangeo/issues) existantes
 - 💬 Discutez de votre idée dans les discussions GitHub
 - 🎯 Assurez-vous que votre contribution s'aligne avec la roadmap
 
@@ -548,9 +548,9 @@ describe('ItemsPage Integration', () => {
 
 ### Communauté
 
-- 💬 [Discussions GitHub](https://github.com/ORIGINAL-OWNER/trocall/discussions)
-- 💬 [Discord Community](https://discord.gg/trocall)
-- 📧 [Email Support](mailto:support@trocall.app)
+- 💬 [Discussions GitHub](https://github.com/ORIGINAL-OWNER/Échangeo/discussions)
+- 💬 [Discord Community](https://discord.gg/Échangeo)
+- 📧 [Email Support](mailto:support@Échangeo.app)
 
 ## ❓ Questions et Support
 
@@ -563,16 +563,16 @@ describe('ItemsPage Integration', () => {
 
 ### Contact
 
-- 📧 **Email** : dev@trocall.app
-- 💬 **Discord** : [Serveur TrocAll](https://discord.gg/trocall)
-- 🐦 **Twitter** : [@TrocAllApp](https://twitter.com/TrocAllApp)
-- 💼 **LinkedIn** : [TrocAll](https://linkedin.com/company/trocall)
+- 📧 **Email** : dev@Échangeo.app
+- 💬 **Discord** : [Serveur Échangeo](https://discord.gg/Échangeo)
+- 🐦 **Twitter** : [@ÉchangeoApp](https://twitter.com/ÉchangeoApp)
+- 💼 **LinkedIn** : [Échangeo](https://linkedin.com/company/Échangeo)
 
 ## 🎉 Reconnaissance
 
 ### Contributeurs
 
-Nous reconnaissons tous les contributeurs qui aident à faire de TrocAll une meilleure plateforme :
+Nous reconnaissons tous les contributeurs qui aident à faire de Échangeo une meilleure plateforme :
 
 - 👨‍💻 **Développeurs** : Code, tests, documentation
 - 🎨 **Designers** : UI/UX, illustrations, branding
@@ -589,6 +589,6 @@ Nous reconnaissons tous les contributeurs qui aident à faire de TrocAll une mei
 
 ---
 
-Merci de contribuer à TrocAll ! Ensemble, nous construisons l'avenir du partage local. 🌱
+Merci de contribuer à Échangeo ! Ensemble, nous construisons l'avenir du partage local. 🌱
 
-**TrocAll** - Révolutionnons la consommation locale ensemble ! 🚀
+**Échangeo** - Révolutionnons la consommation locale ensemble ! 🚀

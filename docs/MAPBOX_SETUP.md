@@ -1,4 +1,4 @@
-# Configuration Mapbox pour TrocAll 🗺️
+# Configuration Mapbox pour Échangeo 🗺️
 
 ## Problème actuel
 

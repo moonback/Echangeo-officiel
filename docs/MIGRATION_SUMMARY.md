@@ -106,4 +106,4 @@ En cas de problème :
 
 **Migration terminée avec succès ! 🎉**
 
-Votre application TrocAll utilise maintenant Google Gemini au lieu de Mistral pour toutes les fonctionnalités IA.
+Votre application Échangeo utilise maintenant Google Gemini au lieu de Mistral pour toutes les fonctionnalités IA.

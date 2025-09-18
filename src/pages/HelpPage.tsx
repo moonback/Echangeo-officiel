@@ -17,7 +17,7 @@ const HelpPage: React.FC = () => {
     {
       icon: Users,
       question: "Comment fonctionne le système de voisinage ?",
-      answer: "TrocAll connecte les utilisateurs proches géographiquement pour faciliter les échanges locaux."
+      answer: "Échangeo connecte les utilisateurs proches géographiquement pour faciliter les échanges locaux."
     },
     {
       icon: Shield,
@@ -37,7 +37,7 @@ const HelpPage: React.FC = () => {
           Centre d'aide
         </h1>
         <p className="text-gray-600">
-          Trouvez des réponses à vos questions sur TrocAll
+          Trouvez des réponses à vos questions sur Échangeo
         </p>
       </motion.div>
 
@@ -51,11 +51,11 @@ const HelpPage: React.FC = () => {
         <div className="flex items-center mb-4">
           <Package className="w-8 h-8 text-blue-600 mr-3" />
           <h2 className="text-xl font-semibold text-blue-900">
-            Qu'est-ce que TrocAll ?
+            Qu'est-ce que Échangeo ?
           </h2>
         </div>
         <p className="text-blue-800 leading-relaxed">
-          TrocAll est une plateforme qui permet aux voisins de se prêter ou d'échanger des objets facilement. 
+          Échangeo est une plateforme qui permet aux voisins de se prêter ou d'échanger des objets facilement. 
           Notre mission est d'encourager la solidarité entre voisins, de réduire la consommation inutile et 
           de favoriser le partage plutôt que l'achat.
         </p>

@@ -1,8 +1,8 @@
-# Implémentation du système de troc - TrocAll
+# Implémentation du système de troc - Échangeo
 
 ## Vue d'ensemble
 
-Le système de troc a été implémenté avec succès dans l'application TrocAll, permettant aux utilisateurs de proposer des échanges définitifs d'objets ou services en plus des prêts temporaires existants.
+Le système de troc a été implémenté avec succès dans l'application Échangeo, permettant aux utilisateurs de proposer des échanges définitifs d'objets ou services en plus des prêts temporaires existants.
 
 ## Modifications apportées
 

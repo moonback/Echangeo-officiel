@@ -25,7 +25,7 @@ const ProPage: React.FC = () => {
 
         <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
           <div className="text-center max-w-2xl mx-auto">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">TrocAll Pro</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Échangeo Pro</h1>
             <p className="mt-3 text-gray-600">Des outils avancés pour associations, recycleries et pros du réemploi.</p>
           </div>
 

@@ -1,8 +1,8 @@
-# Schéma de Base de Données - TrocAll 🗄️
+# Schéma de Base de Données - Échangeo 🗄️
 
 ## Vue d'ensemble
 
-TrocAll utilise **PostgreSQL** via **Supabase** avec un schéma relationnel optimisé pour l'économie collaborative locale.
+Échangeo utilise **PostgreSQL** via **Supabase** avec un schéma relationnel optimisé pour l'économie collaborative locale.
 
 ## 📋 Tables Principales
 

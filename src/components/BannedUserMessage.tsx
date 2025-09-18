@@ -42,7 +42,7 @@ export default function BannedUserMessage({
             Compte suspendu
           </h1>
           <p className="text-red-100">
-            Votre accès à TrocAll a été temporairement restreint
+            Votre accès à Échangeo a été temporairement restreint
           </p>
         </div>
 

@@ -1,4 +1,4 @@
-# Analyse Complète du Dépôt GitHub TrocAll-officiel
+# Analyse Complète du Dépôt GitHub Échangeo-officiel
 
 
 
@@ -6,7 +6,7 @@
 
 ### 1.1. Stack Technologique
 
-Le projet TrocAll-officiel est une application web moderne construite avec une stack technologique robuste et orientée performance. Voici une décomposition des principales technologies utilisées :
+Le projet Échangeo-officiel est une application web moderne construite avec une stack technologique robuste et orientée performance. Voici une décomposition des principales technologies utilisées :
 
 #### Frontend
 
@@ -89,7 +89,7 @@ Le projet suit une architecture de type **SPA (Single Page Application)** avec u
 
 ## 2. Fonctionnalités
 
-Le projet TrocAll-officiel propose un ensemble riche de fonctionnalités, allant de la gestion des échanges d'objets à des outils d'administration avancés, en passant par des intégrations d'intelligence artificielle. Les fonctionnalités sont classées par modules pour une meilleure compréhension.
+Le projet Échangeo-officiel propose un ensemble riche de fonctionnalités, allant de la gestion des échanges d'objets à des outils d'administration avancés, en passant par des intégrations d'intelligence artificielle. Les fonctionnalités sont classées par modules pour une meilleure compréhension.
 
 ### 2.1. Fonctionnalités Présentes dans le Code
 
@@ -223,7 +223,7 @@ Cette estimation représente le coût de développement pour une première versi
 
 ## 4. Business Model Canvas
 
-Le projet TrocAll-officiel, en tant que plateforme d'échange d'objets entre particuliers, peut s'appuyer sur un modèle économique de type place de marché ou freemium. Voici une proposition de Business Model Canvas détaillé pour cette initiative.
+Le projet Échangeo-officiel, en tant que plateforme d'échange d'objets entre particuliers, peut s'appuyer sur un modèle économique de type place de marché ou freemium. Voici une proposition de Business Model Canvas détaillé pour cette initiative.
 
 ### 4.1. Segments Clients (Customer Segments)
 
@@ -317,13 +317,13 @@ Le projet TrocAll-officiel, en tant que plateforme d'échange d'objets entre par
 
 ## 5. Cahier des Charges Simplifié
 
-Ce document présente un cahier des charges simplifié pour le projet TrocAll-officiel, détaillant le contexte, les objectifs, les fonctionnalités, les exigences techniques, et les estimations de planning et de budget.
+Ce document présente un cahier des charges simplifié pour le projet Échangeo-officiel, détaillant le contexte, les objectifs, les fonctionnalités, les exigences techniques, et les estimations de planning et de budget.
 
 ### 5.1. Contexte et Objectifs du Projet
 
 #### 5.1.1. Contexte
 
-Dans un monde où la consommation de masse génère d'importants déchets et où les liens sociaux tendent à s'affaiblir, TrocAll-officiel propose une solution numérique pour favoriser l'économie circulaire et l'entraide locale. La plateforme vise à faciliter l'échange, le don et la réutilisation d'objets entre particuliers au sein de communautés de quartier, en s'appuyant sur les technologies modernes et l'intelligence artificielle.
+Dans un monde où la consommation de masse génère d'importants déchets et où les liens sociaux tendent à s'affaiblir, Échangeo-officiel propose une solution numérique pour favoriser l'économie circulaire et l'entraide locale. La plateforme vise à faciliter l'échange, le don et la réutilisation d'objets entre particuliers au sein de communautés de quartier, en s'appuyant sur les technologies modernes et l'intelligence artificielle.
 
 #### 5.1.2. Objectifs
 
@@ -465,13 +465,13 @@ Ce budget couvre uniquement le développement des fonctionnalités identifiées.
 
 ## 5. Cahier des Charges Simplifié
 
-Ce document présente un cahier des charges simplifié pour le projet TrocAll-officiel, détaillant le contexte, les objectifs, les fonctionnalités, les exigences techniques, et les estimations de planning et de budget.
+Ce document présente un cahier des charges simplifié pour le projet Échangeo-officiel, détaillant le contexte, les objectifs, les fonctionnalités, les exigences techniques, et les estimations de planning et de budget.
 
 ### 5.1. Contexte et Objectifs du Projet
 
 #### 5.1.1. Contexte
 
-Dans un monde où la consommation de masse génère d'importants déchets et où les liens sociaux tendent à s'affaiblir, TrocAll-officiel propose une solution numérique pour favoriser l'économie circulaire et l'entraide locale. La plateforme vise à faciliter l'échange, le don et la réutilisation d'objets entre particuliers au sein de communautés de quartier, en s'appuyant sur les technologies modernes et l'intelligence artificielle.
+Dans un monde où la consommation de masse génère d'importants déchets et où les liens sociaux tendent à s'affaiblir, Échangeo-officiel propose une solution numérique pour favoriser l'économie circulaire et l'entraide locale. La plateforme vise à faciliter l'échange, le don et la réutilisation d'objets entre particuliers au sein de communautés de quartier, en s'appuyant sur les technologies modernes et l'intelligence artificielle.
 
 #### 5.1.2. Objectifs
 
