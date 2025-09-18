@@ -27,6 +27,7 @@ import { getCategoryIcon, getCategoryLabel } from '../utils/categories';
 import { getOfferTypeIcon, getOfferTypeLabel } from '../utils/offerTypes';
 import { useAuthStore } from '../store/authStore';
 import { useProfile } from '../hooks/useProfiles';
+import { useCommunity } from '../hooks/useCommunities';
 import Button from '../components/ui/Button';
 import CompatibilityScore from '../components/CompatibilityScore';
 import Badge from '../components/ui/Badge';
@@ -38,6 +39,9 @@ const ItemDetailPage: React.FC = () => {
   const { data: item, isLoading } = useItem(id!);
   const { toggle } = useFavorites();
   const { data: isFavorited = false } = useIsItemFavorited(id);
+  
+  // Récupérer les informations de la communauté si l'objet en a une
+  const { data: community } = useCommunity(item?.community_id || '');
   const updateItem = useUpdateItem();
   const upsertRating = useUpsertItemRating();
   const { data: allRequests } = useRequests();
@@ -358,7 +362,18 @@ const ItemDetailPage: React.FC = () => {
                   </p>
                   <div className="flex items-center text-sm text-gray-500">
                     <MapPin className="w-4 h-4 mr-1" />
-                    <span>À proximité</span>
+                    <span>
+                      {community ? (
+                        <span className="flex items-center gap-1">
+                          <span className="font-medium text-gray-700">{community.name}</span>
+                          {community.city && (
+                            <span className="text-gray-500">• {community.city}</span>
+                          )}
+                        </span>
+                      ) : (
+                        'À proximité'
+                      )}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -525,7 +540,7 @@ const ItemDetailPage: React.FC = () => {
                               const generated = await generateMessage({
                                 itemTitle: item.title,
                                 itemCategory: item.category,
-                                requestType: item.offer_type,
+                                requestType: item.offer_type === 'donation' ? 'loan' : item.offer_type,
                                 userMessage: requestMessage,
                               });
                               setRequestMessage(generated);

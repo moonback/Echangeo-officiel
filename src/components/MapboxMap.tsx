@@ -192,25 +192,40 @@ function createDetailedItemPopup(marker: MapboxMarker): string {
     `;
   }
 
-  // Prix (si disponible)
-  if (marker.price !== undefined && marker.price > 0) {
+  // Type d'offre (si disponible)
+  if (marker.data?.offer_type) {
+    const offerTypeLabels: Record<string, string> = {
+      loan: 'Prêt',
+      trade: 'Échange',
+      donation: 'Don',
+    };
+    
+    const offerTypeColors: Record<string, string> = {
+      loan: '#3B82F6',
+      trade: '#F59E0B', 
+      donation: '#10B981',
+    };
+    
+    const offerType = marker.data.offer_type as string;
+    const color = offerTypeColors[offerType] || '#6B7280';
+    
     content += `
       <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
         <div style="
           width: 20px;
           height: 20px;
           border-radius: 50%;
-          background-color: #F59E0B20;
+          background-color: ${color}20;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #F59E0B;
+          color: ${color};
           font-size: 10px;
         ">
-          💰
+          ${offerType === 'loan' ? '🔄' : offerType === 'trade' ? '🔄' : '🎁'}
         </div>
         <span style="font-size: 13px; color: #374151; font-weight: 600;">
-          ${marker.price}€
+          ${offerTypeLabels[offerType] || offerType}
         </span>
       </div>
     `;
@@ -345,6 +360,32 @@ function createSimplePopup(marker: MapboxMarker): string {
     `;
   }
 
+  // Afficher le type d'offre si c'est un objet
+  if (marker.type === 'item' && marker.data?.offer_type) {
+    const offerTypeLabels: Record<string, string> = {
+      loan: 'Prêt',
+      trade: 'Échange', 
+      donation: 'Don',
+    };
+    
+    const offerType = marker.data.offer_type as string;
+    
+    content += `
+      <div style="margin-bottom: 8px;">
+        <span style="
+          background-color: #f3f4f6;
+          color: #374151;
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-size: 12px;
+          font-weight: 500;
+        ">
+          ${offerTypeLabels[offerType] || offerType}
+        </span>
+      </div>
+    `;
+  }
+
   content += `
       <div style="
         margin-top: 8px;
@@ -410,7 +451,7 @@ function getMarkerStyle(marker: MapboxMarker) {
       };
     
     case 'item':
-    default:
+    default: {
       // Couleur par catégorie pour les objets
       const categoryColors: Record<string, string> = {
         tools: '#EF4444',        // Rouge pour outils
@@ -438,6 +479,7 @@ function getMarkerStyle(marker: MapboxMarker) {
         size: '20px',
         borderRadius: '50%',
       };
+    }
   }
 }
 
@@ -456,7 +498,7 @@ export interface MapboxMarker {
   price?: number;
   distance?: number;
   createdAt?: string;
-  data?: any; // Données complètes de l'objet
+  data?: Record<string, unknown>; // Données complètes de l'objet
 }
 
 interface MapboxMapProps {

@@ -271,15 +271,34 @@ const CommunityDetailPage: React.FC = () => {
               </div>
             </Card>
           ) : (
-            <Card className="p-6 text-center">
-              <svg className="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-              </svg>
-              <p className="text-gray-600">Aucun objet disponible</p>
-              <p className="text-sm text-gray-500 mt-1">
-                Soyez le premier à proposer un objet dans ce quartier !
-              </p>
-            </Card>
+            <EmptyState
+              icon={
+                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+              }
+              title="Aucun objet disponible"
+              description="Soyez le premier à proposer un objet dans ce quartier !"
+              action={
+                <div className="flex gap-3 justify-center">
+                  <Button
+                    onClick={() => navigate('/create-item')}
+                    variant="primary"
+                    leftIcon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>}
+                  >
+                    Proposer un objet
+                  </Button>
+                  <Button
+                    onClick={() => navigate('/items')}
+                    variant="secondary"
+                  >
+                    Voir tous les objets
+                  </Button>
+                </div>
+              }
+            />
           )}
         </motion.div>
 

@@ -531,19 +531,28 @@ export function useCommunityItems(communityId: string) {
   return useQuery({
     queryKey: ['communityItems', communityId],
     queryFn: async (): Promise<Item[]> => {
-      // Récupérer d'abord les coordonnées de la communauté
-      const { data: community, error: communityError } = await supabase
-        .from('communities')
-        .select('center_latitude, center_longitude, radius_km')
-        .eq('id', communityId)
-        .single();
+      if (!communityId) return [];
 
-      if (communityError) throw communityError;
-      if (!community?.center_latitude || !community?.center_longitude) {
+      // Récupérer d'abord les IDs des membres de la communauté
+      const { data: members, error: membersError } = await supabase
+        .from('community_members')
+        .select('user_id')
+        .eq('community_id', communityId)
+        .eq('is_active', true);
+
+      if (membersError) {
+        console.error('Erreur lors de la récupération des membres:', membersError);
+        throw membersError;
+      }
+
+      if (!members || members.length === 0) {
         return [];
       }
 
-      // Récupérer les objets dans le rayon de la communauté
+      // Extraire les IDs des membres
+      const memberIds = members.map(member => member.user_id);
+
+      // Récupérer tous les objets des membres de la communauté
       const { data, error } = await supabase
         .from('items')
         .select(`
@@ -553,27 +562,15 @@ export function useCommunityItems(communityId: string) {
         `)
         .eq('is_available', true)
         .eq('suspended_by_admin', false)
-        .not('latitude', 'is', null)
-        .not('longitude', 'is', null)
+        .in('owner_id', memberIds)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erreur lors de la récupération des objets de la communauté:', error);
+        throw error;
+      }
 
-      // Filtrer les objets qui sont dans le rayon de la communauté
-      const itemsInRadius = (data || []).filter((item: any) => {
-        if (!item.latitude || !item.longitude) return false;
-        
-        const distance = calculateDistance(
-          community.center_latitude,
-          community.center_longitude,
-          item.latitude,
-          item.longitude
-        );
-        
-        return distance <= community.radius_km;
-      });
-
-      return itemsInRadius as Item[];
+      return data || [];
     },
     enabled: !!communityId,
     staleTime: 1000 * 60 * 3, // 3 minutes

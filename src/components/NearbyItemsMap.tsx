@@ -158,7 +158,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
         longitude: community.center_longitude as number,
         title: community.name,
         type: 'community' as const,
-        data: community
+        data: community as Record<string, unknown>
       }));
   }, [communities, showCommunities]);
 
@@ -192,7 +192,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
         price: item.estimated_value,
         distance: distance,
         createdAt: item.created_at,
-      data: item
+      data: item as Record<string, unknown>
       };
     });
   }, [filteredItems, userLoc]);

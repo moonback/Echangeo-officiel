@@ -38,6 +38,7 @@ export interface Item {
   images?: ItemImage[];
   average_rating?: number;
   ratings_count?: number;
+  [key: string]: unknown; // Signature d'index pour la compatibilité avec MapboxMarker
 }
 
 export interface ItemRating {
@@ -263,6 +264,7 @@ export interface NearbyCommunity {
 
 export interface CommunityOverview extends Community {
   activity_level: 'active' | 'moderate' | 'inactive';
+  [key: string]: unknown; // Signature d'index pour la compatibilité avec MapboxMarker
 }
 
 // Types pour la suggestion de quartiers avec IA
