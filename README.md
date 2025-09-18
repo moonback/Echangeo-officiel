@@ -1,6 +1,6 @@
 # Échangeo 🌱 - La plateforme communautaire pour des échanges locaux et durables
 
-![Échangeo Logo](https://your-image-url/logo.png) <!-- TODO: Ajouter un logo ou une capture d'écran ici -->
+![Échangeo Logo](public/logo.png) <!-- TODO: Ajouter un logo ou une capture d'écran ici -->
 
 ## ✨ Présentation
 
