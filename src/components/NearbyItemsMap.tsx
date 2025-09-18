@@ -82,25 +82,78 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
   const { data: communities } = useCommunities();
   const { data: communityItems, isLoading: communityItemsLoading } = useCommunityItems(selectedCommunity?.id || '');
 
-  // Fonction pour obtenir les informations de localisation
+  // Fonction pour obtenir les informations de localisation avec plusieurs sources
   const getLocationInfo = async (lat: number, lng: number) => {
     try {
-      // Utiliser l'API de géocodage inversé (exemple avec Nominatim)
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1&accept-language=fr`
+      // Essayer d'abord avec Nominatim (OpenStreetMap)
+      const nominatimResponse = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1&accept-language=fr&zoom=18`
       );
-      const data = await response.json();
+      const nominatimData = await nominatimResponse.json();
       
-      if (data.address) {
-        const neighborhood = data.address.suburb || data.address.neighbourhood || data.address.quarter || 'Quartier non identifié';
-        const city = data.address.city || data.address.town || data.address.village || data.address.municipality || 'Ville non identifiée';
+      if (nominatimData.address) {
+        // Essayer plusieurs sources pour le quartier
+        const neighborhood = 
+          nominatimData.address.suburb || 
+          nominatimData.address.neighbourhood || 
+          nominatimData.address.quarter || 
+          nominatimData.address.district ||
+          nominatimData.address.ward ||
+          nominatimData.address.hamlet ||
+          nominatimData.address.road ||
+          nominatimData.address.pedestrian ||
+          nominatimData.address.postcode;
         
-        setUserLocationInfo({ neighborhood, city });
+        // Essayer plusieurs sources pour la ville
+        const city = 
+          nominatimData.address.city || 
+          nominatimData.address.town || 
+          nominatimData.address.village || 
+          nominatimData.address.municipality ||
+          nominatimData.address.county ||
+          nominatimData.address.state ||
+          nominatimData.address.region;
+        
+        if (neighborhood && city) {
+          setUserLocationInfo({ neighborhood, city });
+          return;
+        }
       }
+      
+      // Si Nominatim n'a pas donné de résultats complets, essayer avec une API de secours
+      try {
+        const backupResponse = await fetch(
+          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=fr`
+        );
+        const backupData = await backupResponse.json();
+        
+        if (backupData.localityInfo) {
+          const neighborhood = backupData.localityInfo.administrative[3]?.name || 
+                             backupData.localityInfo.administrative[2]?.name ||
+                             backupData.localityInfo.administrative[1]?.name ||
+                             backupData.locality;
+          const city = backupData.city || backupData.locality || backupData.principalSubdivision;
+          
+          if (neighborhood && city) {
+            setUserLocationInfo({ neighborhood, city });
+            return;
+          }
+        }
+      } catch (backupError) {
+        console.warn('Erreur avec l\'API de secours:', backupError);
+      }
+      
+      // Fallback final avec coordonnées arrondies
+      const neighborhood = `Zone ${Math.round(lat * 1000) / 1000}, ${Math.round(lng * 1000) / 1000}`;
+      const city = 'Localisation actuelle';
+      setUserLocationInfo({ neighborhood, city });
+      
     } catch (error) {
       console.error('Erreur lors de la récupération des informations de localisation:', error);
-      // Fallback avec des valeurs par défaut
-      setUserLocationInfo({ neighborhood: 'Quartier non identifié', city: 'Ville non identifiée' });
+      // Fallback avec coordonnées arrondies
+      const neighborhood = `Zone ${Math.round(lat * 1000) / 1000}, ${Math.round(lng * 1000) / 1000}`;
+      const city = 'Localisation actuelle';
+      setUserLocationInfo({ neighborhood, city });
     }
   };
 
