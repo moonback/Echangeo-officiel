@@ -113,7 +113,7 @@ const Topbar: React.FC = () => {
   const { isAdmin } = useAdminAuth();
   const { query, setQuery, handleKeyDown } = useSearch();
   const { isOpen: mobileOpen, toggle: toggleMobile, close: closeMobile } = useMobileMenu();
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const favoritesCount = useFavoritesCount();
@@ -262,30 +262,34 @@ const Topbar: React.FC = () => {
     </NavLink>
   );
 
-  const MobileSearch = () => (
+  const SearchBar = () => (
     <AnimatePresence>
-      {isMobileSearchOpen && (
+      {isSearchOpen && (
         <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-white/95 backdrop-blur-xl"
+            initial={{ opacity: 0, height: 0 }} 
+            animate={{ opacity: 1, height: 'auto' }} 
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            className="bg-white border-b border-gray-200 overflow-hidden"
         >
-            <div className="max-w-7xl mx-auto px-4 pt-4 flex flex-col h-full">
-              <div className="flex items-center gap-2 mb-4">
+            <div className="max-w-7xl mx-auto px-4 py-3">
+              <div className="flex items-center gap-2">
                   <div className="relative flex-1">
                       <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                       <input
                           type="search"
                           value={query}
                           onChange={(e) => setQuery(e.target.value)}
-                          onKeyDown={(e) => handleKeyDown(e, () => setIsMobileSearchOpen(false))}
+                          onKeyDown={(e) => handleKeyDown(e, () => setIsSearchOpen(false))}
                           placeholder="Rechercher un objet..."
-                          className="w-full pl-10 pr-4 h-12 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-500 bg-white"
+                          className="w-full pl-10 pr-4 h-10 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand-500 bg-white"
                           autoFocus
                       />
                   </div>
-                  <button onClick={() => setIsMobileSearchOpen(false)} className="p-3 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors">Annuler</button>
+                  <button onClick={() => setIsSearchOpen(false)} className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors">
+                    <X size={20} />
+                  </button>
               </div>
-              <div className="text-sm text-gray-500 p-4 text-center">Appuyez sur "Entrée" pour rechercher.</div>
             </div>
         </motion.div>
       )}
@@ -314,18 +318,10 @@ const Topbar: React.FC = () => {
               </nav>
             </div>
 
-            <div className="flex-1 max-w-sm">
-                <div className="relative">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
-                    <input
-                        type="search"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        placeholder="Rechercher un objet..."
-                        className="w-full pl-10 pr-4 h-10 rounded-xl border border-gray-300/80 focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-colors bg-white/80 hover:bg-white"
-                    />
-                </div>
+            <div className="flex-1 flex justify-end">
+                <button onClick={() => setIsSearchOpen(true)} className="p-2.5 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors">
+                    <Search size={18} />
+                </button>
             </div>
 
             <div className="flex items-center gap-2">
@@ -352,14 +348,16 @@ const Topbar: React.FC = () => {
                   <span className="font-bold text-lg text-gray-900">TrocAll</span>
               </Link>
               <div className="flex items-center gap-1">
-                  <button onClick={() => setIsMobileSearchOpen(true)} className="p-2.5 rounded-lg hover:bg-gray-100 text-gray-600"><Search size={20} /></button>
+                  <button onClick={() => setIsSearchOpen(true)} className="p-2.5 rounded-lg hover:bg-gray-100 text-gray-600"><Search size={20} /></button>
                   <button onClick={toggleMobile} className="p-2.5 rounded-lg hover:bg-gray-100 text-gray-600"><Menu size={20} /></button>
               </div>
           </div>
         </div>
+        
+        {/* Search Bar - maintenant intégré dans le header pour toutes les tailles d'écran */}
+        <SearchBar />
       </header>
 
-      <MobileSearch />
       <MobileMenu />
     </>
   );
