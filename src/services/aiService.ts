@@ -20,15 +20,17 @@ export interface AIAnalysisResult {
   categorySuggestions?: string[];
 }
 
-interface MistralResponse {
-  choices: Array<{
-    message: {
-      content: string;
+interface GeminiResponse {
+  candidates: Array<{
+    content: {
+      parts: Array<{
+        text: string;
+      }>;
     };
   }>;
 }
 
-const MISTRAL_API_URL = 'https://api.mistral.ai/v1/chat/completions';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
 /**
  * Convertit une image en base64
@@ -123,13 +125,13 @@ const retryWithBackoff = async <T>(
 };
 
 /**
- * Analyse une image avec l'API Mistral pour extraire les informations de l'objet
+ * Analyse une image avec l'API Gemini pour extraire les informations de l'objet
  */
 export const analyzeImageWithAI = async (file: File): Promise<AIAnalysisResult> => {
-  const apiKey = import.meta.env.VITE_MISTRAL_API_KEY;
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   
   if (!apiKey) {
-    throw new Error('Clé API Mistral manquante. Ajoutez VITE_MISTRAL_API_KEY dans votre fichier .env.local');
+    throw new Error('Clé API Gemini manquante. Ajoutez VITE_GEMINI_API_KEY dans votre fichier .env.local');
   }
 
   return retryWithBackoff(async () => {
@@ -284,58 +286,53 @@ Règles importantes :
 
 Répondez UNIQUEMENT avec le JSON, sans texte supplémentaire.`;
 
-      const response = await fetch(MISTRAL_API_URL, {
+      const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model: 'mistral-large-latest',
-          messages: [
+          contents: [
             {
-              role: 'user',
-              content: [
+              parts: [
                 {
-                  type: 'text',
                   text: prompt
                 },
                 {
-                  type: 'image_url',
-                  image_url: {
-                    url: `data:${file.type};base64,${base64Image}`
+                  inline_data: {
+                    mime_type: file.type,
+                    data: base64Image
                   }
                 }
               ]
             }
           ],
-          max_tokens: 1000,
-          temperature: 0.1, // Faible température pour des réponses plus déterministes
+          generationConfig: {
+            maxOutputTokens: 1000,
+            temperature: 0.1, // Faible température pour des réponses plus déterministes
+          },
         }),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
         
-        // Gestion spécifique des erreurs Mistral
+        // Gestion spécifique des erreurs Gemini
         if (response.status === 429) {
-          const errorData = JSON.parse(errorText);
-          if (errorData.code === 3505) {
-            throw new Error(`Limite de taux dépassée (${errorData.message}). Veuillez réessayer dans quelques instants ou vérifier votre niveau de service Mistral.`);
-          }
+          throw new Error(`Limite de taux dépassée. Veuillez réessayer dans quelques instants.`);
         }
         
-        throw new Error(`Erreur API Mistral: ${response.status} - ${errorText}`);
+        throw new Error(`Erreur API Gemini: ${response.status} - ${errorText}`);
       }
 
-      const result: MistralResponse = await response.json();
-      const content = result.choices[0]?.message?.content;
+      const result: GeminiResponse = await response.json();
+      const content = result.candidates[0]?.content?.parts[0]?.text;
 
       if (!content) {
-        throw new Error('Réponse vide de l\'API Mistral');
+        throw new Error('Réponse vide de l\'API Gemini');
       }
 
-      // Parser le JSON retourné par Mistral
+      // Parser le JSON retourné par Gemini
       let analysisResult: AIAnalysisResult;
       try {
         // Nettoyer le contenu au cas où il y aurait du texte supplémentaire

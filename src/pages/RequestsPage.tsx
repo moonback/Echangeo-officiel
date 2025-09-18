@@ -143,10 +143,10 @@ const RequestsPage: React.FC = () => {
         className="mb-8"
       >
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          Mes demandes
+          Échanges & Troc
         </h1>
         <p className="text-gray-600">
-          Gérez vos demandes d'emprunt et celles que vous recevez
+          Gérez vos demandes d'emprunt, vos propositions d'échange et celles que vous recevez
         </p>
       </motion.div>
 
@@ -306,7 +306,7 @@ const RequestsPage: React.FC = () => {
           transition={{ delay: 0.2 }}
         >
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Mes demandes ({myRequests.length})
+            Mes demandes envoyées ({myRequests.length})
           </h2>
           
           {myRequests.length === 0 ? (

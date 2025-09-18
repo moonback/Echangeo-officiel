@@ -15,11 +15,11 @@ import { Link } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
-import MistralStatusCard from '../components/MistralStatusCard';
+import GeminiStatusCard from '../components/GeminiStatusCard';
 
 const AIFeaturesPage: React.FC = () => {
   const [activeDemo, setActiveDemo] = useState<string | null>(null);
-  const hasAI = !!import.meta.env.VITE_MISTRAL_API_KEY;
+  const hasAI = !!import.meta.env.VITE_GEMINI_API_KEY;
 
   const features = [
     {
@@ -109,7 +109,7 @@ const AIFeaturesPage: React.FC = () => {
           {hasAI ? (
             <Badge variant="success" className="px-4 py-2">
               <Sparkles className="w-4 h-4 mr-2" />
-              IA Mistral Activée
+              IA Gemini Activée
             </Badge>
           ) : (
             <Badge variant="warning" className="px-4 py-2">
@@ -137,15 +137,15 @@ const AIFeaturesPage: React.FC = () => {
                   Configuration IA Requise
                 </h3>
                 <p className="text-gray-700 mb-4">
-                  Pour utiliser les fonctionnalités IA, ajoutez votre clé API Mistral dans le fichier .env.local :
+                  Pour utiliser les fonctionnalités IA, ajoutez votre clé API Gemini dans le fichier .env.local :
                 </p>
                 <div className="bg-gray-900 text-green-400 p-3 rounded-lg font-mono text-sm mb-4">
-                  VITE_MISTRAL_API_KEY=your_mistral_api_key
+                  VITE_GEMINI_API_KEY=your_gemini_api_key
                 </div>
                 <div className="flex gap-3">
                   <Button
                     as="a"
-                    href="https://mistral.ai"
+                    href="https://makersuite.google.com/app/apikey"
                     target="_blank"
                     rel="noopener noreferrer"
                     leftIcon={<ArrowRight size={16} />}
@@ -167,14 +167,14 @@ const AIFeaturesPage: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Statut de l'API Mistral */}
+      {/* Statut de l'API Gemini */}
       {hasAI && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <MistralStatusCard />
+          <GeminiStatusCard />
         </motion.div>
       )}
 
@@ -247,7 +247,7 @@ const AIFeaturesPage: React.FC = () => {
                       {feature.id === 'object-recognition' && (
                         <div className="text-sm text-gray-600 space-y-1">
                           <p>1. Uploadez une photo de votre objet</p>
-                          <p>2. L'IA Mistral analyse l'image</p>
+                          <p>2. L'IA Gemini analyse l'image</p>
                           <p>3. Informations pré-remplies automatiquement</p>
                           <p>4. Validez ou modifiez selon vos besoins</p>
                         </div>
@@ -298,7 +298,7 @@ const AIFeaturesPage: React.FC = () => {
               <div className="flex items-center justify-center gap-2 mb-4">
                 <TrendingUp className="w-6 h-6 text-blue-600" />
                 <h3 className="text-xl font-semibold text-gray-900">
-                  IA Powered by Mistral
+                  IA Powered by Gemini
                 </h3>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-center">

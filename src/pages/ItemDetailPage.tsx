@@ -362,9 +362,23 @@ const ItemDetailPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <Link to={`/profile/${item.owner_id}`}>
-                <Button variant="secondary" size="sm">Voir le profil</Button>
-              </Link>
+              <div className="flex gap-2">
+                <Link to={`/profile/${item.owner_id}`}>
+                  <Button variant="secondary" size="sm">Voir le profil</Button>
+                </Link>
+                {!isOwner && (
+                  <Link to={`/chat/${item.owner_id}`}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="border border-gray-300"
+                      leftIcon={<MessageCircle size={16} />}
+                    >
+                      Message
+                    </Button>
+                  </Link>
+                )}
+              </div>
             </div>
           </Card>
 
@@ -478,21 +492,24 @@ const ItemDetailPage: React.FC = () => {
           {!isOwner && item.is_available && !hasPendingRequest && (
             <div className="space-y-4">
               {!showRequestForm ? (
-                <div className="flex space-x-3">
-                  <Button className="flex-1" onClick={() => setShowRequestForm(true)}>
+                <div className="flex flex-col space-y-3">
+                  <Button className="w-full" onClick={() => setShowRequestForm(true)}>
                     {item.offer_type === 'trade' ? 'Proposer un échange' : 'Demander à emprunter'}
                   </Button>
-                  <Link
-                    to={`/profile/${item.owner_id}`}
-                    className="flex items-center px-4 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-white transition-colors bg-white/70 backdrop-blur-sm"
-                  >
-                    <MessageCircle size={20} />
+                  <Link to={`/chat/${item.owner_id}`} className="w-full">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full border border-gray-300 hover:bg-gray-50"
+                      leftIcon={<MessageCircle size={18} />}
+                    >
+                      Envoyer un message
+                    </Button>
                   </Link>
                 </div>
               ) : (
                 <form onSubmit={handleRequestSubmit} className="space-y-4">
                   {/* Assistant IA pour générer le message */}
-                  {import.meta.env.VITE_MISTRAL_API_KEY && (
+                  {import.meta.env.VITE_GEMINI_API_KEY && (
                     <div className="bg-gradient-to-r from-purple-50/50 to-blue-50/50 border border-purple-200/50 rounded-xl p-4">
                       <div className="flex items-center gap-2 mb-3">
                         <Sparkles className="w-4 h-4 text-purple-600" />

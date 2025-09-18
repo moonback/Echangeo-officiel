@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ArrowLeft, Upload, X, Sparkles, AlertCircle, CheckCircle } from 'lucide-react';
 import { useCreateItem } from '../hooks/useItems';
+import { useNearbyCommunities } from '../hooks/useCommunities';
 import { categories } from '../utils/categories';
 import { offerTypes } from '../utils/offerTypes';
 import type { ItemCategory, OfferType } from '../types';
@@ -36,6 +37,7 @@ const createItemSchema = z.object({
     .preprocess((v) => (v === '' || v === undefined ? undefined : Number(v)), z.number().min(-90).max(90).optional()),
   longitude: z
     .preprocess((v) => (v === '' || v === undefined ? undefined : Number(v)), z.number().min(-180).max(180).optional()),
+  community_id: z.string().optional(),
 });
 
 type CreateItemForm = z.infer<typeof createItemSchema>;
@@ -57,6 +59,59 @@ const CreateItemPage: React.FC = () => {
   const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
   const [isLocating, setIsLocating] = useState(false);
   const [aiAnalysisApplied, setAiAnalysisApplied] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [selectedCommunity, setSelectedCommunity] = useState<string>('');
+  const [addressQuery, setAddressQuery] = useState('');
+  const [addressSuggestions, setAddressSuggestions] = useState<Array<{ label: string; lat: number; lon: number }>>([]);
+  const [isSearchingAddress, setIsSearchingAddress] = useState(false);
+  const [addressDropdownOpen, setAddressDropdownOpen] = useState(false);
+
+  // Récupérer les quartiers proches si la position est disponible
+  const { data: nearbyCommunities, isLoading: communitiesLoading } = useNearbyCommunities(
+    userLocation?.lat || 0,
+    userLocation?.lng || 0,
+    10 // 10km de rayon
+  );
+
+  // Recherche d'adresse (debounce)
+  React.useEffect(() => {
+    const q = addressQuery?.trim();
+    if (!q || q.length < 3) {
+      setAddressSuggestions([]);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(async () => {
+      try {
+        setIsSearchingAddress(true);
+        const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(q)}&addressdetails=1&limit=5`; 
+        const res = await fetch(url, {
+          headers: { 'Accept-Language': 'fr', 'User-Agent': 'TrocAll App (contact@example.com)' },
+          signal: controller.signal,
+        });
+        const json = await res.json();
+        const next = (json || []).map((r: any) => ({
+          label: r.display_name as string,
+          lat: Number(r.lat),
+          lon: Number(r.lon),
+        }));
+        setAddressSuggestions(next);
+        setAddressDropdownOpen(true);
+      } catch (e) {
+        if (!(e instanceof DOMException && e.name === 'AbortError')) {
+          console.warn('Address search failed', e);
+        }
+      } finally {
+        setIsSearchingAddress(false);
+      }
+    }, 350);
+
+    return () => {
+      controller.abort();
+      clearTimeout(timeout);
+    };
+  }, [addressQuery]);
 
   const {
     register,
@@ -165,7 +220,7 @@ const CreateItemPage: React.FC = () => {
     if (brand) suggestions.add(brand.toLowerCase());
     if (model) suggestions.add(model.toLowerCase());
     if (brand && model) suggestions.add(`${brand} ${model}`.toLowerCase());
-    if (category) {
+    if (category && CATEGORY_SUGGESTIONS[category]) {
       CATEGORY_SUGGESTIONS[category].forEach((t) => suggestions.add(t));
     }
     setTagSuggestions(Array.from(suggestions).slice(0, 8));
@@ -204,6 +259,38 @@ const CreateItemPage: React.FC = () => {
     setAiAnalysisApplied(true);
   };
 
+  // Obtenir la géolocalisation de l'utilisateur
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert('La géolocalisation n\'est pas supportée par votre navigateur');
+      return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const location = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+        setUserLocation(location);
+        setValue('latitude', location.lat);
+        setValue('longitude', location.lng);
+        setIsLocating(false);
+      },
+      (error) => {
+        console.error('Erreur de géolocalisation:', error);
+        setIsLocating(false);
+        alert('Impossible d\'obtenir votre position. Veuillez autoriser la géolocalisation.');
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000 // 5 minutes
+      }
+    );
+  };
+
   const onSubmit = async (data: CreateItemForm) => {
     try {
       // Permettre la création sans photos (mais recommander d'en ajouter)
@@ -220,6 +307,7 @@ const CreateItemPage: React.FC = () => {
       
       await createItem.mutateAsync({
         ...data,
+        community_id: selectedCommunity || undefined,
         images: selectedImages,
         onProgress: (current, total, fileName) => setUploadProgress({ current, total, fileName }),
       });
@@ -592,7 +680,56 @@ const CreateItemPage: React.FC = () => {
                 <label htmlFor="location_hint" className="block text-sm font-medium text-gray-700 mb-1">
                   Indication de localisation (ex: étage, bâtiment, etc.)
                 </label>
-                <Input {...register('location_hint')} id="location_hint" />
+                <div className="relative">
+                  <Input
+                    id="location_hint"
+                    value={addressQuery || (watch('location_hint') || '')}
+                    onChange={(e) => {
+                      setAddressQuery(e.target.value);
+                      setValue('location_hint', e.target.value, { shouldDirty: true, shouldTouch: true });
+                    }}
+                    onFocus={() => {
+                      if (addressSuggestions.length > 0) setAddressDropdownOpen(true);
+                    }}
+                    onBlur={() => {
+                      setTimeout(() => setAddressDropdownOpen(false), 150);
+                    }}
+                    placeholder="Saisissez une adresse pour obtenir des suggestions"
+                  />
+
+                  {/* Suggestions d'adresse */}
+                  {addressDropdownOpen && (addressSuggestions.length > 0 || isSearchingAddress) && (
+                    <div className="absolute z-20 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                      {isSearchingAddress && (
+                        <div className="px-3 py-2 text-sm text-gray-600">Recherche en cours…</div>
+                      )}
+                      {addressSuggestions.map((sugg, idx) => (
+                        <button
+                          key={`${sugg.label}-${idx}`}
+                          type="button"
+                          className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm"
+                          onClick={() => {
+                            // Renseigner l'adresse choisie
+                            setValue('location_hint', sugg.label, { shouldDirty: true, shouldTouch: true });
+                            setAddressQuery(sugg.label);
+                            setAddressDropdownOpen(false);
+                            // Mettre à jour coordonnées + position utilisateur
+                            const lat = Number(sugg.lat);
+                            const lon = Number(sugg.lon);
+                            setValue('latitude', lat as unknown as number, { shouldValidate: true, shouldDirty: true });
+                            setValue('longitude', lon as unknown as number, { shouldValidate: true, shouldDirty: true });
+                            setUserLocation({ lat, lng: lon });
+                          }}
+                        >
+                          {sugg.label}
+                        </button>
+                      ))}
+                      {!isSearchingAddress && addressSuggestions.length === 0 && (
+                        <div className="px-3 py-2 text-sm text-gray-500">Aucune suggestion</div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -655,6 +792,93 @@ const CreateItemPage: React.FC = () => {
 
 
 
+        {/* Sélection de quartier - visible sur toutes les étapes après la géolocalisation */}
+        {step >= 3 && (
+          <div className="p-4 rounded-xl border border-gray-200 bg-white glass mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <label className="block text-sm font-medium text-gray-700">
+                Quartier/Communauté
+              </label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={getCurrentLocation}
+                disabled={isLocating}
+                className="text-blue-600 hover:text-blue-700"
+              >
+                {isLocating ? 'Localisation…' : 'Détecter les quartiers proches'}
+              </Button>
+            </div>
+            
+            {userLocation && (
+              <div className="mb-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-sm text-blue-800">
+                  📍 Position détectée : {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
+                </p>
+              </div>
+            )}
+
+            {communitiesLoading ? (
+              <div className="flex items-center gap-2 text-gray-600">
+                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-sm">Recherche des quartiers proches...</span>
+              </div>
+            ) : nearbyCommunities && nearbyCommunities.length > 0 ? (
+              <div className="space-y-2">
+                <p className="text-sm text-gray-600 mb-2">
+                  Quartiers trouvés à proximité ({nearbyCommunities.length}) :
+                </p>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {nearbyCommunities.map((community) => (
+                    <label
+                      key={community.community_id}
+                      className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors"
+                    >
+                      <input
+                        type="radio"
+                        name="community"
+                        value={community.community_id}
+                        checked={selectedCommunity === community.community_id}
+                        onChange={(e) => setSelectedCommunity(e.target.value)}
+                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      />
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900">
+                          {community.community_name}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {community.distance_km.toFixed(1)} km • {community.member_count} membre{community.member_count > 1 ? 's' : ''}
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ) : userLocation ? (
+              <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                <p className="text-sm text-yellow-800">
+                  Aucun quartier trouvé dans un rayon de 10km. Vous pouvez créer votre objet sans quartier spécifique.
+                </p>
+              </div>
+            ) : (
+              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <p className="text-sm text-gray-600">
+                  Cliquez sur "Détecter les quartiers proches" pour voir les quartiers disponibles dans votre zone.
+                </p>
+              </div>
+            )}
+
+            {selectedCommunity && (
+              <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                <p className="text-sm text-green-800">
+                  ✅ Quartier sélectionné : {nearbyCommunities?.find(c => c.community_id === selectedCommunity)?.community_name}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Step 4: Récapitulatif et validation finale */}
         {step === 4 && (
           <>
@@ -712,6 +936,14 @@ const CreateItemPage: React.FC = () => {
                       <h4 className="font-medium text-gray-900">Valeur estimée</h4>
                       <p className="text-sm text-gray-700">
                         {Number(watch('estimated_value')).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                      </p>
+                    </div>
+                  )}
+                  {selectedCommunity && (
+                    <div>
+                      <h4 className="font-medium text-gray-900">Quartier</h4>
+                      <p className="text-sm text-gray-700">
+                        {nearbyCommunities?.find(c => c.community_id === selectedCommunity)?.community_name}
                       </p>
                     </div>
                   )}

@@ -134,7 +134,7 @@ const MessageComposer: React.FC<MessageComposerProps> = ({
           />
           
           {/* Bouton d'amélioration IA */}
-          {import.meta.env.VITE_MISTRAL_API_KEY && value.trim() && (
+          {import.meta.env.VITE_GEMINI_API_KEY && value.trim() && (
             <button
               type="button"
               onClick={handleImprove}

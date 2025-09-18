@@ -11,6 +11,7 @@ import CreateItemPage from './pages/CreateItemPage';
 import EditItemPage from './pages/EditItemPage';
 import RequestsPage from './pages/RequestsPage';
 import ChatPage from './pages/ChatPage';
+import MessagesPage from './pages/MessagesPage';
 import NeighboursPage from './pages/NeighboursPage';
 import CommunitiesPage from './pages/CommunitiesPage';
 import CommunityDetailPage from './pages/CommunityDetailPage';
@@ -103,6 +104,7 @@ function App() {
             <Route path="/items/:id/edit" element={<EditItemPage />} />
             <Route path="/create" element={<CreateItemPage />} />
             <Route path="/requests" element={<RequestsPage />} />
+            <Route path="/messages" element={<MessagesPage />} />
             <Route path="/chat/:id" element={<ChatPage />} />
             <Route path="/neighbours" element={<NeighboursPage />} />
             <Route path="/communities" element={<CommunitiesPage />} />

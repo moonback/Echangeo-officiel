@@ -13,51 +13,59 @@ import Button from './ui/Button';
 import Card from './ui/Card';
 import Badge from './ui/Badge';
 
-interface MistralStatusCardProps {
+interface GeminiStatusCardProps {
   className?: string;
 }
 
-interface MistralStatus {
+interface GeminiStatus {
   isOnline: boolean;
   lastCheck: Date;
   responseTime?: number;
   error?: string;
 }
 
-const MistralStatusCard: React.FC<MistralStatusCardProps> = ({ className = '' }) => {
-  const [status, setStatus] = useState<MistralStatus>({
+const GeminiStatusCard: React.FC<GeminiStatusCardProps> = ({ className = '' }) => {
+  const [status, setStatus] = useState<GeminiStatus>({
     isOnline: false,
     lastCheck: new Date(),
   });
   const [isChecking, setIsChecking] = useState(false);
 
-  const checkMistralStatus = async () => {
+  const checkGeminiStatus = async () => {
     setIsChecking(true);
     const startTime = Date.now();
     
     try {
-      const apiKey = import.meta.env.VITE_MISTRAL_API_KEY;
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
       
       if (!apiKey) {
         setStatus({
           isOnline: false,
           lastCheck: new Date(),
-          error: 'Clé API Mistral manquante'
+          error: 'Clé API Gemini manquante'
         });
         return;
       }
 
       // Test simple avec un petit prompt
-      const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model: 'mistral-large-latest',
-          messages: [{ role: 'user', content: 'Test' }],
-          max_tokens: 10,
+          contents: [
+            {
+              parts: [
+                {
+                  text: 'Test'
+                }
+              ]
+            }
+          ],
+          generationConfig: {
+            maxOutputTokens: 10,
+          },
         }),
       });
 
@@ -93,10 +101,10 @@ const MistralStatusCard: React.FC<MistralStatusCardProps> = ({ className = '' })
 
   useEffect(() => {
     // Vérification initiale
-    checkMistralStatus();
+    checkGeminiStatus();
     
     // Vérification périodique toutes les 5 minutes
-    const interval = setInterval(checkMistralStatus, 5 * 60 * 1000);
+    const interval = setInterval(checkGeminiStatus, 5 * 60 * 1000);
     
     return () => clearInterval(interval);
   }, []);
@@ -125,11 +133,11 @@ const MistralStatusCard: React.FC<MistralStatusCardProps> = ({ className = '' })
     <Card className={`p-4 ${className}`}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
             <Zap className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900">Statut API Mistral</h3>
+            <h3 className="font-semibold text-gray-900">Statut API Gemini</h3>
             <p className="text-sm text-gray-600">Service d'analyse IA</p>
           </div>
         </div>
@@ -143,7 +151,7 @@ const MistralStatusCard: React.FC<MistralStatusCardProps> = ({ className = '' })
           <Button
             variant="ghost"
             size="sm"
-            onClick={checkMistralStatus}
+            onClick={checkGeminiStatus}
             disabled={isChecking}
             leftIcon={<RefreshCw size={14} className={isChecking ? 'animate-spin' : ''} />}
             className="text-gray-600 hover:text-gray-800"
@@ -191,8 +199,8 @@ const MistralStatusCard: React.FC<MistralStatusCardProps> = ({ className = '' })
                     </p>
                     <ul className="text-xs text-red-700 space-y-0.5">
                       <li>• Attendez quelques instants</li>
-                      <li>• Vérifiez votre niveau de service</li>
-                      <li>• Contactez le support Mistral</li>
+                      <li>• Vérifiez votre quota Google AI</li>
+                      <li>• Contactez le support Google AI</li>
                     </ul>
                   </div>
                 )}
@@ -206,11 +214,11 @@ const MistralStatusCard: React.FC<MistralStatusCardProps> = ({ className = '' })
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => window.open('https://console.mistral.ai', '_blank')}
+            onClick={() => window.open('https://makersuite.google.com/app/apikey', '_blank')}
             leftIcon={<ExternalLink size={14} />}
-            className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
           >
-            Ouvrir la console Mistral
+            Ouvrir Google AI Studio
           </Button>
         </div>
       </div>
@@ -218,4 +226,4 @@ const MistralStatusCard: React.FC<MistralStatusCardProps> = ({ className = '' })
   );
 };
 
-export default MistralStatusCard;
+export default GeminiStatusCard;
