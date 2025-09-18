@@ -545,7 +545,7 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
       mapboxgl.accessToken = accessToken as string;
       const map = new mapboxgl.Map({
         container: mapContainerRef.current,
-        style: 'mapbox://styles/mapbox/streets-v11',
+        style: 'mapbox://styles/mapbox/streets-v12',
         center: [center.lng, center.lat],
         zoom,
         attributionControl: false,
