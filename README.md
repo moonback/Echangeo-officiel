@@ -2,7 +2,7 @@
 
 **Plateforme communautaire de partage et d'emprunt d'objets entre voisins**
 
-TrocAll révolutionne la consommation en permettant aux voisins de partager, emprunter et échanger des objets du quotidien. Économisez de l'argent, désencombrez votre espace et créez du lien social dans votre quartier.
+TrocAll révolutionne la consommation en permettant aux voisins de partager, emprunter et échanger des objets du quotidien. Économisez de l'argent, désencombrez votre espace et créez du lien social dans votre quartier grâce à une plateforme moderne intégrant l'IA et la géolocalisation.
 
 ## 🚀 Stack Technique
 
@@ -143,53 +143,53 @@ npm run preview
 src/
 ├── components/           # Composants réutilisables
 │   ├── ui/              # Composants UI de base (Button, Card, Input...)
-│   ├── admin/           # Composants d'administration
-│   ├── modals/          # Modales et overlays
-│   ├── Shell.tsx        # Layout principal avec navigation
-│   ├── Topbar.tsx       # Barre de navigation desktop
+│   ├── admin/            # Composants d'administration
+│   ├── modals/           # Modales et overlays
+│   ├── Shell.tsx         # Layout principal avec navigation
+│   ├── Topbar.tsx        # Barre de navigation desktop
 │   ├── BottomNavigation.tsx # Navigation mobile
-│   ├── ItemCard.tsx     # Carte d'objet
-│   ├── MapboxMap.tsx    # Carte interactive
+│   ├── ItemCard.tsx      # Carte d'objet
+│   ├── MapboxMap.tsx     # Carte interactive
 │   ├── ChatAIAssistant.tsx # Assistant IA pour le chat
 │   ├── GamificationPage.tsx # Système de gamification
 │   ├── NotificationSystem.tsx # Système de notifications
 │   └── ...
-├── pages/               # Pages de l'application
-│   ├── HomePage.tsx     # Page d'accueil avec dashboard
-│   ├── ItemsPage.tsx    # Liste et recherche d'objets
+├── pages/                # Pages de l'application
+│   ├── HomePage.tsx      # Page d'accueil avec dashboard
+│   ├── ItemsPage.tsx     # Liste et recherche d'objets
 │   ├── CreateItemPage.tsx # Création d'objet avec IA
 │   ├── GamificationPage.tsx # Système de niveaux et badges
-│   ├── ChatPage.tsx     # Messagerie intégrée
+│   ├── ChatPage.tsx      # Messagerie intégrée
 │   ├── CommunitiesPage.tsx # Gestion des communautés
-│   ├── admin/           # Pages d'administration
+│   ├── admin/            # Pages d'administration
 │   └── ...
-├── hooks/               # Hooks personnalisés
-│   ├── useItems.ts      # Gestion des objets
+├── hooks/                # Hooks personnalisés
+│   ├── useItems.ts       # Gestion des objets
 │   ├── useGamification.ts # Système de gamification
-│   ├── useChatAI.ts     # Assistant IA
+│   ├── useChatAI.ts      # Assistant IA
 │   ├── useCommunities.ts # Gestion des communautés
-│   ├── useAdmin.ts      # Fonctionnalités admin
+│   ├── useAdmin.ts       # Fonctionnalités admin
 │   └── ...
-├── services/            # Services externes
-│   ├── supabase.ts      # Configuration Supabase
-│   ├── aiService.ts     # Services IA (Gemini)
-│   ├── chatAI.ts        # Assistant de chat
+├── services/             # Services externes
+│   ├── supabase.ts       # Configuration Supabase
+│   ├── aiService.ts      # Services IA (Gemini)
+│   ├── chatAI.ts         # Assistant de chat
 │   ├── categoryDetection.ts # Détection de catégories
 │   ├── compatibilityAI.ts # Analyse de compatibilité
-│   └── mediationAI.ts   # Médiation des conflits
-├── store/               # État global
-│   └── authStore.ts     # Store d'authentification (Zustand)
-├── types/               # Types TypeScript
-│   ├── index.ts         # Types principaux
-│   ├── database.ts      # Types générés Supabase
-│   └── admin.ts         # Types d'administration
-├── utils/               # Utilitaires
-│   ├── categories.ts    # Catégories d'objets
-│   ├── validation.ts    # Schémas de validation
-│   ├── geolocation.ts  # Utilitaires géolocalisation
-│   └── formatting.ts    # Formatage des données
-└── test/                # Tests
-    ├── setup.ts         # Configuration des tests
+│   └── mediationAI.ts    # Médiation des conflits
+├── store/                # État global
+│   └── authStore.ts      # Store d'authentification (Zustand)
+├── types/                # Types TypeScript
+│   ├── index.ts          # Types principaux
+│   ├── database.ts       # Types générés Supabase
+│   └── admin.ts          # Types d'administration
+├── utils/                # Utilitaires
+│   ├── categories.ts     # Catégories d'objets
+│   ├── validation.ts     # Schémas de validation
+│   ├── geolocation.ts    # Utilitaires géolocalisation
+│   └── formatting.ts     # Formatage des données
+└── test/                 # Tests
+    ├── setup.ts          # Configuration des tests
     └── ...
 ```
 
