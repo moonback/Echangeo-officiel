@@ -4,7 +4,6 @@ import {
   Upload, 
   X, 
   Sparkles, 
-  Image as ImageIcon,
   AlertCircle,
   CheckCircle,
   Zap
@@ -349,46 +348,7 @@ const AIImageUpload: React.FC<AIImageUploadProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Instructions et conseils */}
-      {aiEnabled && images.length === 0 && (
-        <Card className="p-4 bg-gradient-to-r from-purple-50/50 to-blue-50/50 border-purple-200/50">
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-purple-600" />
-            </div>
-            <div className="flex-1">
-              <h4 className="text-sm font-semibold text-gray-900 mb-2">
-                Analyse IA avec Mistral
-              </h4>
-              {!import.meta.env.VITE_GEMINI_API_KEY ? (
-                <div className="text-sm text-gray-600 space-y-1">
-                  <p>🔑 Pour activer l'analyse IA, ajoutez votre clé API Mistral dans .env.local</p>
-                  <p className="text-xs">Créez un compte sur mistral.ai pour obtenir une clé API gratuite</p>
-                </div>
-              ) : (
-                <ul className="text-sm text-gray-600 space-y-1">
-                  <li className="flex items-start gap-2">
-                    <span className="w-1 h-1 rounded-full bg-purple-500 mt-2 flex-shrink-0" />
-                    Prenez une photo nette avec un bon éclairage
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="w-1 h-1 rounded-full bg-purple-500 mt-2 flex-shrink-0" />
-                    Centrez l'objet dans le cadre
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="w-1 h-1 rounded-full bg-purple-500 mt-2 flex-shrink-0" />
-                    Évitez les arrière-plans encombrés
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="w-1 h-1 rounded-full bg-purple-500 mt-2 flex-shrink-0" />
-                    Montrez les marques/étiquettes si visibles
-                  </li>
-                </ul>
-              )}
-            </div>
-          </div>
-        </Card>
-      )}
+      
 
       {/* Bouton d'analyse manuelle */}
       {!isAnalyzing && !aiResult && images.length > 0 && aiEnabled && !hasAnalyzed && (
