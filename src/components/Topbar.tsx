@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Package, Plus, Search, MessageCircle, User, LogOut, Menu, X, Users, 
+  Plus, Search, MessageCircle, User, LogOut, Menu, X, Users, 
   HelpCircle, Star, Settings, Sparkles, Trophy, CheckCircle, ChevronDown, Shield
 } from 'lucide-react';
 import { Link, useNavigate, useLocation, NavLink } from 'react-router-dom';
@@ -209,11 +209,20 @@ const Topbar: React.FC = () => {
             className="absolute left-0 top-0 h-full w-full max-w-xs bg-white flex flex-col"
           >
             <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-              <Link to="/" onClick={closeMobile} className="flex items-center gap-3 group">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center">
-                  <Package className="w-5 h-5 text-white" />
+              <Link to="/" onClick={closeMobile} className="group">
+                <img 
+                  src="/logo.png" 
+                  alt="Échangeo Logo" 
+                  className="w-9 h-9 object-contain"
+                  onError={(e) => {
+                    // Fallback si l'image n'existe pas
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+                <div className="w-9 h-9 bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center hidden">
+                  <span className="text-white font-bold text-sm">T</span>
                 </div>
-                <span className="font-bold text-lg text-gray-900">Échangeo</span>
               </Link>
               <button onClick={closeMobile} className="p-2 rounded-lg hover:bg-gray-100"><X size={20} /></button>
             </div>
@@ -303,11 +312,20 @@ const Topbar: React.FC = () => {
           {/* Desktop Header */}
           <div className="hidden md:flex items-center justify-between h-full gap-4">
             <div className="flex items-center gap-6">
-              <Link to="/" className="flex items-center gap-3 group">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-500/25 group-hover:scale-105 transition-transform">
-                  <Package className="w-5 h-5 text-white" />
+              <Link to="/" className="group">
+                <img 
+                  src="/logo.png" 
+                  alt="Échangeo Logo" 
+                  className="w-20 h-20 object-contain group-hover:scale-105 transition-transform"
+                  onError={(e) => {
+                    // Fallback si l'image n'existe pas
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+                <div className="w-10 h-10 bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center group-hover:scale-105 transition-transform hidden">
+                  <span className="text-white font-bold text-lg">T</span>
                 </div>
-                <span className="font-bold text-xl text-gray-900 group-hover:text-brand-600 transition-colors">Échangeo</span>
               </Link>
               <nav className="flex items-center gap-1 text-sm text-gray-700">
                 {mainNavLinks.map(({ to, label }) => (
@@ -341,11 +359,20 @@ const Topbar: React.FC = () => {
           
           {/* Mobile Header */}
           <div className="md:hidden flex items-center justify-between h-full">
-              <Link to="/" className="flex items-center gap-2 group">
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center">
-                    <Package className="w-5 h-5 text-white" />
-                  </div>
-                  <span className="font-bold text-lg text-gray-900">Échangeo</span>
+              <Link to="/" className="group">
+                <img 
+                  src="/logo.png" 
+                  alt="Échangeo Logo" 
+                  className="w-9 h-9 object-contain"
+                  onError={(e) => {
+                    // Fallback si l'image n'existe pas
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+                <div className="w-9 h-9 bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center hidden">
+                  <span className="text-white font-bold text-sm">T</span>
+                </div>
               </Link>
               <div className="flex items-center gap-1">
                   <button onClick={() => setIsSearchOpen(true)} className="p-2.5 rounded-lg hover:bg-gray-100 text-gray-600"><Search size={20} /></button>
