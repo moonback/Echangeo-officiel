@@ -943,7 +943,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
             transition={{ delay: 0.5, type: "spring", stiffness: 300 }}
             className="absolute bottom-24 left-6 right-6 z-20 pointer-events-none"
           >
-            <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/50 p-3 pointer-events-auto max-h-32 w-1/2 min-w-[350px] mx-auto">
+            <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/50 p-3 pointer-events-auto max-h-32 w-1/2 min-w-[350px] ml-0">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <div className="p-1.5 bg-gradient-to-r from-brand-100 to-brand-200 rounded-lg">
