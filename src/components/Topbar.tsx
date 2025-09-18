@@ -213,15 +213,15 @@ const Topbar: React.FC = () => {
                 <img 
                   src="/logo.png" 
                   alt="Échangeo Logo" 
-                  className="w-9 h-9 object-contain"
+                  className="w-12 h-12 object-contain"
                   onError={(e) => {
                     // Fallback si l'image n'existe pas
                     e.currentTarget.style.display = 'none';
                     e.currentTarget.nextElementSibling?.classList.remove('hidden');
                   }}
                 />
-                <div className="w-9 h-9 bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center hidden">
-                  <span className="text-white font-bold text-sm">T</span>
+                <div className="w-12 h-12 bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center hidden">
+                  <span className="text-white font-bold text-base">T</span>
                 </div>
               </Link>
               <button onClick={closeMobile} className="p-2 rounded-lg hover:bg-gray-100"><X size={20} /></button>
@@ -363,15 +363,15 @@ const Topbar: React.FC = () => {
                 <img 
                   src="/logo.png" 
                   alt="Échangeo Logo" 
-                  className="w-9 h-9 object-contain"
+                  className="w-12 h-12 object-contain"
                   onError={(e) => {
                     // Fallback si l'image n'existe pas
                     e.currentTarget.style.display = 'none';
                     e.currentTarget.nextElementSibling?.classList.remove('hidden');
                   }}
                 />
-                <div className="w-9 h-9 bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center hidden">
-                  <span className="text-white font-bold text-sm">T</span>
+                <div className="w-12 h-12 bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center hidden">
+                  <span className="text-white font-bold text-base">T</span>
                 </div>
               </Link>
               <div className="flex items-center gap-1">
