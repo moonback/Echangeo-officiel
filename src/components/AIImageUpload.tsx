@@ -360,7 +360,7 @@ const AIImageUpload: React.FC<AIImageUploadProps> = ({
               <h4 className="text-sm font-semibold text-gray-900 mb-2">
                 Analyse IA avec Mistral
               </h4>
-              {!import.meta.env.VITE_MISTRAL_API_KEY ? (
+              {!import.meta.env.VITE_GEMINI_API_KEY ? (
                 <div className="text-sm text-gray-600 space-y-1">
                   <p>🔑 Pour activer l'analyse IA, ajoutez votre clé API Mistral dans .env.local</p>
                   <p className="text-xs">Créez un compte sur mistral.ai pour obtenir une clé API gratuite</p>

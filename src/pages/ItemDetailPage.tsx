@@ -492,7 +492,7 @@ const ItemDetailPage: React.FC = () => {
               ) : (
                 <form onSubmit={handleRequestSubmit} className="space-y-4">
                   {/* Assistant IA pour générer le message */}
-                  {import.meta.env.VITE_MISTRAL_API_KEY && (
+                  {import.meta.env.VITE_GEMINI_API_KEY && (
                     <div className="bg-gradient-to-r from-purple-50/50 to-blue-50/50 border border-purple-200/50 rounded-xl p-4">
                       <div className="flex items-center gap-2 mb-3">
                         <Sparkles className="w-4 h-4 text-purple-600" />

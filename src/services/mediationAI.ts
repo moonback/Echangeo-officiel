@@ -8,7 +8,7 @@ export interface ConflictAnalysis {
   mediationMessage?: string;
 }
 
-const MISTRAL_API_URL = 'https://api.mistral.ai/v1/chat/completions';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
 /**
  * Analyse les messages pour détecter des conflits potentiels
@@ -17,7 +17,7 @@ export const analyzeConflict = async (
   messages: Message[],
   request?: Request
 ): Promise<ConflictAnalysis> => {
-  const apiKey = import.meta.env.VITE_MISTRAL_API_KEY;
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   
   if (!apiKey || messages.length < 2) {
     return {
@@ -70,17 +70,25 @@ Suggestions de résolution :
 - Ton diplomatique et bienveillant
 - Rappel des bonnes pratiques TrocAll`;
 
-    const response = await fetch(MISTRAL_API_URL, {
+    const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'mistral-large-latest',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 600,
-        temperature: 0.3,
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          maxOutputTokens: 600,
+          temperature: 0.3,
+        },
       }),
     });
 
@@ -89,7 +97,7 @@ Suggestions de résolution :
     }
 
     const result = await response.json();
-    const content = result.choices[0]?.message?.content;
+    const content = result.candidates[0]?.content?.parts[0]?.text;
 
     if (!content) {
       return {
@@ -136,7 +144,7 @@ export const generateMediationMessage = async (
   conflictAnalysis: ConflictAnalysis,
   context?: string
 ): Promise<string> => {
-  const apiKey = import.meta.env.VITE_MISTRAL_API_KEY;
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   
   if (!apiKey) {
     return "Il semble y avoir un malentendu. Pourriez-vous clarifier la situation pour que nous trouvions une solution ensemble ?";
@@ -162,17 +170,25 @@ Générez un message qui :
 
 Retournez UNIQUEMENT le message, sans guillemets.`;
 
-    const response = await fetch(MISTRAL_API_URL, {
+    const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'mistral-large-latest',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 150,
-        temperature: 0.5,
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          maxOutputTokens: 150,
+          temperature: 0.5,
+        },
       }),
     });
 
@@ -181,7 +197,7 @@ Retournez UNIQUEMENT le message, sans guillemets.`;
     }
 
     const result = await response.json();
-    const mediationMessage = result.choices[0]?.message?.content?.trim();
+    const mediationMessage = result.candidates[0]?.content?.parts[0]?.text?.trim();
 
     return mediationMessage || "Essayons de trouver une solution qui convient à tous les deux. Que proposez-vous ?";
 

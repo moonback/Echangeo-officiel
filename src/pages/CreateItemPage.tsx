@@ -165,7 +165,7 @@ const CreateItemPage: React.FC = () => {
     if (brand) suggestions.add(brand.toLowerCase());
     if (model) suggestions.add(model.toLowerCase());
     if (brand && model) suggestions.add(`${brand} ${model}`.toLowerCase());
-    if (category) {
+    if (category && CATEGORY_SUGGESTIONS[category]) {
       CATEGORY_SUGGESTIONS[category].forEach((t) => suggestions.add(t));
     }
     setTagSuggestions(Array.from(suggestions).slice(0, 8));

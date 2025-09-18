@@ -15,7 +15,7 @@ export interface ChatAnalysis {
   summary?: string;
 }
 
-const MISTRAL_API_URL = 'https://api.mistral.ai/v1/chat/completions';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
 /**
  * Génère des suggestions de réponse contextuelle pour un chat
@@ -29,7 +29,7 @@ export const generateChatSuggestions = async (
     userRelation?: 'owner' | 'requester';
   }
 ): Promise<ChatAISuggestion[]> => {
-  const apiKey = import.meta.env.VITE_MISTRAL_API_KEY;
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   
   if (!apiKey) {
     // Retourner des suggestions par défaut si pas d'API
@@ -88,26 +88,34 @@ Règles :
 - Ton amical mais respectueux entre voisins
 - Adaptées au type d'échange (prêt/troc)`;
 
-    const response = await fetch(MISTRAL_API_URL, {
+    const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'mistral-large-latest',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 500,
-        temperature: 0.7,
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          maxOutputTokens: 500,
+          temperature: 0.7,
+        },
       }),
     });
 
     if (!response.ok) {
-      throw new Error(`Erreur API Mistral: ${response.status}`);
+      throw new Error(`Erreur API Gemini: ${response.status}`);
     }
 
     const result = await response.json();
-    const content = result.choices[0]?.message?.content;
+    const content = result.candidates[0]?.content?.parts[0]?.text;
 
     if (!content) {
       return getDefaultSuggestions(context);
@@ -130,7 +138,7 @@ Règles :
  * Analyse le sentiment et le ton d'une conversation
  */
 export const analyzeChatSentiment = async (messages: Message[]): Promise<ChatAnalysis> => {
-  const apiKey = import.meta.env.VITE_MISTRAL_API_KEY;
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   
   if (!apiKey || messages.length === 0) {
     return {
@@ -158,26 +166,34 @@ Retournez UNIQUEMENT un JSON avec ce format :
   "summary": "Résumé en une phrase de l'état de la conversation"
 }`;
 
-    const response = await fetch(MISTRAL_API_URL, {
+    const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'mistral-large-latest',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 200,
-        temperature: 0.3,
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          maxOutputTokens: 200,
+          temperature: 0.3,
+        },
       }),
     });
 
     if (!response.ok) {
-      throw new Error(`Erreur API Mistral: ${response.status}`);
+      throw new Error(`Erreur API Gemini: ${response.status}`);
     }
 
     const result = await response.json();
-    const content = result.choices[0]?.message?.content;
+    const content = result.candidates[0]?.content?.parts[0]?.text;
 
     if (content) {
       try {
@@ -213,7 +229,7 @@ Retournez UNIQUEMENT un JSON avec ce format :
  * Améliore un message avec l'IA (correction, politesse, clarté)
  */
 export const improveMessage = async (message: string, context?: string): Promise<string> => {
-  const apiKey = import.meta.env.VITE_MISTRAL_API_KEY;
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   
   if (!apiKey) {
     return message;
@@ -234,17 +250,25 @@ Règles :
 
 Retournez UNIQUEMENT le message amélioré, sans guillemets ni formatage.`;
 
-    const response = await fetch(MISTRAL_API_URL, {
+    const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'mistral-large-latest',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 150,
-        temperature: 0.4,
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          maxOutputTokens: 150,
+          temperature: 0.4,
+        },
       }),
     });
 
@@ -253,7 +277,7 @@ Retournez UNIQUEMENT le message amélioré, sans guillemets ni formatage.`;
     }
 
     const result = await response.json();
-    const improvedMessage = result.choices[0]?.message?.content?.trim();
+    const improvedMessage = result.candidates[0]?.content?.parts[0]?.text?.trim();
 
     return improvedMessage || message;
 
@@ -329,7 +353,7 @@ export const generateRequestMessage = async (
   requestType: 'loan' | 'trade',
   userMessage?: string
 ): Promise<string> => {
-  const apiKey = import.meta.env.VITE_MISTRAL_API_KEY;
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   
   if (!apiKey) {
     // Message par défaut
@@ -358,17 +382,25 @@ Générez un message qui :
 
 Retournez UNIQUEMENT le message, sans guillemets.`;
 
-    const response = await fetch(MISTRAL_API_URL, {
+    const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'mistral-large-latest',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 100,
-        temperature: 0.6,
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          maxOutputTokens: 100,
+          temperature: 0.6,
+        },
       }),
     });
 
@@ -377,7 +409,7 @@ Retournez UNIQUEMENT le message, sans guillemets.`;
     }
 
     const result = await response.json();
-    const generatedMessage = result.choices[0]?.message?.content?.trim();
+    const generatedMessage = result.candidates[0]?.content?.parts[0]?.text?.trim();
 
     return generatedMessage || `Bonjour ! J'aimerais ${requestType === 'loan' ? 'emprunter' : 'échanger'} votre ${itemTitle}. Merci !`;
 

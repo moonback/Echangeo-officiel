@@ -70,7 +70,7 @@ const CompatibilityScoreComponent: React.FC<CompatibilityScoreProps> = ({
   const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
-    if (import.meta.env.VITE_MISTRAL_API_KEY) {
+    if (import.meta.env.VITE_GEMINI_API_KEY) {
       loadCompatibility();
     }
   }, [requesterProfile.id, ownerProfile.id, item.id]);
@@ -103,7 +103,7 @@ const CompatibilityScoreComponent: React.FC<CompatibilityScoreProps> = ({
     return '❌';
   };
 
-  if (!import.meta.env.VITE_MISTRAL_API_KEY) {
+  if (!import.meta.env.VITE_GEMINI_API_KEY) {
     return null;
   }
 

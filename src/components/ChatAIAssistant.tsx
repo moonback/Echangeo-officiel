@@ -134,7 +134,7 @@ const ChatAIAssistant: React.FC<ChatAIAssistantProps> = ({
     }
   };
 
-  if (!import.meta.env.VITE_MISTRAL_API_KEY) {
+  if (!import.meta.env.VITE_GEMINI_API_KEY) {
     return null; // Ne pas afficher si pas d'API configurée
   }
 

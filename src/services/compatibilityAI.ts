@@ -12,7 +12,7 @@ export interface CompatibilityScore {
   recommendations: string[];
 }
 
-const MISTRAL_API_URL = 'https://api.mistral.ai/v1/chat/completions';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
 /**
  * Calcule un score de compatibilité entre deux utilisateurs pour un échange
@@ -23,7 +23,7 @@ export const calculateCompatibility = async (
   item: Item,
   requestHistory?: Request[]
 ): Promise<CompatibilityScore> => {
-  const apiKey = import.meta.env.VITE_MISTRAL_API_KEY;
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   
   if (!apiKey) {
     return generateBasicCompatibility(requesterProfile, ownerProfile, item);
@@ -90,17 +90,25 @@ Critères d'évaluation :
 
 Scores de 0 à 100.`;
 
-    const response = await fetch(MISTRAL_API_URL, {
+    const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'mistral-large-latest',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 500,
-        temperature: 0.3,
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          maxOutputTokens: 500,
+          temperature: 0.3,
+        },
       }),
     });
 
@@ -109,7 +117,7 @@ Scores de 0 à 100.`;
     }
 
     const result = await response.json();
-    const content = result.choices[0]?.message?.content;
+    const content = result.candidates[0]?.content?.parts[0]?.text;
 
     if (!content) {
       return generateBasicCompatibility(requesterProfile, ownerProfile, item);

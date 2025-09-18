@@ -65,13 +65,13 @@ const ConflictMediator: React.FC<ConflictMediatorProps> = ({
 
   // Analyser automatiquement quand il y a suffisamment de messages
   useEffect(() => {
-    if (messages.length >= 4 && !analysis && import.meta.env.VITE_MISTRAL_API_KEY) {
+    if (messages.length >= 4 && !analysis && import.meta.env.VITE_GEMINI_API_KEY) {
       analyzeMessages();
     }
   }, [messages.length]);
 
   const analyzeMessages = async () => {
-    if (!import.meta.env.VITE_MISTRAL_API_KEY) return;
+    if (!import.meta.env.VITE_GEMINI_API_KEY) return;
     
     setIsAnalyzing(true);
     try {
@@ -84,7 +84,7 @@ const ConflictMediator: React.FC<ConflictMediatorProps> = ({
   };
 
   const generateMediation = async () => {
-    if (!analysis || !import.meta.env.VITE_MISTRAL_API_KEY) return;
+    if (!analysis || !import.meta.env.VITE_GEMINI_API_KEY) return;
     
     setIsGeneratingMediation(true);
     try {
@@ -107,7 +107,7 @@ const ConflictMediator: React.FC<ConflictMediatorProps> = ({
   };
 
   // Ne pas afficher si pas de conflit détecté ou pas d'API
-  if (!import.meta.env.VITE_MISTRAL_API_KEY || 
+  if (!import.meta.env.VITE_GEMINI_API_KEY || 
       (analysis && !analysis.hasConflict && analysis.conflictLevel === 'low')) {
     return null;
   }
