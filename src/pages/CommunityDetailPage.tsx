@@ -7,11 +7,7 @@ import {
   Users, 
   Calendar, 
   MessageCircle, 
-  TrendingUp, 
-  UserPlus, 
-  Check,
-  Clock,
-  Star
+  UserPlus
 } from 'lucide-react';
 import { useCommunity, useJoinCommunity, useLeaveCommunity, useUserCommunities } from '../hooks/useCommunities';
 import { useAuthStore } from '../store/authStore';
@@ -129,7 +125,7 @@ const CommunityDetailPage: React.FC = () => {
           <div className="flex items-center gap-4 mb-4">
             <Button
               onClick={() => navigate('/communities')}
-              variant="outline"
+              variant="ghost"
               size="sm"
               className="flex items-center gap-2"
             >
@@ -157,17 +153,17 @@ const CommunityDetailPage: React.FC = () => {
             
             <div className="flex items-center gap-3">
               <Badge 
-                className={getActivityColor(community.activity_level)}
-                variant="outline"
+                className={getActivityColor('moderate')}
+                variant="neutral"
               >
-                {getActivityLabel(community.activity_level)}
+                {getActivityLabel('moderate')}
               </Badge>
               
               {isMember ? (
                 <Button
                   onClick={handleLeaveCommunity}
                   disabled={isLeaving}
-                  variant="outline"
+                  variant="danger"
                   className="text-red-600 border-red-200 hover:bg-red-50"
                 >
                   {isLeaving ? 'Sortie...' : 'Quitter le quartier'}
@@ -203,25 +199,25 @@ const CommunityDetailPage: React.FC = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div className="text-center">
                 <div className="text-3xl font-bold text-brand-600 mb-2">
-                  {community.total_members}
+                  {community.stats?.total_members || 0}
                 </div>
                 <div className="text-sm text-gray-600">Membres</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-green-600 mb-2">
-                  {community.total_exchanges}
+                  {community.stats?.total_exchanges || 0}
                 </div>
                 <div className="text-sm text-gray-600">Échanges</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-blue-600 mb-2">
-                  {community.total_events}
+                  {community.stats?.total_events || 0}
                 </div>
                 <div className="text-sm text-gray-600">Événements</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-purple-600 mb-2">
-                  {community.total_items}
+                  {community.stats?.total_items || 0}
                 </div>
                 <div className="text-sm text-gray-600">Objets</div>
               </div>
@@ -370,7 +366,7 @@ const CommunityDetailPage: React.FC = () => {
                           ? 'bg-blue-100 text-blue-700 border-blue-200'
                           : 'bg-gray-100 text-gray-700 border-gray-200'
                       }
-                      variant="outline"
+                      variant="neutral"
                     >
                       {member.role === 'admin' ? 'Admin' : 
                        member.role === 'moderator' ? 'Modérateur' : 'Membre'}
