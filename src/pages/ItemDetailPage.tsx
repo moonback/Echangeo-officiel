@@ -61,6 +61,28 @@ const ItemDetailPage: React.FC = () => {
     (r) => r.requester_id === user?.id && r.item_id === item.id && r.status === 'pending'
   ));
 
+  // Gestion des événements clavier pour la lightbox
+  useEffect(() => {
+    if (!isLightboxOpen || !item?.images) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsLightboxOpen(false);
+      if (e.key === 'ArrowLeft') goPrevImage();
+      if (e.key === 'ArrowRight') goNextImage();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isLightboxOpen, item?.images]);
+
+  const goPrevImage = () => {
+    if (!item?.images || item.images.length === 0) return;
+    setCurrentImageIndex((prev) => (prev - 1 + item.images.length) % item.images.length);
+  };
+
+  const goNextImage = () => {
+    if (!item?.images || item.images.length === 0) return;
+    setCurrentImageIndex((prev) => (prev + 1) % item.images.length);
+  };
+
   if (isLoading) {
     return (
       <div className="p-4 max-w-7xl mx-auto">
@@ -91,28 +113,6 @@ const ItemDetailPage: React.FC = () => {
   const CategoryIcon = getCategoryIcon(item.category);
   const OfferTypeIcon = getOfferTypeIcon(item.offer_type);
   const isOwner = user?.id === item.owner_id;
-
-  // Gestion des événements clavier pour la lightbox
-  useEffect(() => {
-    if (!isLightboxOpen || !item?.images) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsLightboxOpen(false);
-      if (e.key === 'ArrowLeft') goPrevImage();
-      if (e.key === 'ArrowRight') goNextImage();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [isLightboxOpen, item?.images]);
-
-  const goPrevImage = () => {
-    if (!item?.images || item.images.length === 0) return;
-    setCurrentImageIndex((prev) => (prev - 1 + item.images.length) % item.images.length);
-  };
-
-  const goNextImage = () => {
-    if (!item?.images || item.images.length === 0) return;
-    setCurrentImageIndex((prev) => (prev + 1) % item.images.length);
-  };
 
   const handleRequestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
