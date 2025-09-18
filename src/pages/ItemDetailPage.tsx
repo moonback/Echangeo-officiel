@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -62,6 +62,16 @@ const ItemDetailPage: React.FC = () => {
     (r) => r.requester_id === user?.id && r.item_id === item.id && r.status === 'pending'
   ));
 
+  const goPrevImage = useCallback(() => {
+    if (!item?.images || item.images.length === 0) return;
+    setCurrentImageIndex((prev) => (prev - 1 + item.images!.length) % item.images!.length);
+  }, [item?.images]);
+
+  const goNextImage = useCallback(() => {
+    if (!item?.images || item.images.length === 0) return;
+    setCurrentImageIndex((prev) => (prev + 1) % item.images!.length);
+  }, [item?.images]);
+
   // Gestion des événements clavier pour la lightbox
   useEffect(() => {
     if (!isLightboxOpen || !item?.images) return;
@@ -72,17 +82,7 @@ const ItemDetailPage: React.FC = () => {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [isLightboxOpen, item?.images]);
-
-  const goPrevImage = () => {
-    if (!item?.images || item.images.length === 0) return;
-    setCurrentImageIndex((prev) => (prev - 1 + item.images.length) % item.images.length);
-  };
-
-  const goNextImage = () => {
-    if (!item?.images || item.images.length === 0) return;
-    setCurrentImageIndex((prev) => (prev + 1) % item.images.length);
-  };
+  }, [isLightboxOpen, item?.images, goPrevImage, goNextImage]);
 
   if (isLoading) {
     return (
@@ -176,7 +176,9 @@ const ItemDetailPage: React.FC = () => {
             onClick={async () => {
               try {
                 await navigator.clipboard.writeText(window.location.href);
-              } catch {}
+              } catch {
+                // Erreur silencieuse pour la copie
+              }
             }}
             title="Copier le lien"
             aria-label="Copier le lien"
@@ -263,11 +265,11 @@ const ItemDetailPage: React.FC = () => {
             </Badge>
           </div>
 
-          {typeof (item as any).average_rating === 'number' && (item as any).ratings_count ? (
+          {typeof (item as { average_rating?: number; ratings_count?: number }).average_rating === 'number' && (item as { average_rating?: number; ratings_count?: number }).ratings_count ? (
             <div className="flex items-center text-sm text-gray-700">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-yellow-500 mr-1"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.285a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.802 2.034a1 1 0 00-.364 1.118l1.07 3.286c.3.92-.755 1.688-1.54 1.118l-2.802-2.034a1 1 0 00-1.175 0l-2.802 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.286a1 1 0 00-.364-1.118L2.98 8.712c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.285z" /></svg>
-              <span className="font-medium">{(item as any).average_rating.toFixed(1)}</span>
-              <span className="ml-1 text-gray-500">({(item as any).ratings_count})</span>
+              <span className="font-medium">{(item as { average_rating: number }).average_rating.toFixed(1)}</span>
+              <span className="ml-1 text-gray-500">({(item as { ratings_count: number }).ratings_count})</span>
             </div>
           ) : null}
 
@@ -674,32 +676,59 @@ const ItemDetailPage: React.FC = () => {
                  <div className="sm:col-span-2 lg:col-span-3 xl:col-span-4">
                    <span className="text-gray-500 block mb-3">Position</span>
                    <div className="space-y-3">
-                     {/* Carte Mapbox intégrée */}
-                     <div className="relative rounded-lg overflow-hidden border border-gray-200 shadow-sm">
-                       <iframe
-                         src={`https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+ff0000(${item.longitude},${item.latitude})/${item.longitude},${item.latitude},15,0/600x300@2x?access_token=${import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw'}`}
-                         width="100%"
-                         height="200"
-                         style={{ border: 0 }}
-                         allowFullScreen
-                         loading="lazy"
-                         referrerPolicy="no-referrer-when-downgrade"
-                         className="w-full h-48"
-                         title="Position de l'objet"
-                       />
-                       {/* Overlay avec coordonnées */}
-                       <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm rounded-lg px-2 py-1 text-xs font-mono text-gray-600 border border-gray-200">
-                         {item.latitude?.toFixed(6)}, {item.longitude?.toFixed(6)}
+                     {/* Carte Mapbox interactive */}
+                     <div className="relative rounded-lg overflow-hidden border border-gray-200 shadow-lg bg-gray-100">
+                       <div className="w-full h-64 bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center relative">
+                         {/* Carte Mapbox intégrée avec style amélioré */}
+                         <iframe
+                           src={`https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+ff0000(${item.longitude},${item.latitude})/${item.longitude},${item.latitude},14,0/800x400@2x?access_token=${import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw'}`}
+                           width="100%"
+                           height="100%"
+                           style={{ border: 0 }}
+                           allowFullScreen
+                           loading="lazy"
+                           referrerPolicy="no-referrer-when-downgrade"
+                           className="w-full h-full rounded-lg"
+                           title="Position de l'objet"
+                         />
+                         
+                         {/* Overlay avec informations */}
+                         <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border border-gray-200">
+                           <div className="flex items-center gap-2">
+                             <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                             <span className="text-sm font-medium text-gray-800">Position de l'objet</span>
+                           </div>
+                         </div>
+                         
+                         {/* Coordonnées en overlay */}
+                         <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border border-gray-200">
+                           <div className="text-xs font-mono text-gray-600">
+                             <div className="font-semibold text-gray-800 mb-1">Coordonnées</div>
+                             <div>Lat: {item.latitude?.toFixed(6)}</div>
+                             <div>Lng: {item.longitude?.toFixed(6)}</div>
+                           </div>
+                         </div>
+                         
+                         {/* Bouton plein écran */}
+                         <button
+                           onClick={() => window.open(`https://www.mapbox.com/maps?q=${item.latitude},${item.longitude}`, '_blank')}
+                           className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm rounded-lg p-2 shadow-lg border border-gray-200 hover:bg-white transition-colors duration-200"
+                           title="Ouvrir en plein écran"
+                         >
+                           <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                           </svg>
+                         </button>
                        </div>
                      </div>
                      
-                     {/* Boutons d'action */}
-                     <div className="flex gap-2">
+                     {/* Boutons d'action améliorés */}
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                        <a
                          href={`https://www.mapbox.com/maps?q=${item.latitude},${item.longitude}`}
                          target="_blank" 
                          rel="noreferrer"
-                         className="inline-flex items-center gap-2 px-3 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition-colors duration-200"
+                         className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg"
                        >
                          <MapPin className="w-4 h-4" />
                          Ouvrir dans Mapbox
@@ -714,10 +743,10 @@ const ItemDetailPage: React.FC = () => {
                              });
                            }
                          }}
-                         className="inline-flex items-center gap-2 px-3 py-2 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition-colors duration-200"
+                         className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-md hover:shadow-lg"
                        >
                          <ArrowRight className="w-4 h-4" />
-                         Itinéraire
+                         Calculer l'itinéraire
                        </button>
                      </div>
                    </div>
