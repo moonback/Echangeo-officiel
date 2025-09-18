@@ -142,8 +142,8 @@ const LoginPage: React.FC = () => {
                 className="w-full px-4 py-3 border border-gray-300/60 rounded-2xl bg-white/60 backdrop-blur-sm focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 focus:-translate-y-0.5 focus:shadow-lg transition-all duration-200"
                 placeholder="Votre nom complet"
               />
-              {errors.fullName && (
-                <p className="text-red-500 text-xs mt-2">{errors.fullName.message}</p>
+              {(errors as Record<string, { message?: string }>).fullName && (
+                <p className="text-red-500 text-xs mt-2">{(errors as Record<string, { message?: string }>).fullName.message}</p>
               )}
             </motion.div>
           )}
@@ -213,8 +213,8 @@ const LoginPage: React.FC = () => {
                 className="w-full px-4 py-3 border border-gray-300/60 rounded-2xl bg-white/60 backdrop-blur-sm focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 focus:-translate-y-0.5 focus:shadow-lg transition-all duration-200"
                 placeholder="••••••••"
               />
-              {errors.confirmPassword && (
-                <p className="text-red-500 text-xs mt-2">{errors.confirmPassword.message}</p>
+              {(errors as Record<string, { message?: string }>).confirmPassword && (
+                <p className="text-red-500 text-xs mt-2">{(errors as Record<string, { message?: string }>).confirmPassword.message}</p>
               )}
             </motion.div>
           )}
