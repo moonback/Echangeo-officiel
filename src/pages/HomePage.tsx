@@ -9,17 +9,10 @@ import { ItemCardSkeleton } from '../components/SkeletonLoader';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import EmptyState from '../components/EmptyState';
-import MapboxMap from '../components/MapboxMap';
+import NearbyItemsMap from '../components/NearbyItemsMap';
 
 const HomePage: React.FC = () => {
   const { data: items, isLoading: itemsLoading } = useItems();
-  const [userLoc, setUserLoc] = React.useState<{ lat: number; lng: number } | null>(null);
-  React.useEffect(() => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition((pos) => {
-      setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-    });
-  }, []);
   const { data: requests } = useRequests();
 
   const recentItems = items?.slice(0, 4) || [];
@@ -161,37 +154,16 @@ const HomePage: React.FC = () => {
       </motion.section>
 
       {/* Carte interactive */}
-      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        <Card className="p-0 glass">
-          <div className="p-4 flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-900">Autour de moi</h2>
-            <span className="text-sm text-gray-600">{items?.length || 0} objets</span>
-          </div>
-          <div>
-            <MapboxMap
-              center={{ lat: userLoc?.lat ?? 48.8566, lng: userLoc?.lng ?? 2.3522 }}
-              zoom={12}
-              height={360}
-              autoFit
-              showUserLocation={!!userLoc}
-              userLocation={userLoc || undefined}
-              markers={(items || [])
-                .filter((it) => typeof it.latitude === 'number' && typeof it.longitude === 'number')
-                .map((it) => ({
-                  id: it.id,
-                  latitude: it.latitude as number,
-                  longitude: it.longitude as number,
-                  title: it.title,
-                  imageUrl: it.images && it.images.length > 0 ? it.images[0].url : undefined,
-                  category: it.category,
-                }))}
-              onMarkerClick={(id) => {
-                window.location.href = `/items/${id}`;
-              }}
-            />
-          </div>
-        </Card>
-      </motion.section>
+      <NearbyItemsMap
+        title="Quartiers et objets"
+        height={360}
+        zoom={11}
+        autoFit={true}
+        showStats={true}
+        showControls={true}
+        showCommunities={true}
+        maxItems={50}
+      />
 
       {/* Objets récents */}
       <motion.section 
@@ -319,7 +291,7 @@ const HomePage: React.FC = () => {
                   }}
                   className="h-full"
                 >
-                  <ItemCard item={item} userLocation={userLoc || undefined} />
+                  <ItemCard item={item} />
                 </motion.div>
               ))}
             </motion.div>
