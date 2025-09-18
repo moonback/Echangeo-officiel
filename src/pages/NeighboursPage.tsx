@@ -5,6 +5,7 @@ import { useCommunities } from '../hooks/useCommunities';
 import { Link } from 'react-router-dom';
 import { Search, MapPin, MessageCircle, User, ExternalLink, SortAsc, Users } from 'lucide-react';
 import MapboxMap from '../components/MapboxMap';
+import MapLegend from '../components/MapLegend';
 import Card from '../components/ui/Card';
 
 const NeighboursPage: React.FC = () => {
@@ -194,6 +195,7 @@ const NeighboursPage: React.FC = () => {
                 autoFit
                 showUserLocation={!!userLoc}
                 userLocation={userLoc || undefined}
+                showPopup={true}
                 markers={showCommunities ? (communities || [])
                   .filter((c: any) => typeof c.center_latitude === 'number' && typeof c.center_longitude === 'number')
                   .map((c: any) => ({
@@ -202,7 +204,7 @@ const NeighboursPage: React.FC = () => {
                     longitude: parseFloat(c.center_longitude),
                     title: c.name,
                     description: `${c.city} - ${c.stats?.total_members || 0} membres`,
-                    color: '#8B5CF6', // Couleur violette pour les quartiers
+                    type: 'community' as const,
                   })) : (neighbors || [])
                   .filter((p: any) => typeof p.latitude === 'number' && typeof p.longitude === 'number')
                   .map((p: any) => ({
@@ -210,7 +212,7 @@ const NeighboursPage: React.FC = () => {
                     latitude: p.latitude as number,
                     longitude: p.longitude as number,
                     title: p.full_name || p.email || 'Voisin',
-                    color: '#3B82F6', // Couleur bleue pour les utilisateurs
+                    type: 'user' as const,
                   }))}
                 onMarkerClick={(id) => {
                   if (showCommunities) {
@@ -222,6 +224,21 @@ const NeighboursPage: React.FC = () => {
               />
             </div>
           </Card>
+        </motion.div>
+
+        {/* Légende de la carte */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mb-6"
+        >
+          <MapLegend 
+            showItems={!showCommunities}
+            showCommunities={showCommunities}
+            showUsers={!showCommunities}
+            showEvents={false}
+          />
         </motion.div>
 
         {/* Quartiers disponibles */}

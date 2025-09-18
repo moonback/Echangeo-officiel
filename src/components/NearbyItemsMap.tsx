@@ -123,17 +123,38 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
 
   // Préparer les marqueurs d'objets
   const itemMarkers = useMemo(() => {
-    return filteredItems.map((item) => ({
-      id: item.id,
-      latitude: item.latitude as number,
-      longitude: item.longitude as number,
-      title: item.title,
-      imageUrl: item.images && item.images.length > 0 ? item.images[0].url : undefined,
-      category: item.category,
-      type: 'item' as const,
-      data: item
-    }));
-  }, [filteredItems]);
+    return filteredItems.map((item) => {
+      // Calculer la distance si on a la position utilisateur
+      let distance: number | undefined;
+      if (userLoc && item.latitude && item.longitude) {
+        const R = 6371; // Rayon de la Terre en km
+        const dLat = (item.latitude - userLoc.lat) * Math.PI / 180;
+        const dLon = (item.longitude - userLoc.lng) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+          Math.cos(userLoc.lat * Math.PI / 180) * Math.cos(item.latitude * Math.PI / 180) *
+          Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        distance = R * c;
+      }
+
+      return {
+        id: item.id,
+        latitude: item.latitude as number,
+        longitude: item.longitude as number,
+        title: item.title,
+        description: item.description,
+        imageUrl: item.images && item.images.length > 0 ? item.images[0].url : undefined,
+        category: item.category,
+        type: 'item' as const,
+        owner: item.owner?.full_name || item.owner?.email || 'Propriétaire anonyme',
+        condition: item.condition,
+        price: item.price,
+        distance: distance,
+        createdAt: item.created_at,
+        data: item
+      };
+    });
+  }, [filteredItems, userLoc]);
 
   // Statistiques
   const stats = useMemo(() => {
@@ -366,6 +387,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
               userLocation={userLoc || undefined}
               markers={viewMode === 'communities' ? communityMarkers : itemMarkers}
               onMarkerClick={handleMarkerClick}
+              showPopup={true}
             />
           ) : (
             <div 
