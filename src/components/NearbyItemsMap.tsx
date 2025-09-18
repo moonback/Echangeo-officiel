@@ -643,9 +643,9 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
             >
               <EmptyState
                 icon={viewMode === 'communities' ? <Users className="w-12 h-12" /> : <MapPin className="w-12 h-12" />}
-                title={viewMode === 'communities' ? 'Aucun quartier trouvé' : 'Aucun objet localisé'}
+                title={viewMode === 'communities' ? 'Vous ne vous êtes inscrit à aucun quartier' : 'Aucun objet localisé'}
                 description={viewMode === 'communities' 
-                  ? 'Aucun quartier actif avec des objets n\'a été trouvé dans votre région.'
+                  ? 'Recherchez le quartier où vous habitez pour voir les offres disponibles.'
                   : 'Aucun objet avec localisation n\'a été trouvé dans ce quartier.'
                 }
                 action={
