@@ -185,6 +185,7 @@ export function useCreateItem() {
       location_hint?: string;
       latitude?: number;
       longitude?: number;
+      community_id?: string; // ID de la communauté/quartier
       images: File[];
       onProgress?: (current: number, total: number, fileName: string) => void;
     }) => {
@@ -211,6 +212,7 @@ export function useCreateItem() {
           location_hint: data.location_hint || null,
           latitude: typeof data.latitude === 'number' ? data.latitude : null,
           longitude: typeof data.longitude === 'number' ? data.longitude : null,
+          community_id: data.community_id || null,
         })
         .select()
         .single();

@@ -6,8 +6,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ArrowLeft, Sparkles, AlertCircle, CheckCircle } from 'lucide-react';
 import { useCreateItem } from '../hooks/useItems';
-import { useNearbyCommunities, useCreateCommunity } from '../hooks/useCommunities';
+import { useNearbyCommunities, useCreateCommunity, useUserCommunities } from '../hooks/useCommunities';
 import { supabase } from '../services/supabase';
+import { useAuthStore } from '../store/authStore';
 import { categories } from '../utils/categories';
 import { offerTypes } from '../utils/offerTypes';
 import type { ItemCategory } from '../types';
@@ -60,6 +61,12 @@ const CreateItemPage: React.FC = () => {
   const navigate = useNavigate();
   const createItem = useCreateItem();
   const createCommunity = useCreateCommunity();
+  
+  // Récupérer l'utilisateur connecté
+  const { user } = useAuthStore();
+  
+  // Récupérer les communautés de l'utilisateur
+  const { data: userCommunities } = useUserCommunities(user?.id);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [imagesError, setImagesError] = useState<string | null>(null);
@@ -86,6 +93,14 @@ const CreateItemPage: React.FC = () => {
     userLocation?.lng || 0,
     10 // 10km de rayon
   );
+
+  // Définir automatiquement la première communauté de l'utilisateur comme sélectionnée
+  React.useEffect(() => {
+    if (userCommunities && userCommunities.length > 0 && !selectedCommunity) {
+      setSelectedCommunity(userCommunities[0].id);
+      console.log('Communauté utilisateur sélectionnée automatiquement:', userCommunities[0].name);
+    }
+  }, [userCommunities, selectedCommunity]);
 
   // Recherche d'adresse (debounce)
   React.useEffect(() => {
@@ -565,6 +580,7 @@ const CreateItemPage: React.FC = () => {
       
       await createItem.mutateAsync({
         ...data,
+        community_id: selectedCommunity || undefined,
         images: selectedImages,
         onProgress: (current, total, fileName) => setUploadProgress({ current, total, fileName }),
       });
@@ -1041,6 +1057,50 @@ const CreateItemPage: React.FC = () => {
 
 
 
+        {/* Communautés de l'utilisateur - visible sur toutes les étapes */}
+        {step >= 3 && userCommunities && userCommunities.length > 0 && (
+          <div className="p-4 rounded-xl border border-green-200 bg-green-50 glass mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <label className="block text-sm font-medium text-green-800">
+                Vos quartiers ({userCommunities.length})
+              </label>
+            </div>
+            
+            <div className="space-y-2">
+              <p className="text-sm text-green-700 mb-3">
+                Vous êtes membre de {userCommunities.length} quartier{userCommunities.length > 1 ? 's' : ''}. 
+                Votre objet sera automatiquement visible dans le quartier sélectionné.
+              </p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {userCommunities.map((community) => (
+                  <label
+                    key={community.id}
+                    className="flex items-center gap-3 p-3 rounded-lg border border-green-200 hover:bg-green-100 cursor-pointer transition-colors"
+                  >
+                    <input
+                      type="radio"
+                      name="userCommunity"
+                      value={community.id}
+                      checked={selectedCommunity === community.id}
+                      onChange={(e) => setSelectedCommunity(e.target.value)}
+                      className="w-4 h-4 text-green-600 border-green-300 focus:ring-green-500"
+                    />
+                    <div className="flex-1">
+                      <div className="font-medium text-green-900">
+                        {community.name}
+                      </div>
+                      <div className="text-sm text-green-600">
+                        {community.city} • {community.postal_code || 'N/A'}
+                      </div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Sélection de quartier - visible sur toutes les étapes après la géolocalisation */}
         {step >= 3 && (
           <div className="p-4 rounded-xl border border-gray-200 bg-white glass mb-4">
@@ -1252,7 +1312,9 @@ const CreateItemPage: React.FC = () => {
                       <p className="text-sm text-gray-700">
                         {selectedNeighborhood 
                           ? `${selectedNeighborhood.name} (${selectedNeighborhood.city})`
-                          : nearbyCommunities?.find(c => c.community_id === selectedCommunity)?.community_name
+                          : userCommunities?.find(c => c.id === selectedCommunity)?.name ||
+                            nearbyCommunities?.find(c => c.community_id === selectedCommunity)?.community_name ||
+                            'Quartier sélectionné'
                         }
                       </p>
                       {selectedNeighborhood && (
@@ -1272,6 +1334,13 @@ const CreateItemPage: React.FC = () => {
                               )}
                             </div>
                           )}
+                        </div>
+                      )}
+                      {!selectedNeighborhood && userCommunities?.find(c => c.id === selectedCommunity) && (
+                        <div className="mt-1">
+                          <p className="text-xs text-green-600 font-medium">
+                            ✅ Quartier où vous êtes membre
+                          </p>
                         </div>
                       )}
                     </div>

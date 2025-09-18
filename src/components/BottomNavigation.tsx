@@ -9,7 +9,7 @@ const BottomNavigation: React.FC = () => {
     { to: '/items', icon: Search, label: 'Rechercher' },
     { to: '/communities', icon: Users, label: 'Quartiers' },
     { to: '/messages', icon: MessageCircle, label: 'Messages' },
-    { to: '/requests', icon: CheckCircle, label: 'Échanges' },
+    { to: '/requests', icon: CheckCircle, label: 'Annonces' },
     { to: '/me', icon: User, label: 'Profil' },
   ];
 

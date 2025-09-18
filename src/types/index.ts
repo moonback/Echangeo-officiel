@@ -30,6 +30,7 @@ export interface Item {
   location_hint?: string;
   latitude?: number;
   longitude?: number;
+  community_id?: string; // ID de la communauté/quartier
   is_available: boolean;
   created_at: string;
   updated_at: string;

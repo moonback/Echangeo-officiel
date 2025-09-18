@@ -348,7 +348,6 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
               </>
             ) : (
               <>
-                {/* Filtres pour les objets */}
                 {/* Filtre par catégorie */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
