@@ -9,10 +9,11 @@ import {
   MessageCircle, 
   UserPlus
 } from 'lucide-react';
-import { useCommunity, useJoinCommunity, useLeaveCommunity, useUserCommunities } from '../hooks/useCommunities';
+import { useCommunity, useJoinCommunity, useLeaveCommunity, useUserCommunities, useCommunityItems } from '../hooks/useCommunities';
 import { useAuthStore } from '../store/authStore';
 import CommunityEventCard from '../components/CommunityEventCard';
 import CommunityDiscussionCard from '../components/CommunityDiscussionCard';
+import ItemCard from '../components/ItemCard';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
@@ -24,6 +25,7 @@ const CommunityDetailPage: React.FC = () => {
   const { user } = useAuthStore();
   const { data: community, isLoading } = useCommunity(id || '');
   const { data: userCommunities } = useUserCommunities(user?.id);
+  const { data: communityItems, isLoading: itemsLoading } = useCommunityItems(id || '');
   const joinCommunity = useJoinCommunity();
   const leaveCommunity = useLeaveCommunity();
 
@@ -225,13 +227,69 @@ const CommunityDetailPage: React.FC = () => {
           </Card>
         </motion.div>
 
+        {/* Objets du quartier */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="mb-8"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              <svg className="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+              Objets disponibles
+            </h2>
+            <Link 
+              to={`/items?community=${community.id}`}
+              className="text-sm text-brand-600 hover:text-brand-700"
+            >
+              Voir tout →
+            </Link>
+          </div>
+          
+          {itemsLoading ? (
+            <Card className="p-6">
+              <div className="animate-pulse">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="h-48 bg-gray-200 rounded-lg"></div>
+                  ))}
+                </div>
+              </div>
+            </Card>
+          ) : communityItems && communityItems.length > 0 ? (
+            <Card className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {communityItems?.slice(0, 6).map((item) => (
+                  <ItemCard
+                    key={item.id}
+                    item={item}
+                  />
+                ))}
+              </div>
+            </Card>
+          ) : (
+            <Card className="p-6 text-center">
+              <svg className="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+              <p className="text-gray-600">Aucun objet disponible</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Soyez le premier à proposer un objet dans ce quartier !
+              </p>
+            </Card>
+          )}
+        </motion.div>
+
         {/* Contenu principal */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Événements récents */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
@@ -278,7 +336,7 @@ const CommunityDetailPage: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
@@ -318,7 +376,7 @@ const CommunityDetailPage: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.5 }}
+          transition={{ delay: 0.6, duration: 0.5 }}
           className="mt-8"
         >
           <div className="flex items-center justify-between mb-4">
