@@ -553,134 +553,137 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
       </AnimatePresence>
 
       <Card className={`p-0 glass ${className.includes('h-full') ? 'h-full flex flex-col' : ''} ${className.includes('w-full') ? 'w-full' : ''} ${isSidebarOpen ? 'flex-1' : ''}`}>
-        {/* Header amélioré */}
-        <div className="relative bg-gradient-to-r from-white/90 via-brand-50/30 to-blue-50/30 backdrop-blur-sm border-b border-gray-200/50">
-          <div className="p-2">
-            <div className="flex items-center justify-between mb-4">
+        {/* Carte sans header */}
+                  
+        {/* Carte améliorée */}
+        <div className={`relative overflow-hidden ${className.includes('h-full') ? 'flex-1' : ''} ${className.includes('w-full') ? 'w-full' : ''}`}>
+          
+          {/* Éléments flottants au-dessus de la carte */}
+          <div className="absolute top-4 left-4 right-4 z-30">
+            <div className="flex items-center justify-between">
+              {/* Titre et informations flottants */}
               <motion.div 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 className="flex items-center gap-4"
               >
-                <div className="relative">
-                  <div className="p-3 bg-gradient-to-r from-brand-500 to-blue-500 rounded-2xl shadow-lg">
-                {viewMode === 'communities' ? (
-                      <Users className="w-6 h-6 text-white" />
-                    ) : (
-                      <MapPin className="w-6 h-6 text-white" />
-                    )}
+                <div className="bg-white/95 backdrop-blur-xl rounded-2xl px-4 py-3 shadow-2xl border border-gray-200/50">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <div className="p-2 bg-gradient-to-r from-brand-500 to-blue-500 rounded-xl shadow-lg">
+                        {viewMode === 'communities' ? (
+                          <Users className="w-5 h-5 text-white" />
+                        ) : (
+                          <MapPin className="w-5 h-5 text-white" />
+                        )}
+                      </div>
+                      {userLoc && (
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
+                      )}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h2 className="text-lg font-bold text-gray-900">
+                          {selectedCommunity ? selectedCommunity.name : title}
+                        </h2>
+                        {selectedCommunity && (
+                          <Badge variant="info" size="sm" className="animate-pulse">
+                            <Map size={10} className="mr-1" />
+                            Quartier
+                          </Badge>
+                        )}
+                      </div>
+                      {locationError && (
+                        <motion.p 
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-xs text-red-500 flex items-center gap-1"
+                        >
+                          <Navigation size={12} />
+                          {locationError}
+                        </motion.p>
+                      )}
+                      {selectedCommunity && (
+                        <motion.p 
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-xs text-gray-600 flex items-center gap-1"
+                        >
+                          <MapPin size={12} />
+                          {selectedCommunity.city} • {selectedCommunity.stats?.total_items || 0} objets
+                        </motion.p>
+                      )}
+                    </div>
                   </div>
-                  {userLoc && (
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
-                )}
-              </div>
-              <div>
-                  <div className="flex items-center gap-3 mb-1">
-                    <h2 className="text-2xl font-bold text-gray-900">
-                    {selectedCommunity ? selectedCommunity.name : title}
-                  </h2>
-                  {selectedCommunity && (
-                      <Badge variant="info" size="sm" className="animate-pulse">
-                        <Map size={12} className="mr-1" />
-                      Quartier
-                    </Badge>
-                  )}
                 </div>
-                {locationError && (
-                    <motion.p 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="text-sm text-red-500 flex items-center gap-2"
-                    >
-                      <Navigation size={14} />
-                      {locationError}
-                    </motion.p>
-                )}
-                {selectedCommunity && (
-                    <motion.p 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="text-sm text-gray-600 flex items-center gap-2"
-                    >
-                      <MapPin size={14} />
-                      {selectedCommunity.city} • {selectedCommunity.stats?.total_items || 0} objets disponibles
-                    </motion.p>
-                )}
-              </div>
               </motion.div>
-            
-            {showControls && (
+              
+              {/* Contrôles flottants */}
+              {showControls && (
                 <motion.div 
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="flex items-center gap-3"
+                  className="flex items-center gap-2"
                 >
-                {/* Bouton retour aux quartiers */}
-                {selectedCommunity && (
+                  {/* Bouton retour aux quartiers */}
+                  {selectedCommunity && (
+                    <Button
+                      onClick={handleBackToCommunities}
+                      variant="ghost"
+                      size="sm"
+                      className="bg-white/95 backdrop-blur-xl shadow-lg hover:bg-white hover:shadow-xl transition-all border border-gray-200/50"
+                      leftIcon={<ArrowLeft size={14} />}
+                    >
+                      Retour
+                    </Button>
+                  )}
+
+                  {/* Bouton d'actualisation */}
                   <Button
-                    onClick={handleBackToCommunities}
+                    onClick={handleRefresh}
                     variant="ghost"
                     size="sm"
-                      className="flex items-center gap-2 hover:bg-brand-50 hover:text-brand-700 transition-all"
-                      leftIcon={<ArrowLeft size={16} />}
-                  >
-                    Retour aux quartiers
-                  </Button>
-                )}
-
-                {/* Bouton d'actualisation */}
-                <Button
-                  onClick={handleRefresh}
-                  variant="ghost"
-                  size="sm"
-                  disabled={isRefreshing}
-                    className="flex items-center gap-2 hover:bg-blue-50 hover:text-blue-700 transition-all"
+                    disabled={isRefreshing}
+                    className="bg-white/95 backdrop-blur-xl shadow-lg hover:bg-white hover:shadow-xl transition-all border border-gray-200/50"
                     leftIcon={
-                  <RefreshCw 
-                    size={16} 
-                    className={isRefreshing ? 'animate-spin' : ''} 
-                  />
+                      <RefreshCw 
+                        size={14} 
+                        className={isRefreshing ? 'animate-spin' : ''} 
+                      />
                     }
                   >
-                  Actualiser
-                </Button>
+                    Actualiser
+                  </Button>
 
-                 
-
-                {/* Bouton de filtres */}
-                {showSidebar && (
-                <Button
-                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                  variant="ghost"
-                  size="sm"
-                      className={`flex items-center gap-2 relative ${
+                  {/* Bouton de filtres */}
+                  {showSidebar && (
+                    <Button
+                      onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                      variant="ghost"
+                      size="sm"
+                      className={`bg-white/95 backdrop-blur-xl shadow-lg hover:bg-white hover:shadow-xl transition-all border border-gray-200/50 relative ${
                         activeFiltersCount > 0 
-                          ? 'text-brand-600 bg-brand-50/50' 
-                          : 'text-gray-500 hover:text-brand-600'
-                      } transition-all`}
-                      leftIcon={<SlidersHorizontal size={16} />}
+                          ? 'text-brand-600' 
+                          : 'text-gray-600'
+                      }`}
+                      leftIcon={<SlidersHorizontal size={14} />}
                     >
-                    Filtres
-                    {activeFiltersCount > 0 && (
+                      Filtres
+                      {activeFiltersCount > 0 && (
                         <Badge 
                           variant="brand" 
                           size="sm"
                           className="absolute -top-1 -right-1 animate-pulse"
                         >
-                        {activeFiltersCount}
-                      </Badge>
-                    )}
-                </Button>
-                )}
+                          {activeFiltersCount}
+                        </Badge>
+                      )}
+                    </Button>
+                  )}
                 </motion.div>
-            )}
+              )}
+            </div>
           </div>
-                  </div>
-                  
-                  </div>
-                  
-        {/* Carte améliorée */}
-        <div className={`relative overflow-hidden ${className.includes('h-full') ? 'flex-1' : ''} ${className.includes('w-full') ? 'w-full' : ''}`}>
           {(isLoading || (viewMode === 'items' && communityItemsLoading)) ? (
             <div 
               className={`flex items-center justify-center bg-gradient-to-br from-gray-50 via-brand-50/30 to-blue-50/30 ${className.includes('h-full') ? 'h-full' : ''}`}
@@ -784,7 +787,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="absolute top-20 right-4 bg-white/95 backdrop-blur-xl rounded-2xl px-3 py-3 shadow-2xl border border-gray-200/50 max-w-xs z-10"
+              className="absolute top-24 right-4 bg-white/95 backdrop-blur-xl rounded-2xl px-3 py-3 shadow-2xl border border-gray-200/50 max-w-xs z-10"
             >
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-sm font-bold text-gray-800 flex items-center gap-2">
@@ -883,7 +886,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
             <motion.div 
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="absolute top-20 right-4 z-10"
+              className="absolute top-24 right-4 z-10"
             >
               <Button
                 onClick={() => setShowLegend(true)}
