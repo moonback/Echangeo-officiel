@@ -4,13 +4,13 @@ import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, Upload, X, Sparkles, AlertCircle, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Sparkles, AlertCircle, CheckCircle } from 'lucide-react';
 import { useCreateItem } from '../hooks/useItems';
 import { useNearbyCommunities, useCreateCommunity } from '../hooks/useCommunities';
 import { supabase } from '../services/supabase';
 import { categories } from '../utils/categories';
 import { offerTypes } from '../utils/offerTypes';
-import type { ItemCategory, OfferType } from '../types';
+import type { ItemCategory } from '../types';
 import type { AIAnalysisResult } from '../services/aiService';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -105,7 +105,7 @@ const CreateItemPage: React.FC = () => {
           signal: controller.signal,
         });
         const json = await res.json();
-        const next = (json || []).map((r: any) => ({
+        const next = (json || []).map((r: { display_name: string; lat: string; lon: string }) => ({
           label: r.display_name as string,
           lat: Number(r.lat),
           lon: Number(r.lon),
@@ -197,6 +197,10 @@ const CreateItemPage: React.FC = () => {
   }, [setValue]);
 
   // Suggestions de tags depuis marque/modèle + catégorie
+  const brand = watch('brand');
+  const model = watch('model');
+  const category = watch('category');
+  
   React.useEffect(() => {
     // Suggestions enrichies pour chaque catégorie
     const CATEGORY_SUGGESTIONS: Record<ItemCategory, string[]> = {
@@ -221,24 +225,51 @@ const CreateItemPage: React.FC = () => {
       toys: [
         'jouet', 'enfant', 'jeu', 'puzzle', 'éducatif', 'peluche', 'construction', 'créatif', 'voiture', 'poupée', 'lego', 'society', 'apprentissage', 'famille', 'divertissement'
       ],
+      fashion: [
+        'vêtement', 'mode', 'style', 'textile', 'accessoire', 'chaussure', 'sac', 'bijou', 'cosmétique', 'parfum', 'maquillage', 'soin', 'beauté', 'élégance', 'tendance'
+      ],
+      furniture: [
+        'mobilier', 'meuble', 'décoration', 'intérieur', 'design', 'table', 'chaise', 'armoire', 'canapé', 'lit', 'bureau', 'étagère', 'rangement', 'style', 'moderne'
+      ],
+      music: [
+        'musique', 'instrument', 'son', 'audio', 'guitare', 'piano', 'batterie', 'microphone', 'ampli', 'casque', 'enceinte', 'dj', 'concert', 'studio', 'partition'
+      ],
+      baby: [
+        'bébé', 'enfant', 'nourrisson', 'poussette', 'berceau', 'jouet', 'vêtement', 'soin', 'alimentation', 'sécurité', 'éducation', 'éveil', 'développement', 'famille', 'maternité'
+      ],
+      art: [
+        'art', 'création', 'artistique', 'peinture', 'dessin', 'sculpture', 'photo', 'galerie', 'exposition', 'créatif', 'inspiration', 'culture', 'beauté', 'expression', 'original'
+      ],
+      beauty: [
+        'beauté', 'cosmétique', 'soin', 'maquillage', 'parfum', 'hygiène', 'bien-être', 'relaxation', 'spa', 'salon', 'professionnel', 'naturel', 'bio', 'qualité', 'luxe'
+      ],
+      auto: [
+        'voiture', 'automobile', 'véhicule', 'moto', 'vélo', 'pièce', 'réparation', 'entretien', 'accessoire', 'sécurité', 'garage', 'mécanique', 'transport', 'mobilité', 'route'
+      ],
+      office: [
+        'bureau', 'travail', 'professionnel', 'ordinateur', 'papeterie', 'organisation', 'productivité', 'réunion', 'présentation', 'archivage', 'communication', 'entreprise', 'salle', 'espace'
+      ],
+      services: [
+        'service', 'aide', 'assistance', 'compétence', 'professionnel', 'expertise', 'conseil', 'formation', 'réparation', 'maintenance', 'installation', 'nettoyage', 'garde', 'accompagnement'
+      ],
       other: [
         'divers', 'maison', 'pratique', 'décoration', 'organisation', 'accessoire', 'quotidien', 'loisir', 'événement', 'occasion', 'stockage', 'mobilier', 'éclairage', 'sécurité', 'polyvalent'
       ],
     };
 
-    const brand = watch('brand')?.trim();
-    const model = watch('model')?.trim();
-    const category = watch('category') as ItemCategory | undefined;
+    const brandTrimmed = brand?.trim();
+    const modelTrimmed = model?.trim();
+    const categoryTyped = category as ItemCategory | undefined;
 
     const suggestions = new Set<string>();
-    if (brand) suggestions.add(brand.toLowerCase());
-    if (model) suggestions.add(model.toLowerCase());
-    if (brand && model) suggestions.add(`${brand} ${model}`.toLowerCase());
-    if (category && CATEGORY_SUGGESTIONS[category]) {
-      CATEGORY_SUGGESTIONS[category].forEach((t) => suggestions.add(t));
+    if (brandTrimmed) suggestions.add(brandTrimmed.toLowerCase());
+    if (modelTrimmed) suggestions.add(modelTrimmed.toLowerCase());
+    if (brandTrimmed && modelTrimmed) suggestions.add(`${brandTrimmed} ${modelTrimmed}`.toLowerCase());
+    if (categoryTyped && CATEGORY_SUGGESTIONS[categoryTyped]) {
+      CATEGORY_SUGGESTIONS[categoryTyped].forEach((t) => suggestions.add(t));
     }
     setTagSuggestions(Array.from(suggestions).slice(0, 8));
-  }, [watch('brand'), watch('model'), watch('category')]);
+  }, [brand, model, category]);
 
 
   // Gérer les résultats de l'analyse IA (ne pas appliquer automatiquement)
@@ -321,7 +352,21 @@ const CreateItemPage: React.FC = () => {
         
         // Rechercher des quartiers basés sur cette adresse
         const { suggestNeighborhoods } = await import('../services/neighborhoodSuggestionAI');
-        const suggestions = await suggestNeighborhoods(address, nearbyCommunities || []);
+        // Convertir NearbyCommunity[] en Community[] pour la compatibilité
+        const communitiesForSuggestion = (nearbyCommunities || []).map(nc => ({
+          id: nc.community_id,
+          name: nc.community_name,
+          description: '',
+          city: '',
+          country: 'France',
+          center_latitude: undefined,
+          center_longitude: undefined,
+          radius_km: 2,
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }));
+        const suggestions = await suggestNeighborhoods(address, communitiesForSuggestion);
         
         if (suggestions.length > 0) {
           // Stocker toutes les suggestions pour création ultérieure
@@ -520,7 +565,6 @@ const CreateItemPage: React.FC = () => {
       
       await createItem.mutateAsync({
         ...data,
-        community_id: selectedCommunity || undefined,
         images: selectedImages,
         onProgress: (current, total, fileName) => setUploadProgress({ current, total, fileName }),
       });
@@ -894,76 +938,62 @@ const CreateItemPage: React.FC = () => {
                 <label htmlFor="location_hint" className="block text-sm font-medium text-gray-700 mb-1">
                   Indication de localisation (ex: étage, bâtiment, etc.)
                 </label>
-                <div className="relative">
-                  <Input
-                    id="location_hint"
-                    value={addressQuery || (watch('location_hint') || '')}
-                    onChange={(e) => {
-                      setAddressQuery(e.target.value);
-                      setValue('location_hint', e.target.value, { shouldDirty: true, shouldTouch: true });
-                    }}
-                    onFocus={() => {
-                      if (addressSuggestions.length > 0) setAddressDropdownOpen(true);
-                    }}
-                    onBlur={() => {
-                      setTimeout(() => setAddressDropdownOpen(false), 150);
-                    }}
-                    placeholder="Saisissez une adresse pour obtenir des suggestions"
-                  />
+                <div className="flex gap-3">
+                  <div className="relative flex-1">
+                    <Input
+                      id="location_hint"
+                      value={addressQuery || (watch('location_hint') || '')}
+                      onChange={(e) => {
+                        setAddressQuery(e.target.value);
+                        setValue('location_hint', e.target.value, { shouldDirty: true, shouldTouch: true });
+                      }}
+                      onFocus={() => {
+                        if (addressSuggestions.length > 0) setAddressDropdownOpen(true);
+                      }}
+                      onBlur={() => {
+                        setTimeout(() => setAddressDropdownOpen(false), 150);
+                      }}
+                      placeholder="Saisissez une adresse pour obtenir des suggestions"
+                    />
 
-                  {/* Suggestions d'adresse */}
-                  {addressDropdownOpen && (addressSuggestions.length > 0 || isSearchingAddress) && (
-                    <div className="absolute z-20 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
-                      {isSearchingAddress && (
-                        <div className="px-3 py-2 text-sm text-gray-600">Recherche en cours…</div>
-                      )}
-                      {addressSuggestions.map((sugg, idx) => (
-                        <button
-                          key={`${sugg.label}-${idx}`}
-                          type="button"
-                          className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm"
-                          onClick={() => {
-                            // Renseigner l'adresse choisie
-                            setValue('location_hint', sugg.label, { shouldDirty: true, shouldTouch: true });
-                            setAddressQuery(sugg.label);
-                            setAddressDropdownOpen(false);
-                            // Mettre à jour coordonnées + position utilisateur
-                            const lat = Number(sugg.lat);
-                            const lon = Number(sugg.lon);
-                            setValue('latitude', lat as unknown as number, { shouldValidate: true, shouldDirty: true });
-                            setValue('longitude', lon as unknown as number, { shouldValidate: true, shouldDirty: true });
-                            setUserLocation({ lat, lng: lon });
-                          }}
-                        >
-                          {sugg.label}
-                        </button>
-                      ))}
-                      {!isSearchingAddress && addressSuggestions.length === 0 && (
-                        <div className="px-3 py-2 text-sm text-gray-500">Aucune suggestion</div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
-                  <label htmlFor="latitude" className="block text-sm font-medium text-gray-700 mb-1">
-                    Latitude
-                  </label>
-                  <Input {...register('latitude')} type="number" step="any" id="latitude" />
-                </div>
-                <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
-                  <label htmlFor="longitude" className="block text-sm font-medium text-gray-700 mb-1">
-                    Longitude
-                  </label>
-                  <Input {...register('longitude')} type="number" step="any" id="longitude" />
-                </div>
-                <div className="flex items-end p-4 rounded-xl border border-gray-200 bg-white glass">
+                    {/* Suggestions d'adresse */}
+                    {addressDropdownOpen && (addressSuggestions.length > 0 || isSearchingAddress) && (
+                      <div className="absolute z-20 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                        {isSearchingAddress && (
+                          <div className="px-3 py-2 text-sm text-gray-600">Recherche en cours…</div>
+                        )}
+                        {addressSuggestions.map((sugg, idx) => (
+                          <button
+                            key={`${sugg.label}-${idx}`}
+                            type="button"
+                            className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm"
+                            onClick={() => {
+                              // Renseigner l'adresse choisie
+                              setValue('location_hint', sugg.label, { shouldDirty: true, shouldTouch: true });
+                              setAddressQuery(sugg.label);
+                              setAddressDropdownOpen(false);
+                              // Mettre à jour coordonnées + position utilisateur
+                              const lat = Number(sugg.lat);
+                              const lon = Number(sugg.lon);
+                              setValue('latitude', lat as unknown as number, { shouldValidate: true, shouldDirty: true });
+                              setValue('longitude', lon as unknown as number, { shouldValidate: true, shouldDirty: true });
+                              setUserLocation({ lat, lng: lon });
+                            }}
+                          >
+                            {sugg.label}
+                          </button>
+                        ))}
+                        {!isSearchingAddress && addressSuggestions.length === 0 && (
+                          <div className="px-3 py-2 text-sm text-gray-500">Aucune suggestion</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  
                   <Button
                     type="button"
                     variant="ghost"
-                    className="w-full border border-gray-300"
+                    className="border border-gray-300 whitespace-nowrap"
                     onClick={() => {
                       if (!navigator.geolocation) {
                         console.warn('Geolocation non supportée');
@@ -984,6 +1014,7 @@ const CreateItemPage: React.FC = () => {
                             const display = json?.display_name as string | undefined;
                             if (display) {
                               setValue('location_hint', display, { shouldValidate: true, shouldDirty: true });
+                              setAddressQuery(display);
                             }
                           })
                           .catch((e) => console.warn('Reverse geocoding failed', e))
@@ -998,6 +1029,10 @@ const CreateItemPage: React.FC = () => {
                   </Button>
                 </div>
               </div>
+
+              {/* Coordonnées cachées - gérées automatiquement par la géolocalisation */}
+              <input type="hidden" {...register('latitude')} />
+              <input type="hidden" {...register('longitude')} />
             </div>
           </>
         )}
@@ -1041,7 +1076,7 @@ const CreateItemPage: React.FC = () => {
             {userLocation && (
               <div className="mb-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
                 <p className="text-sm text-blue-800">
-                  📍 Position détectée : {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
+                  📍 Adresse détectée : {detectedAddress ? detectedAddress : `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`}
                 </p>
               </div>
             )}
@@ -1289,7 +1324,19 @@ const CreateItemPage: React.FC = () => {
         onClose={() => setIsNeighborhoodModalOpen(false)}
         onSelectNeighborhood={handleSelectNeighborhood}
         onSuggestionsFound={handleSuggestionsFound}
-        existingCommunities={nearbyCommunities || []}
+        existingCommunities={(nearbyCommunities || []).map(nc => ({
+          id: nc.community_id,
+          name: nc.community_name,
+          description: '',
+          city: '',
+          country: 'France',
+          center_latitude: undefined,
+          center_longitude: undefined,
+          radius_km: 2,
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }))}
         userLocation={userLocation || undefined}
         searchInput={detectedAddress}
       />
