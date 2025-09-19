@@ -17,7 +17,6 @@ import { useCommunities, useCommunityItems } from '../hooks/useCommunities';
 import MapboxMap from './MapboxMap';
 import MapFiltersModal from './MapFiltersModal';
 import MapMarkerPopup from './MapMarkerPopup';
-import CommunityMarkerPopup from './CommunityMarkerPopup';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import Badge from './ui/Badge';
@@ -69,7 +68,6 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
   
   // États pour les popups au survol
   const [hoveredItem, setHoveredItem] = useState<Item | null>(null);
-  const [hoveredCommunity, setHoveredCommunity] = useState<Community | null>(null);
   const [popupPosition, setPopupPosition] = useState<{ x: number; y: number } | null>(null);
   
   // Référence pour la carte
@@ -345,32 +343,22 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
   const handleMarkerHover = (id: string, position: { x: number; y: number }) => {
     // D'abord, effacer tous les popups existants
     setHoveredItem(null);
-    setHoveredCommunity(null);
     setPopupPosition(null);
     
     // Petit délai pour éviter les conflits
     setTimeout(() => {
-      if (id.startsWith('community-')) {
-        const communityId = id.replace('community-', '');
-        const community = communities?.find(c => c.id === communityId);
-        if (community) {
-          setHoveredCommunity(community);
-          setPopupPosition(position);
-        }
-      } else {
-        const item = filteredItems.find(i => i.id === id);
-        if (item) {
-          setHoveredItem(item);
-          setPopupPosition(position);
-          
-          // Centrer la carte sur l'item survolé
-          if (item.latitude && item.longitude && mapRef.current) {
-            mapRef.current.flyTo({
-              center: [item.longitude, item.latitude],
-              zoom: Math.max(mapRef.current.getZoom(), 14), // Zoom minimum de 14
-              duration: 800 // Animation de 800ms
-            });
-          }
+      const item = filteredItems.find(i => i.id === id);
+      if (item) {
+        setHoveredItem(item);
+        setPopupPosition(position);
+        
+        // Centrer la carte sur l'item survolé
+        if (item.latitude && item.longitude && mapRef.current) {
+          mapRef.current.flyTo({
+            center: [item.longitude, item.latitude],
+            zoom: Math.max(mapRef.current.getZoom(), 14), // Zoom minimum de 14
+            duration: 800 // Animation de 800ms
+          });
         }
       }
     }, 10);
@@ -379,7 +367,6 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
   // Gérer la fin du survol
   const handleMarkerLeave = () => {
     setHoveredItem(null);
-    setHoveredCommunity(null);
     setPopupPosition(null);
   };
 
@@ -986,7 +973,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
       </Card>
 
       {/* Popups au survol */}
-      {hoveredItem && popupPosition && !hoveredCommunity && (
+      {hoveredItem && popupPosition && (
         <div 
           className="fixed z-50"
           style={{
@@ -1004,22 +991,6 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
         </div>
       )}
 
-      {hoveredCommunity && popupPosition && !hoveredItem && (
-        <div 
-          className="fixed z-50"
-          style={{
-            left: popupPosition.x,
-            top: popupPosition.y,
-            transform: 'translate(-50%, -100%)'
-          }}
-        >
-          <CommunityMarkerPopup
-            community={hoveredCommunity}
-            onClose={handleMarkerLeave}
-            onCommunityClick={onCommunityClick}
-          />
-        </div>
-      )}
 
       {/* Filters Modal */}
       <MapFiltersModal
