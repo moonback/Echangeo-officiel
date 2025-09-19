@@ -132,27 +132,7 @@ function createMarkerContent(marker: MapboxMarker): string {
     // Marqueur de quartier/communauté
     iconContent = `
       <div style="position: relative;">
-        <div style="
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(135deg, #8B5CF6, #7C3AED);
-          border-radius: 50%;
-          border: 3px solid #ffffff;
-          box-shadow: 
-            0 4px 12px rgba(139, 92, 246, 0.3),
-            0 2px 6px rgba(0, 0, 0, 0.15),
-            inset 0 1px 0 rgba(255, 255, 255, 0.8),
-            inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          font-weight: bold;
-          font-size: 16px;
-          cursor: pointer;
-        ">
-          🏘️
-        </div>
+      </div>
         
         <!-- Étiquette du quartier -->
         <div style="
