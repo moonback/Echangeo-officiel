@@ -1,14 +1,6 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import mapboxgl from 'mapbox-gl';
-
-// Configuration de performance
-const PERFORMANCE_CONFIG = {
-  maxItemsPerPage: 50, // Limite d'objets par page
-  debounceDelay: 300, // Délai de debounce pour les filtres
-  distanceCacheSize: 1000, // Taille du cache de distances
-  geolocationCacheTime: 5 * 60 * 1000, // 5 minutes
-};
 import { 
   MapPin, 
   RefreshCw, 
@@ -81,57 +73,14 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
   
   // Référence pour la carte
   const mapRef = useRef<mapboxgl.Map | null>(null);
-  
-  // Cache pour les calculs de distance
-  const distanceCacheRef = useRef<Map<string, number>>(new Map());
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const lastGeolocationRef = useRef<{ lat: number; lng: number; timestamp: number } | null>(null);
 
   const { data: items, isLoading, refetch } = useItems({
     isAvailable: true,
-    hasImages: showOnlyWithImages || undefined,
-    limit: PERFORMANCE_CONFIG.maxItemsPerPage
+    hasImages: showOnlyWithImages || undefined
   });
 
-  const { data: communities } = useCommunities(PERFORMANCE_CONFIG.maxItemsPerPage);
+  const { data: communities } = useCommunities();
   const { data: communityItems, isLoading: communityItemsLoading } = useCommunityItems(selectedCommunity?.id || '');
-
-  // Fonction optimisée pour calculer la distance avec cache
-  const calculateDistanceCached = useCallback((lat1: number, lon1: number, lat2: number, lon2: number): number => {
-    const cacheKey = `${lat1.toFixed(4)},${lon1.toFixed(4)},${lat2.toFixed(4)},${lon2.toFixed(4)}`;
-    
-    if (distanceCacheRef.current.has(cacheKey)) {
-      return distanceCacheRef.current.get(cacheKey)!;
-    }
-
-    const R = 6371; // Rayon de la Terre en km
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    const distance = R * c;
-
-    // Limiter la taille du cache
-    if (distanceCacheRef.current.size >= PERFORMANCE_CONFIG.distanceCacheSize) {
-      const firstKey = distanceCacheRef.current.keys().next().value;
-      if (firstKey) {
-        distanceCacheRef.current.delete(firstKey);
-      }
-    }
-
-    distanceCacheRef.current.set(cacheKey, distance);
-    return distance;
-  }, []);
-
-  // Fonction debounced pour les filtres (utilisée dans les futurs filtres)
-  // const debouncedSetFilter = useCallback((filterFn: () => void) => {
-  //   if (debounceTimeoutRef.current) {
-  //     clearTimeout(debounceTimeoutRef.current);
-  //   }
-  //   debounceTimeoutRef.current = setTimeout(filterFn, PERFORMANCE_CONFIG.debounceDelay);
-  // }, []);
 
   // Fonction pour obtenir les informations de localisation avec plusieurs sources
   const getLocationInfo = async (lat: number, lng: number) => {
@@ -208,31 +157,16 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
     }
   };
 
-  // Géolocalisation de l'utilisateur avec cache
+  // Géolocalisation de l'utilisateur
   useEffect(() => {
     if (!navigator.geolocation) {
       return;
     }
 
     const getLocation = () => {
-      // Vérifier le cache de géolocalisation
-      const now = Date.now();
-      if (lastGeolocationRef.current && 
-          (now - lastGeolocationRef.current.timestamp) < PERFORMANCE_CONFIG.geolocationCacheTime) {
-        setUserLoc({ lat: lastGeolocationRef.current.lat, lng: lastGeolocationRef.current.lng });
-        return;
-      }
-
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
           const location = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-          
-          // Mettre à jour le cache
-          lastGeolocationRef.current = {
-            ...location,
-            timestamp: now
-          };
-          
           setUserLoc(location);
           // Obtenir les informations de localisation
           await getLocationInfo(location.lat, location.lng);
@@ -243,7 +177,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
         {
           enableHighAccuracy: true,
           timeout: 10000,
-          maximumAge: PERFORMANCE_CONFIG.geolocationCacheTime
+          maximumAge: 300000 // 5 minutes
         }
       );
     };
@@ -251,7 +185,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
     getLocation();
   }, []);
 
-  // Filtrer et limiter les objets (optimisé)
+  // Filtrer et limiter les objets
   const filteredItems = useMemo(() => {
     const sourceItems = selectedCommunity ? communityItems : items;
     if (!sourceItems) return [];
@@ -277,14 +211,16 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
         return false;
       }
 
-      // Filtre par distance avec cache
-      if (userLoc && maxDistance < 1000) {
-        const distance = calculateDistanceCached(
-          userLoc.lat, 
-          userLoc.lng, 
-          item.latitude, 
-          item.longitude
-        );
+      // Filtre par distance
+      if (userLoc && maxDistance < 1000) { // Si maxDistance < 1000, on considère que c'est en km
+        const R = 6371; // Rayon de la Terre en km
+        const dLat = (item.latitude - userLoc.lat) * Math.PI / 180;
+        const dLon = (item.longitude - userLoc.lng) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+          Math.cos(userLoc.lat * Math.PI / 180) * Math.cos(item.latitude * Math.PI / 180) *
+          Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        const distance = R * c;
         
         if (distance > maxDistance) {
           return false;
@@ -294,12 +230,12 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
       return true;
     });
 
-    // Limiter le nombre d'objets pour la performance
-    const maxItemsToShow = maxItems || PERFORMANCE_CONFIG.maxItemsPerPage;
-    filtered = filtered.slice(0, maxItemsToShow);
+    if (maxItems) {
+      filtered = filtered.slice(0, maxItems);
+    }
 
     return filtered;
-  }, [items, communityItems, selectedCommunity, maxItems, selectedCategory, selectedCondition, selectedType, maxDistance, userLoc, calculateDistanceCached]);
+  }, [items, communityItems, selectedCommunity, maxItems, selectedCategory, selectedCondition, selectedType, maxDistance, userLoc]);
 
   // Préparer les marqueurs de communautés
   const communityMarkers = useMemo(() => {
@@ -322,18 +258,20 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
       }));
   }, [communities, showCommunities]);
 
-  // Préparer les marqueurs d'objets (optimisé)
+  // Préparer les marqueurs d'objets
   const itemMarkers = useMemo(() => {
     return filteredItems.map((item) => {
-      // Calculer la distance si on a la position utilisateur (avec cache)
+      // Calculer la distance si on a la position utilisateur
       let distance: number | undefined;
       if (userLoc && item.latitude && item.longitude) {
-        distance = calculateDistanceCached(
-          userLoc.lat, 
-          userLoc.lng, 
-          item.latitude, 
-          item.longitude
-        );
+        const R = 6371; // Rayon de la Terre en km
+        const dLat = (item.latitude - userLoc.lat) * Math.PI / 180;
+        const dLon = (item.longitude - userLoc.lng) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+          Math.cos(userLoc.lat * Math.PI / 180) * Math.cos(item.latitude * Math.PI / 180) *
+          Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        distance = R * c;
       }
 
       return {
@@ -354,7 +292,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
       data: item as Record<string, unknown>
       };
     });
-  }, [filteredItems, userLoc, calculateDistanceCached]);
+  }, [filteredItems, userLoc]);
 
 
   // Actualiser les données
@@ -402,15 +340,6 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
     setMaxDistance(10);
     setShowOnlyWithImages(false);
   };
-
-  // Cleanup des timeouts
-  useEffect(() => {
-    return () => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
-    };
-  }, []);
 
   // Compter les filtres actifs
   const activeFiltersCount = [
