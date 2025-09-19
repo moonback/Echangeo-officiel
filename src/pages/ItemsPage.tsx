@@ -6,16 +6,13 @@ import { useGeolocation } from '../hooks/useGeolocation';
 import ItemCard from '../components/ItemCard';
 import { ItemCardSkeleton } from '../components/SkeletonLoader';
 import SearchBar from '../components/SearchBar';
-import FiltersPanel from '../components/FiltersPanel';
-import FiltersDrawer from '../components/FiltersDrawer';
+import FiltersModal from '../components/FiltersModal';
 import EmptyStateEnhanced from '../components/EmptyStateEnhanced';
-import { useMediaQuery } from '../hooks/useMediaQuery';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import { useAppStats } from '../hooks/useStats';
 
 const ItemsPage: React.FC = () => {
-  const isMobile = useMediaQuery('(max-width: 1024px)');
   const [showSearch, setShowSearch] = React.useState(false);
   
   // Géolocalisation de l'utilisateur
@@ -373,25 +370,14 @@ const ItemsPage: React.FC = () => {
             transition={{ delay: 0.3, duration: 0.5 }}
             className="mb-6"
           >
-            {!isMobile ? (
-              showFilters && (
-                <FiltersPanel
-                  filters={filters}
-                  activeFiltersCount={activeFiltersCount}
-                  onFilterChange={handleFilterChange}
-                  onResetFilters={resetFilters}
-                />
-              )
-            ) : (
-              <FiltersDrawer
-                isOpen={showFilters}
-                onClose={() => setShowFilters(false)}
-                filters={filters}
-                activeFiltersCount={activeFiltersCount}
-                onFilterChange={handleFilterChange}
-                onResetFilters={resetFilters}
-              />
-            )}
+            <FiltersModal
+              isOpen={showFilters}
+              onClose={() => setShowFilters(false)}
+              filters={filters}
+              activeFiltersCount={activeFiltersCount}
+              onFilterChange={handleFilterChange}
+              onResetFilters={resetFilters}
+            />
           </motion.div>
 
           {/* Results */}
