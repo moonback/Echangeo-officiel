@@ -6,7 +6,6 @@ import { useProfile } from '../hooks/useProfiles';
 import { useAuthStore } from '../store/authStore';
 import ChatAIAssistant from '../components/ChatAIAssistant';
 import MessageComposer from '../components/MessageComposer';
-import ConflictMediator from '../components/ConflictMediator';
 
 const ChatPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -40,13 +39,6 @@ const ChatPage: React.FC = () => {
         <h1 className="text-2xl font-bold text-gray-900 mb-4">
           {otherProfile?.full_name || otherProfile?.email || 'Chat'}
         </h1>
-
-        {/* Médiateur de conflit IA */}
-        <ConflictMediator
-          messages={messages || []}
-          onMediationSuggestion={handleSuggestionSelect}
-          className="mb-4"
-        />
 
         {/* Assistant IA */}
         <ChatAIAssistant
