@@ -77,7 +77,7 @@ const calculateDistance = (
 const popupCache = new Map<string, string>();
 
 // Fonction optimisée de création de popup avec cache
-const createOptimizedPopup = memo((marker: MapboxMarker): string => {
+const createOptimizedPopup = (marker: MapboxMarker): string => {
   const cacheKey = `${marker.id}-${marker.title}-${marker.category}-${marker.distance}`;
   
   if (popupCache.has(cacheKey)) {
@@ -166,7 +166,7 @@ const createOptimizedPopup = memo((marker: MapboxMarker): string => {
   
   popupCache.set(cacheKey, popupHTML);
   return popupHTML;
-});
+};
 
 // Fonctions utilitaires optimisées
 const getCategoryInfo = (category?: string) => {
@@ -190,6 +190,36 @@ const getCategoryInfo = (category?: string) => {
       label: 'Sport',
       gradient: '#10B981, #059669',
       icon: '<svg width="16" height="16" fill="white" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>'
+    },
+    kitchen: {
+      label: 'Cuisine',
+      gradient: '#F59E0B, #D97706',
+      icon: '<svg width="16" height="16" fill="white" viewBox="0 0 24 24"><path d="M3 2h7l4 4v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M9 2v4"/></svg>'
+    },
+    garden: {
+      label: 'Jardin',
+      gradient: '#22C55E, #16A34A',
+      icon: '<svg width="16" height="16" fill="white" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>'
+    },
+    toys: {
+      label: 'Jouets',
+      gradient: '#EC4899, #DB2777',
+      icon: '<svg width="16" height="16" fill="white" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>'
+    },
+    fashion: {
+      label: 'Mode',
+      gradient: '#A855F7, #9333EA',
+      icon: '<svg width="16" height="16" fill="white" viewBox="0 0 24 24"><path d="M6 2h12l4 6-10 13L2 8l4-6z"/></svg>'
+    },
+    furniture: {
+      label: 'Meubles',
+      gradient: '#6B7280, #4B5563',
+      icon: '<svg width="16" height="16" fill="white" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>'
+    },
+    community: {
+      label: 'Communauté',
+      gradient: '#8B5CF6, #7C3AED',
+      icon: '<svg width="16" height="16" fill="white" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'
     }
   };
 
