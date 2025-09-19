@@ -112,12 +112,13 @@ const FiltersDrawer: React.FC<FiltersDrawerProps> = ({
                     <div className="w-1 h-4 bg-brand-500 rounded-full"></div>
                     Catégories
                   </h3>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
+                    {/* Bouton "Toutes" */}
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => onFilterChange('selectedCategory', undefined)}
-                      className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                      className={`w-full flex items-center justify-center px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
                         !filters.selectedCategory 
                           ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25' 
                           : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm'
@@ -128,51 +129,56 @@ const FiltersDrawer: React.FC<FiltersDrawerProps> = ({
                         <motion.div 
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          className="w-2 h-2 bg-white rounded-full" 
+                          className="w-2 h-2 bg-white rounded-full ml-2" 
                         />
                       )}
                     </motion.button>
-                    {categories.map((category, index) => {
-                      const Icon = getCategoryIcon(category.value);
-                      return (
-                        <motion.button
-                          key={category.value}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.1 + index * 0.05 }}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => onFilterChange('selectedCategory', category.value)}
-                          className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                            filters.selectedCategory === category.value 
-                              ? 'bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-lg shadow-brand-500/25' 
-                              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-lg ${
+                    
+                    {/* Grille des catégories - 4 par ligne */}
+                    <div className="grid grid-cols-4 gap-3">
+                      {categories.map((category, index) => {
+                        const Icon = getCategoryIcon(category.value);
+                        return (
+                          <motion.button
+                            key={category.value}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.1 + index * 0.05 }}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => onFilterChange('selectedCategory', category.value)}
+                            className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all duration-200 ${
+                              filters.selectedCategory === category.value 
+                                ? 'bg-gradient-to-br from-brand-500 to-brand-600 text-white shadow-lg shadow-brand-500/25' 
+                                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md'
+                            }`}
+                            title={category.label}
+                          >
+                            <div className={`p-2 rounded-lg mb-2 ${
                               filters.selectedCategory === category.value 
                                 ? 'bg-white/20' 
                                 : 'bg-gray-100'
                             }`}>
-                              <Icon size={16} className={
+                              <Icon size={20} className={
                                 filters.selectedCategory === category.value 
                                   ? 'text-white' 
                                   : 'text-gray-600'
                               } />
                             </div>
-                            <span>{category.label}</span>
-                          </div>
-                          {filters.selectedCategory === category.value && (
-                            <motion.div 
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="w-2 h-2 bg-white rounded-full" 
-                            />
-                          )}
-                        </motion.button>
-                      );
-                    })}
+                            <span className="text-xs font-medium text-center leading-tight">
+                              {category.label}
+                            </span>
+                            {filters.selectedCategory === category.value && (
+                              <motion.div 
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                className="w-1.5 h-1.5 bg-white rounded-full mt-1" 
+                              />
+                            )}
+                          </motion.button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </motion.div>
 

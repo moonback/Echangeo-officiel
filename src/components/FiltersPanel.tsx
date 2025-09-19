@@ -88,40 +88,57 @@ const FiltersPanel: React.FC<FiltersPanelProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {/* Categories */}
           <div className="lg:col-span-2 xl:col-span-1">
-            <h4 className="text-sm font-medium text-gray-700 mb-3">Catégories</h4>
-            <div className="space-y-2">
+            <h4 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <div className="w-1 h-4 bg-brand-500 rounded-full"></div>
+              Catégories
+            </h4>
+            <div className="space-y-4">
+              {/* Bouton "Toutes" */}
               <button
                 onClick={() => onFilterChange('selectedCategory', undefined)}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`w-full flex items-center justify-center px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
                   !filters.selectedCategory 
-                    ? 'bg-blue-100 text-blue-700' 
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25' 
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm'
                 }`}
               >
                 <span>Toutes les catégories</span>
                 {!filters.selectedCategory && (
-                  <div className="w-2 h-2 bg-blue-600 rounded-full" />
+                  <div className="w-2 h-2 bg-white rounded-full ml-2" />
                 )}
               </button>
-              <div className="grid grid-cols-2 gap-2">
+              
+              {/* Grille des catégories - 4 par ligne */}
+              <div className="grid grid-cols-4 gap-3">
                 {categories.map((category) => {
                   const Icon = getCategoryIcon(category.value);
                   return (
                     <button
                       key={category.value}
                       onClick={() => onFilterChange('selectedCategory', category.value)}
-                      className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all duration-200 ${
                         filters.selectedCategory === category.value 
-                          ? 'bg-brand-50 text-brand-700' 
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          ? 'bg-gradient-to-br from-brand-500 to-brand-600 text-white shadow-lg shadow-brand-500/25' 
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md'
                       }`}
+                      title={category.label}
                     >
-                      <div className="flex items-center gap-2">
-                        <Icon size={14} />
-                        <span className="truncate">{category.label}</span>
+                      <div className={`p-2 rounded-lg mb-2 ${
+                        filters.selectedCategory === category.value 
+                          ? 'bg-white/20' 
+                          : 'bg-gray-100'
+                      }`}>
+                        <Icon size={18} className={
+                          filters.selectedCategory === category.value 
+                            ? 'text-white' 
+                            : 'text-gray-600'
+                        } />
                       </div>
+                      <span className="text-xs font-medium text-center leading-tight">
+                        {category.label}
+                      </span>
                       {filters.selectedCategory === category.value && (
-                        <div className="w-2 h-2 bg-brand-600 rounded-full flex-shrink-0" />
+                        <div className="w-1.5 h-1.5 bg-white rounded-full mt-1" />
                       )}
                     </button>
                   );
