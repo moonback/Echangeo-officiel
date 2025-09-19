@@ -54,7 +54,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
   showSidebar = true
 }) => {
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
-  const [userLocationInfo, setUserLocationInfo] = useState<{ neighborhood: string; city: string } | null>(null);
+  const [, setUserLocationInfo] = useState<{ neighborhood: string; city: string } | null>(null);
   const [showOnlyWithImages, setShowOnlyWithImages] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedCommunity, setSelectedCommunity] = useState<Community | null>(null);
@@ -634,7 +634,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
           <div className="absolute top-4 left-4 right-4 z-30">
             <div className="flex items-center justify-between">
               {/* Localisation flottante */}
-              <motion.div 
+              {/* <motion.div 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 className="bg-white/95 backdrop-blur-xl rounded-2xl px-4 py-3 shadow-2xl border border-gray-200/50"
@@ -685,7 +685,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
                     )}
                   </div>
                 </div>
-              </motion.div>
+              </motion.div> */}
               
               {/* Contrôles flottants */}
               {showControls && (
