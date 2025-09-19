@@ -41,6 +41,8 @@ interface MapboxMapProps {
   height?: number | string;
   markers?: MapboxMarker[];
   onMarkerClick?: (id: string) => void;
+  onMarkerHover?: (id: string, position: { x: number; y: number }) => void;
+  onMarkerLeave?: () => void;
   onClusterClick?: (cluster: Cluster) => void;
   autoFit?: boolean;
   userLocation?: { lat: number; lng: number };
@@ -225,7 +227,29 @@ function createMarkerContent(marker: MapboxMarker): string {
     // Marqueur de quartier/communauté
     iconContent = `
       <div style="position: relative;">
-      </div>
+        <!-- Marqueur principal de communauté -->
+        <div style="
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+          border-radius: 50%;
+          border: 3px solid #ffffff;
+          box-shadow: 
+            0 4px 12px rgba(139, 92, 246, 0.3),
+            0 2px 6px rgba(0, 0, 0, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8),
+            inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-weight: bold;
+          font-size: 14px;
+          cursor: pointer;
+          animation: communityPulse 2s ease-in-out infinite;
+        ">
+          🏘️
+        </div>
         
         <!-- Étiquette du quartier -->
         <div style="
@@ -481,6 +505,8 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
   height = 360,
   markers = [],
   onMarkerClick,
+  onMarkerHover,
+  onMarkerLeave,
   onClusterClick,
   autoFit = false,
   userLocation,
@@ -493,6 +519,29 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());
   const [isMapLoaded, setIsMapLoaded] = React.useState(false);
+
+  // Références stables pour les callbacks
+  const onMarkerClickRef = useRef(onMarkerClick);
+  const onMarkerHoverRef = useRef(onMarkerHover);
+  const onMarkerLeaveRef = useRef(onMarkerLeave);
+  const onClusterClickRef = useRef(onClusterClick);
+
+  // Mettre à jour les références quand les props changent
+  React.useEffect(() => {
+    onMarkerClickRef.current = onMarkerClick;
+  }, [onMarkerClick]);
+
+  React.useEffect(() => {
+    onMarkerHoverRef.current = onMarkerHover;
+  }, [onMarkerHover]);
+
+  React.useEffect(() => {
+    onMarkerLeaveRef.current = onMarkerLeave;
+  }, [onMarkerLeave]);
+
+  React.useEffect(() => {
+    onClusterClickRef.current = onClusterClick;
+  }, [onClusterClick]);
 
   // Fonctions de popup supprimées pour simplifier
 
@@ -543,7 +592,7 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
 
         el.addEventListener('click', (e) => {
           e.stopPropagation();
-          onClusterClick?.(cluster);
+          onClusterClickRef.current?.(cluster);
         });
 
         const mapboxMarker = new mapboxgl.Marker(el)
@@ -581,7 +630,24 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
 
         el.addEventListener('click', (e) => {
           e.stopPropagation();
-          onMarkerClick?.(marker.id);
+          onMarkerClickRef.current?.(marker.id);
+        });
+
+        // Ajouter les événements de survol
+        el.addEventListener('mouseenter', () => {
+          const rect = el.getBoundingClientRect();
+          const containerRect = mapContainerRef.current?.getBoundingClientRect();
+          if (containerRect) {
+            const position = {
+              x: rect.left + rect.width / 2,
+              y: rect.top
+            };
+            onMarkerHoverRef.current?.(marker.id, position);
+          }
+        });
+
+        el.addEventListener('mouseleave', () => {
+          onMarkerLeaveRef.current?.();
         });
 
         // Ajouter un décalage basé sur l'ID pour éviter la superposition
@@ -639,8 +705,6 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
         `;
              el.innerHTML = createMarkerContent(marker);
 
-        // Pas d'interaction au survol, seulement au clic
-
         el.addEventListener('click', (e) => {
           e.stopPropagation();
           
@@ -651,7 +715,24 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
                   }, 150);
 
           // Appeler seulement la fonction de callback
-          onMarkerClick?.(marker.id);
+          onMarkerClickRef.current?.(marker.id);
+        });
+
+        // Ajouter les événements de survol
+        el.addEventListener('mouseenter', () => {
+          const rect = el.getBoundingClientRect();
+          const containerRect = mapContainerRef.current?.getBoundingClientRect();
+          if (containerRect) {
+            const position = {
+              x: rect.left + rect.width / 2,
+              y: rect.top
+            };
+            onMarkerHoverRef.current?.(marker.id, position);
+          }
+        });
+
+        el.addEventListener('mouseleave', () => {
+          onMarkerLeaveRef.current?.();
         });
 
         // Ajouter un décalage basé sur l'ID pour éviter la superposition
@@ -723,7 +804,7 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
           }
         }
     }
-  }, [markers, isMapLoaded, autoFit, showUserLocation, userLocation, onMarkerClick, enableClustering, clusterRadius, clusterMaxZoom, onClusterClick]);
+  }, [markers, isMapLoaded, autoFit, showUserLocation, userLocation, enableClustering, clusterRadius, clusterMaxZoom]);
 
   // Gestion des popups supprimée
 
@@ -765,7 +846,12 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
       // Listener pour recalculer les clusters lors du changement de zoom
       if (enableClustering) {
         map.on('zoomend', () => {
-          updateMarkers();
+          // Utiliser un timeout pour éviter les appels trop fréquents
+          setTimeout(() => {
+            if (mapRef.current && isMapLoaded) {
+              updateMarkers();
+            }
+          }, 100);
         });
       }
 
@@ -783,19 +869,24 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
         mapRef.current = null;
       }
     };
-  }, [accessToken, center.lat, center.lng, zoom, enableClustering, updateMarkers]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accessToken, center.lat, center.lng, zoom, enableClustering]);
 
   // Mise à jour optimisée des marqueurs basée sur le hash (optimisation majeure)
   useEffect(() => {
-    updateMarkers();
-  }, [markersHash, updateMarkers]);
+    if (isMapLoaded) {
+      updateMarkers();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [markersHash, isMapLoaded]);
 
   // Recalculer les clusters lors du changement de zoom
   useEffect(() => {
     if (enableClustering && mapRef.current && isMapLoaded) {
       updateMarkers();
     }
-  }, [enableClustering, updateMarkers, isMapLoaded]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enableClustering, isMapLoaded]);
 
   // Mettre à jour le marqueur utilisateur de manière optimisée
   useEffect(() => {

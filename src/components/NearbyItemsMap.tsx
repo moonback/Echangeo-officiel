@@ -16,11 +16,13 @@ import { useItems } from '../hooks/useItems';
 import { useCommunities, useCommunityItems } from '../hooks/useCommunities';
 import MapboxMap from './MapboxMap';
 import MapFiltersModal from './MapFiltersModal';
+import MapMarkerPopup from './MapMarkerPopup';
+import CommunityMarkerPopup from './CommunityMarkerPopup';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import Badge from './ui/Badge';
 import EmptyState from './EmptyState';
-import type { Community, OfferType } from '../types';
+import type { Community, OfferType, Item } from '../types';
 
 interface NearbyItemsMapProps {
   className?: string;
@@ -64,6 +66,11 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
   // Nouveaux états pour l'amélioration du design
   const [showLegend, setShowLegend] = useState(false);
   const [showCarousel, setShowCarousel] = useState(false);
+  
+  // États pour les popups au survol
+  const [hoveredItem, setHoveredItem] = useState<Item | null>(null);
+  const [hoveredCommunity, setHoveredCommunity] = useState<Community | null>(null);
+  const [popupPosition, setPopupPosition] = useState<{ x: number; y: number } | null>(null);
   
   // Référence pour la carte
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -332,6 +339,33 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
         window.location.href = `/items/${id}`;
       }
     }
+  };
+
+  // Gérer le survol des marqueurs
+  const handleMarkerHover = (id: string, position: { x: number; y: number }) => {
+    if (id.startsWith('community-')) {
+      const communityId = id.replace('community-', '');
+      const community = communities?.find(c => c.id === communityId);
+      if (community) {
+        setHoveredCommunity(community);
+        setHoveredItem(null);
+        setPopupPosition(position);
+      }
+    } else {
+      const item = filteredItems.find(i => i.id === id);
+      if (item) {
+        setHoveredItem(item);
+        setHoveredCommunity(null);
+        setPopupPosition(position);
+      }
+    }
+  };
+
+  // Gérer la fin du survol
+  const handleMarkerLeave = () => {
+    setHoveredItem(null);
+    setHoveredCommunity(null);
+    setPopupPosition(null);
   };
 
   // Retour à la vue des communautés
@@ -604,6 +638,8 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
               userLocation={validUserLoc || undefined}
               markers={viewMode === 'communities' ? communityMarkers : itemMarkers}
               onMarkerClick={handleMarkerClick}
+              onMarkerHover={handleMarkerHover}
+              onMarkerLeave={handleMarkerLeave}
             />
             </motion.div>
           ) : (
@@ -933,6 +969,42 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
           </motion.div>
         )}
       </Card>
+
+      {/* Popups au survol */}
+      {hoveredItem && popupPosition && (
+        <div 
+          className="fixed pointer-events-none z-50"
+          style={{
+            left: popupPosition.x,
+            top: popupPosition.y,
+            transform: 'translate(-50%, -100%)'
+          }}
+        >
+          <MapMarkerPopup
+            item={hoveredItem}
+            onClose={handleMarkerLeave}
+            onItemClick={onItemClick}
+            userLocation={validUserLoc || undefined}
+          />
+        </div>
+      )}
+
+      {hoveredCommunity && popupPosition && (
+        <div 
+          className="fixed pointer-events-none z-50"
+          style={{
+            left: popupPosition.x,
+            top: popupPosition.y,
+            transform: 'translate(-50%, -100%)'
+          }}
+        >
+          <CommunityMarkerPopup
+            community={hoveredCommunity}
+            onClose={handleMarkerLeave}
+            onCommunityClick={onCommunityClick}
+          />
+        </div>
+      )}
 
       {/* Filters Modal */}
       <MapFiltersModal
