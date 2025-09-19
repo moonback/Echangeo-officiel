@@ -365,23 +365,10 @@ const CreateItemPage: React.FC = () => {
         console.log('Adresse détectée:', address);
         setDetectedAddress(address);
         
-        // Rechercher des quartiers basés sur cette adresse
+        // Rechercher des quartiers basés sur cette adresse via l'IA
         const { suggestNeighborhoods } = await import('../services/neighborhoodSuggestionAI');
-        // Convertir NearbyCommunity[] en Community[] pour la compatibilité
-        const communitiesForSuggestion = (nearbyCommunities || []).map(nc => ({
-          id: nc.community_id,
-          name: nc.community_name,
-          description: '',
-          city: '',
-          country: 'France',
-          center_latitude: undefined,
-          center_longitude: undefined,
-          radius_km: 2,
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }));
-        const suggestions = await suggestNeighborhoods(address, communitiesForSuggestion);
+        // Utiliser une liste vide pour forcer la génération de nouveaux quartiers
+        const suggestions = await suggestNeighborhoods(address, []);
         
         if (suggestions.length > 0) {
           // Stocker toutes les suggestions pour création ultérieure
@@ -391,15 +378,21 @@ const CreateItemPage: React.FC = () => {
           const bestSuggestion = suggestions[0];
           handleSelectNeighborhood(bestSuggestion);
           
-          console.log('Quartier suggéré automatiquement:', bestSuggestion.name);
+          console.log('Quartier généré automatiquement par IA:', bestSuggestion.name);
         } else {
-          console.log('Aucun quartier trouvé pour cette adresse');
+          console.log('Aucun quartier généré par l\'IA pour cette adresse');
           // Ouvrir le modal avec l'adresse détectée pour recherche manuelle
           setIsNeighborhoodModalOpen(true);
         }
+      } else {
+        console.log('Impossible de détecter l\'adresse, ouverture du modal');
+        // Ouvrir le modal pour saisie manuelle
+        setIsNeighborhoodModalOpen(true);
       }
     } catch (error) {
       console.error('Erreur lors de la recherche automatique de quartiers:', error);
+      // En cas d'erreur, ouvrir le modal pour saisie manuelle
+      setIsNeighborhoodModalOpen(true);
     } finally {
       setIsSearchingNeighborhoods(false);
     }
@@ -962,6 +955,23 @@ const CreateItemPage: React.FC = () => {
                       onChange={(e) => {
                         setAddressQuery(e.target.value);
                         setValue('location_hint', e.target.value, { shouldDirty: true, shouldTouch: true });
+                        
+                        // Déclencher la suggestion automatique si l'adresse semble complète
+                        const value = e.target.value.trim();
+                        if (value.length > 10 && (value.includes(',') || /\d{5}/.test(value))) {
+                          // Adresse semble complète, déclencher la recherche de quartiers
+                          setTimeout(async () => {
+                            if (addressSuggestions.length > 0) {
+                              const firstSuggestion = addressSuggestions[0];
+                              const lat = Number(firstSuggestion.lat);
+                              const lon = Number(firstSuggestion.lon);
+                              setUserLocation({ lat, lng: lon });
+                              setValue('latitude', lat as unknown as number, { shouldValidate: true, shouldDirty: true });
+                              setValue('longitude', lon as unknown as number, { shouldValidate: true, shouldDirty: true });
+                              await searchNeighborhoodsFromLocation(lat, lon);
+                            }
+                          }, 1000); // Attendre 1 seconde pour que les suggestions se chargent
+                        }
                       }}
                       onFocus={() => {
                         if (addressSuggestions.length > 0) setAddressDropdownOpen(true);
@@ -983,7 +993,7 @@ const CreateItemPage: React.FC = () => {
                             key={`${sugg.label}-${idx}`}
                             type="button"
                             className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm"
-                            onClick={() => {
+                            onClick={async () => {
                               // Renseigner l'adresse choisie
                               setValue('location_hint', sugg.label, { shouldDirty: true, shouldTouch: true });
                               setAddressQuery(sugg.label);
@@ -994,6 +1004,9 @@ const CreateItemPage: React.FC = () => {
                               setValue('latitude', lat as unknown as number, { shouldValidate: true, shouldDirty: true });
                               setValue('longitude', lon as unknown as number, { shouldValidate: true, shouldDirty: true });
                               setUserLocation({ lat, lng: lon });
+                              
+                              // Déclencher automatiquement la recherche de quartiers
+                              await searchNeighborhoodsFromLocation(lat, lon);
                             }}
                           >
                             {sugg.label}
@@ -1010,31 +1023,36 @@ const CreateItemPage: React.FC = () => {
                     type="button"
                     variant="ghost"
                     className="border border-gray-300 whitespace-nowrap"
-                    onClick={() => {
+                    onClick={async () => {
                       if (!navigator.geolocation) {
                         console.warn('Geolocation non supportée');
                         return;
                       }
                       setIsLocating(true);
-                      navigator.geolocation.getCurrentPosition((pos) => {
+                      navigator.geolocation.getCurrentPosition(async (pos) => {
                         const lat = pos.coords.latitude;
                         const lng = pos.coords.longitude;
                         setValue('latitude', lat as unknown as number, { shouldValidate: true, shouldDirty: true });
                         setValue('longitude', lng as unknown as number, { shouldValidate: true, shouldDirty: true });
 
-                        fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`, {
-                          headers: { 'Accept-Language': 'fr' },
-                        })
-                          .then((r) => r.json())
-                          .then((json) => {
-                            const display = json?.display_name as string | undefined;
-                            if (display) {
-                              setValue('location_hint', display, { shouldValidate: true, shouldDirty: true });
-                              setAddressQuery(display);
-                            }
-                          })
-                          .catch((e) => console.warn('Reverse geocoding failed', e))
-                          .finally(() => setIsLocating(false));
+                        try {
+                          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`, {
+                            headers: { 'Accept-Language': 'fr' },
+                          });
+                          const json = await response.json();
+                          const display = json?.display_name as string | undefined;
+                          if (display) {
+                            setValue('location_hint', display, { shouldValidate: true, shouldDirty: true });
+                            setAddressQuery(display);
+                          }
+                          
+                          // Déclencher automatiquement la recherche de quartiers
+                          await searchNeighborhoodsFromLocation(lat, lng);
+                        } catch (e) {
+                          console.warn('Reverse geocoding failed', e);
+                        } finally {
+                          setIsLocating(false);
+                        }
                       }, (err) => {
                         console.warn('Geolocation error', err);
                         setIsLocating(false);
@@ -1213,28 +1231,7 @@ const CreateItemPage: React.FC = () => {
               </div>
             )}
 
-            {selectedNeighborhood && (
-              <div className="mt-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
-                <p className="text-sm text-purple-800">
-                  ✨ Quartier suggéré par IA : {selectedNeighborhood.name}
-                </p>
-                <p className="text-xs text-purple-600 mt-1">
-                  {selectedNeighborhood.city} • {selectedNeighborhood.postalCode || 'N/A'} • {selectedNeighborhood.description}
-                </p>
-                {createdCommunityId && (
-                  <div className="mt-1">
-                    <p className="text-xs text-green-600 font-medium">
-                      ✅ Communauté sélectionnée créée automatiquement
-                    </p>
-                    {allSuggestions.length > 1 && (
-                      <p className="text-xs text-blue-600 mt-1">
-                        📊 {allSuggestions.length} communautés créées en masse pour économiser les appels API
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+            
 
             {selectedCommunity && (
               <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
@@ -1406,7 +1403,6 @@ const CreateItemPage: React.FC = () => {
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         }))}
-        userLocation={userLocation || undefined}
         searchInput={detectedAddress}
       />
     </div>
