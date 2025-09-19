@@ -814,7 +814,6 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
               userLocation={userLoc || undefined}
               markers={viewMode === 'communities' ? communityMarkers : itemMarkers}
               onMarkerClick={handleMarkerClick}
-              showPopup={true}
             />
             </motion.div>
           ) : (
