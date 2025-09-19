@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Image } from 'lucide-react';
 import { useItemFilters } from '../hooks/useItemFilters';
+import { useGeolocation } from '../hooks/useGeolocation';
 import ItemCard from '../components/ItemCard';
 import { ItemCardSkeleton } from '../components/SkeletonLoader';
 import SearchBar from '../components/SearchBar';
@@ -14,6 +15,9 @@ import Button from '../components/ui/Button';
 
 const ItemsPage: React.FC = () => {
   const isMobile = useMediaQuery('(max-width: 1024px)');
+  
+  // Géolocalisation de l'utilisateur
+  const { userLocation, getCurrentLocation } = useGeolocation();
   
   const {
     filters,
@@ -39,6 +43,15 @@ const ItemsPage: React.FC = () => {
     resetFilters,
     refetch,
   } = useItemFilters();
+
+  // Récupérer la position de l'utilisateur au chargement
+  React.useEffect(() => {
+    if (!userLocation) {
+      getCurrentLocation().catch((error) => {
+        console.log('Géolocalisation non disponible:', error.message);
+      });
+    }
+  }, [userLocation, getCurrentLocation]);
 
   const handleFilterChange = (key: keyof typeof filters, value: string | boolean | undefined) => {
     switch (key) {
@@ -83,16 +96,16 @@ const ItemsPage: React.FC = () => {
       {/* Sticky Header */}
       <div className="sticky top-0 z-30 bg-white border-b border-gray-200 shadow-sm">
         <div className="p-4 max-w-7xl mx-auto">
-          <motion.div
+      <motion.div
             initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
+        animate={{ opacity: 1, y: 0 }}
             className="space-y-4"
-          >
+      >
             <h1 className="text-2xl font-bold text-gray-900">
-              Parcourir les objets
-            </h1>
+          Parcourir les objets
+        </h1>
 
-            {/* Search Bar */}
+        {/* Search Bar */}
             <SearchBar
               value={filters.search}
               onChange={setSearch}
@@ -100,7 +113,7 @@ const ItemsPage: React.FC = () => {
               placeholder="Rechercher un objet..."
             />
 
-            {/* Controls */}
+        {/* Controls */}
             <ViewControls
               sortBy={filters.sortBy}
               viewMode={filters.viewMode}
@@ -114,8 +127,8 @@ const ItemsPage: React.FC = () => {
             />
           </motion.div>
         </div>
-      </div>
-
+          </div>
+          
       <div className="p-4 max-w-7xl mx-auto">
 
         {/* Filters */}
@@ -139,53 +152,53 @@ const ItemsPage: React.FC = () => {
           />
         )}
 
-        {/* Results */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          {/* Results Header */}
+      {/* Results */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        {/* Results Header */}
           <div className="flex items-center justify-between mb-6">
-            <div>
+          <div>
               {filters.search || filters.selectedCategory || activeFiltersCount > 0 ? (
-                <p className="text-gray-600">
-                  {sortedItems?.length || 0} résultat(s) 
+              <p className="text-gray-600">
+                {sortedItems?.length || 0} résultat(s) 
                   {filters.search && ` pour "${filters.search}"`}
                   {filters.selectedCategory && ` dans "${filters.selectedCategory}"`}
-                  {activeFiltersCount > 0 && ` avec ${activeFiltersCount} filtre(s)`}
-                </p>
-              ) : (
-                <p className="text-gray-600">
-                  {sortedItems?.length || 0} objet(s) disponible(s)
-                </p>
-              )}
-            </div>
-            
-            {/* Quick Stats */}
-            {sortedItems && sortedItems.length > 0 && (
-              <div className="flex items-center gap-4 text-sm text-gray-500">
-                <span className="flex items-center gap-1">
-                  <MapPin size={14} />
-                  {sortedItems.filter(item => item.latitude && item.longitude).length} avec localisation
-                </span>
-                <span className="flex items-center gap-1">
-                  <Image size={14} />
-                  {sortedItems.filter(item => item.images && item.images.length > 0).length} avec photos
-                </span>
-              </div>
+                {activeFiltersCount > 0 && ` avec ${activeFiltersCount} filtre(s)`}
+              </p>
+            ) : (
+              <p className="text-gray-600">
+                {sortedItems?.length || 0} objet(s) disponible(s)
+              </p>
             )}
           </div>
+          
+          {/* Quick Stats */}
+          {sortedItems && sortedItems.length > 0 && (
+            <div className="flex items-center gap-4 text-sm text-gray-500">
+              <span className="flex items-center gap-1">
+                <MapPin size={14} />
+                {sortedItems.filter(item => item.latitude && item.longitude).length} avec localisation
+              </span>
+              <span className="flex items-center gap-1">
+                  <Image size={14} />
+                {sortedItems.filter(item => item.images && item.images.length > 0).length} avec photos
+              </span>
+            </div>
+          )}
+        </div>
 
-          {/* Results Grid/List */}
-          <div className={filters.viewMode === 'grid' 
-            ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
-            : 'space-y-4'
-          }>
-            {isLoading ? (
-              <ItemCardSkeleton count={8} />
-            ) : sortedItems && sortedItems.length > 0 ? (
-              sortedItems.map((item) => (
+        {/* Results Grid/List */}
+           <div className={filters.viewMode === 'grid' 
+             ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4'
+          : 'space-y-4'
+        }>
+          {isLoading ? (
+            <ItemCardSkeleton count={8} />
+          ) : sortedItems && sortedItems.length > 0 ? (
+            sortedItems.map((item) => (
                 <motion.div
                   key={item.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -193,17 +206,18 @@ const ItemsPage: React.FC = () => {
                   transition={{ duration: 0.3 }}
                   whileHover={{ y: -2 }}
                 >
-                  <ItemCard 
-                    item={item} 
-                    className={filters.viewMode === 'list' ? 'flex flex-row items-center space-x-4' : ''}
-                  />
+              <ItemCard 
+                item={item} 
+                userLocation={userLocation || undefined}
+                className={filters.viewMode === 'list' ? 'flex flex-row items-center space-x-4' : ''}
+              />
                 </motion.div>
-              ))
-            ) : (
+            ))
+          ) : (
               <EmptyStateEnhanced
-                title="Aucun objet trouvé"
-                description="Essayez de modifier vos critères de recherche ou réinitialisez les filtres."
-                className="col-span-full"
+              title="Aucun objet trouvé"
+              description="Essayez de modifier vos critères de recherche ou réinitialisez les filtres."
+              className="col-span-full"
                 suggestions={[
                   'Réinitialiser les filtres',
                   'Changer de catégorie',
@@ -217,17 +231,17 @@ const ItemsPage: React.FC = () => {
                     resetFilters();
                   }
                 }}
-                action={
-                  activeFiltersCount > 0 ? (
-                    <Button onClick={resetFilters} variant="primary">
-                      Réinitialiser les filtres
-                    </Button>
-                  ) : undefined
-                }
-              />
-            )}
-          </div>
-        </motion.div>
+              action={
+                activeFiltersCount > 0 ? (
+                  <Button onClick={resetFilters} variant="primary">
+                    Réinitialiser les filtres
+                  </Button>
+                ) : undefined
+              }
+            />
+          )}
+        </div>
+      </motion.div>
       </div>
     </div>
   );
