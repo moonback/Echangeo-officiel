@@ -791,30 +791,30 @@ function createMarkerContent(marker: MapboxMarker): string {
 
   let icon = '';
   let color = '#6B7280';
-  let size = '20px';
+  let size = '28px';
 
   switch (marker.type) {
     case 'community':
       icon = markerIcons.community;
       color = markerColors.community;
-      size = '24px';
+      size = '32px';
       break;
     case 'user':
       icon = markerIcons.user;
       color = markerColors.user;
-      size = '18px';
+      size = '26px';
       break;
     case 'event':
       icon = markerIcons.event;
       color = markerColors.event;
-      size = '22px';
+      size = '30px';
       break;
     case 'item':
     default: {
       const category = marker.category || 'other';
       icon = markerIcons.item[category as keyof typeof markerIcons.item] || markerIcons.item.other;
       color = marker.color || markerColors.item[category as keyof typeof markerColors.item] || markerColors.item.other;
-      size = '20px';
+      size = '28px';
       break;
     }
   }
@@ -825,14 +825,27 @@ function createMarkerContent(marker: MapboxMarker): string {
       height: ${size};
       background: ${color};
       border-radius: 50%;
-      border: 3px solid white;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+      border: 4px solid white;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(255, 255, 255, 0.8);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.3s ease;
+      position: relative;
     ">
+      <!-- Effet de brillance -->
+      <div style="
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        right: 2px;
+        height: 50%;
+        background: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), transparent);
+        border-radius: 50% 50% 0 0;
+        pointer-events: none;
+      "></div>
+      
       <div style="
         color: white;
         display: flex;
@@ -840,6 +853,8 @@ function createMarkerContent(marker: MapboxMarker): string {
         justify-content: center;
         width: 100%;
         height: 100%;
+        position: relative;
+        z-index: 1;
       ">
         ${icon}
       </div>
@@ -850,11 +865,11 @@ function createMarkerContent(marker: MapboxMarker): string {
 // Fonction pour définir le style des marqueurs selon leur type (legacy - gardée pour compatibilité)
 function getMarkerStyle(marker: MapboxMarker) {
   const baseStyle = {
-    size: '20px',
+    size: '28px',
     borderRadius: '50%',
-    border: '2px solid white',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-    fontSize: '10px',
+    border: '4px solid white',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.4), 0 0 0 2px rgba(255, 255, 255, 0.8)',
+    fontSize: '12px',
     color: 'white',
     fontWeight: 'bold' as const
   };
@@ -864,7 +879,7 @@ function getMarkerStyle(marker: MapboxMarker) {
       return {
         ...baseStyle,
         backgroundColor: '#8B5CF6',
-        size: '24px',
+        size: '32px',
         borderRadius: '50%',
       };
     
@@ -872,7 +887,7 @@ function getMarkerStyle(marker: MapboxMarker) {
       return {
         ...baseStyle,
         backgroundColor: '#10B981',
-        size: '18px',
+        size: '26px',
         borderRadius: '50%',
       };
     
@@ -880,7 +895,7 @@ function getMarkerStyle(marker: MapboxMarker) {
       return {
         ...baseStyle,
         backgroundColor: '#F59E0B',
-        size: '22px',
+        size: '30px',
         borderRadius: '50%',
       };
     
@@ -909,7 +924,7 @@ function getMarkerStyle(marker: MapboxMarker) {
       return {
         ...baseStyle,
         backgroundColor: marker.color || categoryColors[marker.category || 'other'] || '#2563eb',
-        size: '20px',
+        size: '28px',
         borderRadius: '50%',
       };
     }
@@ -1075,12 +1090,12 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
         // Ajouter le marqueur utilisateur
         if (showUserLocation && userLocation) {
           const userEl = document.createElement('div');
-          userEl.style.width = '16px';
-          userEl.style.height = '16px';
+          userEl.style.width = '20px';
+          userEl.style.height = '20px';
           userEl.style.borderRadius = '50%';
           userEl.style.backgroundColor = '#2563eb';
-          userEl.style.border = '2px solid white';
-          userEl.style.boxShadow = '0 0 0 4px rgba(37,99,235,0.3)';
+          userEl.style.border = '3px solid white';
+          userEl.style.boxShadow = '0 0 0 6px rgba(37,99,235,0.3), 0 4px 12px rgba(0, 0, 0, 0.4)';
           userEl.style.animation = 'pulse 2s infinite';
 
           const userMarker = new mapboxgl.Marker(userEl)
@@ -1216,12 +1231,12 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
     // Ajouter le nouveau marqueur utilisateur
     if (showUserLocation && userLocation) {
       const userEl = document.createElement('div');
-      userEl.style.width = '16px';
-      userEl.style.height = '16px';
+      userEl.style.width = '20px';
+      userEl.style.height = '20px';
       userEl.style.borderRadius = '50%';
       userEl.style.backgroundColor = '#2563eb';
-      userEl.style.border = '2px solid white';
-      userEl.style.boxShadow = '0 0 0 4px rgba(37,99,235,0.3)';
+      userEl.style.border = '3px solid white';
+      userEl.style.boxShadow = '0 0 0 6px rgba(37,99,235,0.3), 0 4px 12px rgba(0, 0, 0, 0.4)';
       userEl.style.animation = 'pulse 2s infinite';
 
       const userMarker = new mapboxgl.Marker(userEl)
@@ -1343,12 +1358,13 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
            }
 
            .marker:hover {
-             transform: scale(1.1);
+             transform: scale(1.15);
              z-index: 1000;
            }
 
            .marker:hover > div {
-             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4) !important;
+             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), 0 0 0 4px rgba(255, 255, 255, 0.9) !important;
+             border-width: 5px !important;
            }
 
            .marker svg {
@@ -1356,7 +1372,7 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
            }
 
            .marker:hover svg {
-             transform: scale(1.1);
+             transform: scale(1.15);
            }
 
            /* Animation pour le popup de survol des communautés */
