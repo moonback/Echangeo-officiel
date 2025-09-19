@@ -1,537 +1,701 @@
-# Documentation API - Échangeo
+# Documentation API Échangeo 📚
 
-## 🌐 Vue d'ensemble
+## Vue d'ensemble
 
-Échangeo utilise **Supabase** comme backend-as-a-service, fournissant une API REST automatique basée sur le schéma PostgreSQL. Cette documentation couvre tous les endpoints disponibles et leur utilisation.
+Échangeo utilise **Supabase** comme backend-as-a-service, fournissant une API REST automatique basée sur le schéma de base de données PostgreSQL. Cette documentation couvre les endpoints principaux et les patterns d'utilisation.
 
-## 🔐 Authentification
+## Configuration
 
-### Endpoints d'Auth Supabase
+### Client Supabase
 ```typescript
-// Connexion
-POST /auth/v1/token?grant_type=password
-{
-  "email": "user@example.com",
-  "password": "password123"
-}
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from '../types/database';
 
-// Inscription
-POST /auth/v1/signup
-{
-  "email": "user@example.com",
-  "password": "password123",
-  "data": {
-    "full_name": "John Doe"
+const supabase = createClient<Database>(
+  process.env.VITE_SUPABASE_URL!,
+  process.env.VITE_SUPABASE_ANON_KEY!
+);
+```
+
+## Authentification
+
+### Inscription
+```typescript
+const { data, error } = await supabase.auth.signUp({
+  email: 'user@example.com',
+  password: 'password123',
+  options: {
+    data: {
+      full_name: 'John Doe',
+      phone: '+33123456789'
+    }
   }
-}
-
-// Déconnexion
-POST /auth/v1/logout
-
-// Refresh token
-POST /auth/v1/token?grant_type=refresh_token
-{
-  "refresh_token": "refresh_token_here"
-}
+});
 ```
 
-### Headers requis
-```http
-Authorization: Bearer <jwt_token>
-apikey: <supabase_anon_key>
-Content-Type: application/json
-```
-
-## 👤 Profils Utilisateurs
-
-### Obtenir le profil courant
+### Connexion
 ```typescript
-GET /rest/v1/profiles?select=*&id=eq.{user_id}
-
-// Response
-{
-  "id": "uuid",
-  "email": "user@example.com",
-  "full_name": "John Doe",
-  "avatar_url": "https://...",
-  "bio": "Bio utilisateur",
-  "phone": "+33123456789",
-  "address": "123 Rue Example",
-  "latitude": 48.8566,
-  "longitude": 2.3522,
-  "created_at": "2024-01-01T00:00:00Z",
-  "updated_at": "2024-01-01T00:00:00Z"
-}
+const { data, error } = await supabase.auth.signInWithPassword({
+  email: 'user@example.com',
+  password: 'password123'
+});
 ```
 
-### Mettre à jour le profil
+### Déconnexion
 ```typescript
-PATCH /rest/v1/profiles?id=eq.{user_id}
-{
-  "full_name": "John Doe Updated",
-  "bio": "Nouvelle bio",
-  "phone": "+33123456789",
-  "address": "456 Nouvelle Rue",
-  "latitude": 48.8566,
-  "longitude": 2.3522
-}
+const { error } = await supabase.auth.signOut();
 ```
 
-### Rechercher des voisins
+### Récupération du profil utilisateur
 ```typescript
-GET /rest/v1/profiles?select=*&distance=lt.5000&order=distance
-
-// Avec géolocalisation
-GET /rest/v1/profiles?select=*&latitude=gte.48.8&latitude=lte.48.9&longitude=gte.2.3&longitude=lte.2.4
+const { data: { user } } = await supabase.auth.getUser();
 ```
 
-## 📦 Objets (Items)
+## Gestion des Profils
 
-### Lister les objets
+### Créer un profil
 ```typescript
-GET /rest/v1/items?select=*,owner:profiles(*),images:item_images(*)
-
-// Avec filtres
-GET /rest/v1/items?select=*&category=eq.tools&is_available=eq.true&order=created_at.desc
-
-// Recherche textuelle
-GET /rest/v1/items?select=*&title=ilike.*perceuse*
-
-// Géolocalisation (rayon de 5km)
-GET /rest/v1/items?select=*&latitude=gte.48.8&latitude=lte.48.9&longitude=gte.2.3&longitude=lte.2.4
+const { data, error } = await supabase
+  .from('profiles')
+  .insert({
+    id: user.id,
+    email: user.email,
+    full_name: 'John Doe',
+    bio: 'Passionné de bricolage',
+    phone: '+33123456789',
+    address: '123 Rue de la Paix, Paris',
+    latitude: 48.8566,
+    longitude: 2.3522
+  });
 ```
 
-### Obtenir un objet spécifique
+### Récupérer un profil
 ```typescript
-GET /rest/v1/items?select=*,owner:profiles(*),images:item_images(*),ratings:item_ratings(*)&id=eq.{item_id}
-
-// Response
-{
-  "id": "uuid",
-  "owner_id": "uuid",
-  "title": "Perceuse Bosch",
-  "description": "Perceuse en excellent état",
-  "category": "tools",
-  "condition": "excellent",
-  "offer_type": "loan",
-  "desired_items": null,
-  "brand": "Bosch",
-  "model": "GSR 18V-21",
-  "estimated_value": 150,
-  "tags": ["bricolage", "outil", "électrique"],
-  "available_from": "2024-01-01",
-  "available_to": "2024-12-31",
-  "location_hint": "RDC, boîte aux lettres",
-  "latitude": 48.8566,
-  "longitude": 2.3522,
-  "is_available": true,
-  "suspended_by_admin": false,
-  "created_at": "2024-01-01T00:00:00Z",
-  "updated_at": "2024-01-01T00:00:00Z",
-  "owner": { /* profil owner */ },
-  "images": [ /* array d'images */ ],
-  "ratings": [ /* array d'évaluations */ ]
-}
+const { data, error } = await supabase
+  .from('profiles')
+  .select('*')
+  .eq('id', userId)
+  .single();
 ```
+
+### Mettre à jour un profil
+```typescript
+const { data, error } = await supabase
+  .from('profiles')
+  .update({
+    full_name: 'John Smith',
+    bio: 'Nouvelle bio',
+    phone: '+33987654321'
+  })
+  .eq('id', userId);
+```
+
+### Rechercher des profils par localisation
+```typescript
+const { data, error } = await supabase
+  .from('profiles')
+  .select('*')
+  .not('latitude', 'is', null)
+  .not('longitude', 'is', null);
+```
+
+## Gestion des Objets
 
 ### Créer un objet
 ```typescript
-POST /rest/v1/items
-{
-  "title": "Perceuse Bosch",
-  "description": "Perceuse en excellent état",
-  "category": "tools",
-  "condition": "excellent",
-  "offer_type": "loan",
-  "brand": "Bosch",
-  "model": "GSR 18V-21",
-  "estimated_value": 150,
-  "tags": ["bricolage", "outil", "électrique"],
-  "available_from": "2024-01-01",
-  "available_to": "2024-12-31",
-  "location_hint": "RDC, boîte aux lettres",
-  "latitude": 48.8566,
-  "longitude": 2.3522
-}
+const { data, error } = await supabase
+  .from('items')
+  .insert({
+    owner_id: userId,
+    title: 'Perceuse Bosch',
+    description: 'Perceuse en excellent état',
+    category: 'tools',
+    condition: 'excellent',
+    offer_type: 'loan',
+    brand: 'Bosch',
+    model: 'GSB 13 RE',
+    estimated_value: 80,
+    tags: ['bricolage', 'perceuse', 'outils'],
+    available_from: '2024-01-01T00:00:00Z',
+    available_to: '2024-12-31T23:59:59Z',
+    location_hint: 'Dans mon garage',
+    latitude: 48.8566,
+    longitude: 2.3522,
+    community_id: communityId,
+    is_available: true
+  });
+```
+
+### Récupérer tous les objets disponibles
+```typescript
+const { data, error } = await supabase
+  .from('items')
+  .select(`
+    *,
+    owner:profiles(*),
+    images:item_images(*),
+    average_rating,
+    ratings_count
+  `)
+  .eq('is_available', true)
+  .order('created_at', { ascending: false });
+```
+
+### Récupérer un objet par ID
+```typescript
+const { data, error } = await supabase
+  .from('items')
+  .select(`
+    *,
+    owner:profiles(*),
+    images:item_images(*),
+    average_rating,
+    ratings_count
+  `)
+  .eq('id', itemId)
+  .single();
+```
+
+### Rechercher des objets par catégorie
+```typescript
+const { data, error } = await supabase
+  .from('items')
+  .select('*')
+  .eq('category', 'tools')
+  .eq('is_available', true);
+```
+
+### Recherche géolocalisée (dans un rayon)
+```typescript
+const { data, error } = await supabase
+  .rpc('search_nearby_items', {
+    user_lat: 48.8566,
+    user_lng: 2.3522,
+    radius_km: 5
+  });
+```
+
+### Recherche par texte (titre et description)
+```typescript
+const { data, error } = await supabase
+  .from('items')
+  .select('*')
+  .or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`)
+  .eq('is_available', true);
 ```
 
 ### Mettre à jour un objet
 ```typescript
-PATCH /rest/v1/items?id=eq.{item_id}
-{
-  "title": "Perceuse Bosch - Mise à jour",
-  "is_available": false
-}
+const { data, error } = await supabase
+  .from('items')
+  .update({
+    title: 'Nouveau titre',
+    description: 'Nouvelle description',
+    is_available: false
+  })
+  .eq('id', itemId)
+  .eq('owner_id', userId); // Sécurité : seul le propriétaire peut modifier
 ```
 
 ### Supprimer un objet
 ```typescript
-DELETE /rest/v1/items?id=eq.{item_id}
+const { data, error } = await supabase
+  .from('items')
+  .delete()
+  .eq('id', itemId)
+  .eq('owner_id', userId);
 ```
 
-## 🖼️ Images d'Objets
+## Gestion des Images
 
-### Upload d'images
+### Upload d'image vers Supabase Storage
 ```typescript
-// Via Supabase Storage
-POST /storage/v1/object/items/{item_id}/{filename}
-Content-Type: image/jpeg
-Body: [binary image data]
-
-// Enregistrer en base
-POST /rest/v1/item_images
-{
-  "item_id": "uuid",
-  "url": "https://supabase.co/storage/v1/object/public/items/...",
-  "is_primary": true
-}
+const uploadImage = async (file: File, itemId: string) => {
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${itemId}/${Date.now()}.${fileExt}`;
+  
+  const { data, error } = await supabase.storage
+    .from('items')
+    .upload(fileName, file);
+    
+  if (error) throw error;
+  
+  // Obtenir l'URL publique
+  const { data: { publicUrl } } = supabase.storage
+    .from('items')
+    .getPublicUrl(fileName);
+    
+  return publicUrl;
+};
 ```
 
-### Lister les images d'un objet
+### Enregistrer une image en base
 ```typescript
-GET /rest/v1/item_images?select=*&item_id=eq.{item_id}&order=is_primary.desc,created_at.asc
+const { data, error } = await supabase
+  .from('item_images')
+  .insert({
+    item_id: itemId,
+    url: imageUrl,
+    is_primary: isPrimary
+  });
 ```
 
-## 📝 Demandes (Requests)
+### Récupérer les images d'un objet
+```typescript
+const { data, error } = await supabase
+  .from('item_images')
+  .select('*')
+  .eq('item_id', itemId)
+  .order('is_primary', { ascending: false });
+```
+
+## Gestion des Demandes
 
 ### Créer une demande
 ```typescript
-POST /rest/v1/requests
-{
-  "item_id": "uuid",
-  "message": "Bonjour, je souhaiterais emprunter cette perceuse pour un week-end",
-  "requested_from": "2024-01-15T09:00:00Z",
-  "requested_to": "2024-01-17T18:00:00Z"
-}
+const { data, error } = await supabase
+  .from('requests')
+  .insert({
+    requester_id: userId,
+    item_id: itemId,
+    message: 'Bonjour, je souhaiterais emprunter cet objet',
+    status: 'pending',
+    requested_from: '2024-01-15T00:00:00Z',
+    requested_to: '2024-01-20T23:59:59Z'
+  });
 ```
 
-### Lister les demandes
+### Récupérer les demandes reçues
 ```typescript
-// Demandes où je suis le demandeur
-GET /rest/v1/requests?select=*,item:items(*,owner:profiles(*))&requester_id=eq.{user_id}
+const { data, error } = await supabase
+  .from('requests')
+  .select(`
+    *,
+    requester:profiles(*),
+    item:items(*)
+  `)
+  .eq('item.owner_id', userId)
+  .order('created_at', { ascending: false });
+```
 
-// Demandes sur mes objets
-GET /rest/v1/requests?select=*,requester:profiles(*),item:items(*)&item_id=in.(item_ids_array)
+### Récupérer les demandes envoyées
+```typescript
+const { data, error } = await supabase
+  .from('requests')
+  .select(`
+    *,
+    item:items(*)
+  `)
+  .eq('requester_id', userId)
+  .order('created_at', { ascending: false });
 ```
 
 ### Mettre à jour le statut d'une demande
 ```typescript
-PATCH /rest/v1/requests?id=eq.{request_id}
-{
-  "status": "approved", // ou "rejected", "completed"
-  "message": "Demande acceptée, vous pouvez venir la récupérer"
-}
+const { data, error } = await supabase
+  .from('requests')
+  .update({ status: 'approved' })
+  .eq('id', requestId)
+  .eq('item.owner_id', userId); // Sécurité : seul le propriétaire peut approuver
 ```
 
-## 💬 Messages
+## Système de Messagerie
 
 ### Envoyer un message
 ```typescript
-POST /rest/v1/messages
-{
-  "sender_id": "uuid",
-  "receiver_id": "uuid",
-  "content": "Bonjour, merci pour votre demande !",
-  "conversation_id": "uuid"
-}
+const { data, error } = await supabase
+  .from('messages')
+  .insert({
+    sender_id: userId,
+    receiver_id: receiverId,
+    content: 'Bonjour, merci pour votre réponse !',
+    request_id: requestId // Optionnel : lier à une demande
+  });
 ```
 
-### Récupérer une conversation
+### Récupérer les conversations
 ```typescript
-GET /rest/v1/messages?select=*,sender:profiles(*),receiver:profiles(*)&conversation_id=eq.{conversation_id}&order=created_at.asc
+const { data, error } = await supabase
+  .from('messages')
+  .select(`
+    *,
+    sender:profiles(*),
+    receiver:profiles(*)
+  `)
+  .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+  .order('created_at', { ascending: false });
 ```
 
-### Lister les conversations
+### Récupérer les messages d'une conversation
 ```typescript
-GET /rest/v1/messages?select=distinct(conversation_id),sender:profiles(*),receiver:profiles(*),content,created_at&or=(sender_id.eq.{user_id},receiver_id.eq.{user_id})&order=created_at.desc
+const { data, error } = await supabase
+  .from('messages')
+  .select(`
+    *,
+    sender:profiles(*),
+    receiver:profiles(*)
+  `)
+  .or(`and(sender_id.eq.${userId},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${userId})`)
+  .order('created_at', { ascending: true });
 ```
 
-## 🏘️ Communautés
+## Système de Favoris
 
-### Lister les communautés
+### Ajouter aux favoris
 ```typescript
-GET /rest/v1/communities?select=*,members:community_members(count)&is_active=eq.true&order=created_at.desc
+const { data, error } = await supabase
+  .from('favorites')
+  .insert({
+    user_id: userId,
+    item_id: itemId
+  });
 ```
 
-### Obtenir une communauté
+### Retirer des favoris
 ```typescript
-GET /rest/v1/communities?select=*,members:community_members(*,profile:profiles(*)),events:community_events(*),discussions:community_discussions(*)&id=eq.{community_id}
+const { data, error } = await supabase
+  .from('favorites')
+  .delete()
+  .eq('user_id', userId)
+  .eq('item_id', itemId);
 ```
+
+### Récupérer les favoris
+```typescript
+const { data, error } = await supabase
+  .from('favorites')
+  .select(`
+    *,
+    item:items(
+      *,
+      owner:profiles(*),
+      images:item_images(*)
+    )
+  `)
+  .eq('user_id', userId);
+```
+
+## Système de Notation
+
+### Noter un objet
+```typescript
+const { data, error } = await supabase
+  .from('item_ratings')
+  .insert({
+    item_id: itemId,
+    rater_id: userId,
+    score: 5,
+    comment: 'Excellent objet, très satisfait !'
+  });
+```
+
+### Noter un utilisateur
+```typescript
+const { data, error } = await supabase
+  .from('user_ratings')
+  .insert({
+    request_id: requestId,
+    rater_id: userId,
+    rated_user_id: ratedUserId,
+    communication_score: 5,
+    punctuality_score: 4,
+    care_score: 5,
+    comment: 'Très bon échange, personne de confiance'
+  });
+```
+
+### Récupérer les statistiques de réputation
+```typescript
+const { data, error } = await supabase
+  .from('profile_reputation_stats')
+  .select('*')
+  .eq('profile_id', userId)
+  .single();
+```
+
+## Gestion des Communautés
 
 ### Créer une communauté
 ```typescript
-POST /rest/v1/communities
-{
-  "name": "Quartier République",
-  "description": "Communauté du quartier République à Paris",
-  "city": "Paris",
-  "postal_code": "75011",
-  "center_latitude": 48.8566,
-  "center_longitude": 2.3522,
-  "radius_km": 2,
-  "created_by": "uuid"
-}
+const { data, error } = await supabase
+  .from('communities')
+  .insert({
+    name: 'Quartier Belleville',
+    description: 'Communauté des habitants de Belleville',
+    city: 'Paris',
+    postal_code: '75019',
+    country: 'France',
+    center_latitude: 48.8722,
+    center_longitude: 2.3767,
+    radius_km: 2,
+    created_by: userId
+  });
+```
+
+### Récupérer les communautés proches
+```typescript
+const { data, error } = await supabase
+  .rpc('search_nearby_communities', {
+    user_lat: 48.8566,
+    user_lng: 2.3522,
+    radius_km: 10
+  });
 ```
 
 ### Rejoindre une communauté
 ```typescript
-POST /rest/v1/community_members
-{
-  "community_id": "uuid",
-  "user_id": "uuid",
-  "role": "member"
-}
+const { data, error } = await supabase
+  .from('community_members')
+  .insert({
+    community_id: communityId,
+    user_id: userId,
+    role: 'member'
+  });
 ```
 
-## ⭐ Évaluations et Gamification
-
-### Créer une évaluation
+### Récupérer les membres d'une communauté
 ```typescript
-POST /rest/v1/item_ratings
-{
-  "item_id": "uuid",
-  "rater_id": "uuid",
-  "rating": 5,
-  "comment": "Excellent service, objet en parfait état"
-}
+const { data, error } = await supabase
+  .from('community_members')
+  .select(`
+    *,
+    user:profiles(*)
+  `)
+  .eq('community_id', communityId)
+  .eq('is_active', true);
 ```
 
-### Obtenir les statistiques d'un utilisateur
+## Système de Gamification
+
+### Récupérer les points et badges
 ```typescript
-GET /rest/v1/user_levels?select=*,points_history:user_points_history(*)&profile_id=eq.{user_id}
+const { data, error } = await supabase
+  .from('user_gamification')
+  .select(`
+    *,
+    badges:user_badges(
+      *,
+      badge:badges(*)
+    )
+  `)
+  .eq('user_id', userId)
+  .single();
 ```
 
-### Obtenir le classement
+### Ajouter des points
 ```typescript
-GET /rest/v1/user_levels?select=*,profile:profiles(full_name,avatar_url)&order=points.desc&limit=50
+const { data, error } = await supabase
+  .from('user_gamification')
+  .update({
+    total_points: totalPoints + newPoints,
+    level: newLevel
+  })
+  .eq('user_id', userId);
 ```
 
-## 🔔 Notifications
+## Administration
 
-### Lister les notifications
+### Récupérer les statistiques globales
 ```typescript
-GET /rest/v1/notifications?select=*&user_id=eq.{user_id}&is_read=eq.false&order=created_at.desc
+const { data, error } = await supabase
+  .from('admin_stats')
+  .select('*')
+  .single();
 ```
 
-### Marquer comme lu
+### Bannir un utilisateur
 ```typescript
-PATCH /rest/v1/notifications?id=eq.{notification_id}
-{
-  "is_read": true
-}
+const { data, error } = await supabase
+  .from('user_bans')
+  .insert({
+    user_id: userId,
+    banned_by: adminId,
+    reason: 'Comportement inapproprié',
+    expires_at: '2024-12-31T23:59:59Z'
+  });
 ```
 
-## 🛡️ Administration
-
-### Statistiques globales
+### Suspendre un objet
 ```typescript
-GET /rest/v1/admin_stats?select=*
-
-// Response
-{
-  "total_users": 1250,
-  "total_items": 3400,
-  "total_requests": 8900,
-  "total_communities": 45,
-  "active_users_today": 89,
-  "items_by_category": { /* breakdown */ },
-  "requests_by_status": { /* breakdown */ }
-}
+const { data, error } = await supabase
+  .from('items')
+  .update({
+    is_available: false,
+    suspended_by_admin: true,
+    suspension_reason: 'Contenu inapproprié'
+  })
+  .eq('id', itemId);
 ```
 
-### Gestion des utilisateurs
-```typescript
-// Lister tous les utilisateurs
-GET /rest/v1/profiles?select=*,level:user_levels(*),items_count:items(count),requests_count:requests(count)&order=created_at.desc
+## Fonctions RPC Personnalisées
 
-// Suspendre un utilisateur
-PATCH /rest/v1/profiles?id=eq.{user_id}
-{
-  "is_suspended": true,
-  "suspension_reason": "Violation des conditions d'utilisation"
-}
-```
-
-### Gestion des objets
-```typescript
-// Objets signalés
-GET /rest/v1/items?select=*,owner:profiles(*),reports:item_reports(*)&suspended_by_admin=eq.false&order=created_at.desc
-
-// Suspendre un objet
-PATCH /rest/v1/items?id=eq.{item_id}
-{
-  "suspended_by_admin": true,
-  "suspension_reason": "Contenu inapproprié"
-}
-```
-
-## 🤖 Intelligence Artificielle
-
-### Analyse d'image (via service externe)
-```typescript
-// Endpoint interne (pas Supabase)
-POST /api/ai/analyze-image
-Content-Type: multipart/form-data
-Body: FormData avec image
-
-// Response
-{
-  "title": "Perceuse électrique",
-  "description": "Perceuse sans fil en bon état",
-  "category": "tools",
-  "condition": "good",
-  "brand": "Bosch",
-  "model": "GSR 18V-21",
-  "estimated_value": 120,
-  "tags": ["bricolage", "outil", "électrique", "sans fil"],
-  "confidence": 0.95
-}
-```
-
-### Suggestions de chat
-```typescript
-POST /api/ai/chat-suggestions
-{
-  "messages": [/* array de messages */],
-  "context": {
-    "itemTitle": "Perceuse Bosch",
-    "itemCategory": "tools",
-    "requestType": "loan",
-    "userRelation": "owner"
-  }
-}
-```
-
-## 📊 Requêtes Avancées
-
-### Recherche géolocalisée avec distance
+### Recherche géolocalisée d'objets
 ```sql
--- Via fonction SQL personnalisée
-SELECT *, 
-  ST_Distance(
-    ST_Point(longitude, latitude)::geography,
-    ST_Point(2.3522, 48.8566)::geography
-  ) as distance_meters
-FROM items 
-WHERE ST_DWithin(
-  ST_Point(longitude, latitude)::geography,
-  ST_Point(2.3522, 48.8566)::geography,
-  5000
+CREATE OR REPLACE FUNCTION search_nearby_items(
+  user_lat double precision,
+  user_lng double precision,
+  radius_km double precision DEFAULT 5
 )
-ORDER BY distance_meters;
+RETURNS TABLE (
+  id uuid,
+  title text,
+  description text,
+  category text,
+  condition text,
+  offer_type text,
+  latitude double precision,
+  longitude double precision,
+  distance_km double precision
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    i.id,
+    i.title,
+    i.description,
+    i.category,
+    i.condition,
+    i.offer_type,
+    i.latitude,
+    i.longitude,
+    ST_Distance(
+      ST_Point(i.longitude, i.latitude)::geography,
+      ST_Point(user_lng, user_lat)::geography
+    ) / 1000 as distance_km
+  FROM items i
+  WHERE i.is_available = true
+    AND i.latitude IS NOT NULL
+    AND i.longitude IS NOT NULL
+    AND ST_DWithin(
+      ST_Point(i.longitude, i.latitude)::geography,
+      ST_Point(user_lng, user_lat)::geography,
+      radius_km * 1000
+    )
+  ORDER BY distance_km;
+END;
+$$ LANGUAGE plpgsql;
 ```
 
-### Agrégations complexes
+### Recherche géolocalisée de communautés
+```sql
+CREATE OR REPLACE FUNCTION search_nearby_communities(
+  user_lat double precision,
+  user_lng double precision,
+  radius_km double precision DEFAULT 10
+)
+RETURNS TABLE (
+  id uuid,
+  name text,
+  description text,
+  city text,
+  postal_code text,
+  distance_km double precision,
+  member_count bigint
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    c.id,
+    c.name,
+    c.description,
+    c.city,
+    c.postal_code,
+    ST_Distance(
+      ST_Point(c.center_longitude, c.center_latitude)::geography,
+      ST_Point(user_lng, user_lat)::geography
+    ) / 1000 as distance_km,
+    COUNT(cm.id) as member_count
+  FROM communities c
+  LEFT JOIN community_members cm ON c.id = cm.community_id AND cm.is_active = true
+  WHERE c.is_active = true
+    AND c.center_latitude IS NOT NULL
+    AND c.center_longitude IS NOT NULL
+    AND ST_DWithin(
+      ST_Point(c.center_longitude, c.center_latitude)::geography,
+      ST_Point(user_lng, user_lat)::geography,
+      radius_km * 1000
+    )
+  GROUP BY c.id, c.name, c.description, c.city, c.postal_code, c.center_latitude, c.center_longitude
+  ORDER BY distance_km;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+## Gestion des Erreurs
+
+### Pattern de gestion d'erreur
 ```typescript
-// Statistiques par catégorie
-GET /rest/v1/items?select=category,count:id&group=category
+const handleSupabaseError = (error: any) => {
+  if (error.code === 'PGRST116') {
+    return 'Aucun résultat trouvé';
+  } else if (error.code === '23505') {
+    return 'Cette ressource existe déjà';
+  } else if (error.code === '23503') {
+    return 'Référence invalide';
+  } else {
+    return error.message || 'Une erreur est survenue';
+  }
+};
 
-// Activité utilisateur
-GET /rest/v1/profiles?select=id,items:items(count),requests:requests(count),ratings:item_ratings(count)
+// Utilisation
+const { data, error } = await supabase.from('items').select('*');
+if (error) {
+  throw new Error(handleSupabaseError(error));
+}
 ```
 
-## 🔄 Realtime Subscriptions
-
-### Écouter les changements
-```typescript
-// Messages en temps réel
-supabase
-  .channel('messages')
-  .on('postgres_changes', {
-    event: 'INSERT',
-    schema: 'public',
-    table: 'messages',
-    filter: `conversation_id=eq.${conversationId}`
-  }, (payload) => {
-    console.log('Nouveau message:', payload.new)
-  })
-  .subscribe()
-
-// Notifications
-supabase
-  .channel('notifications')
-  .on('postgres_changes', {
-    event: 'INSERT',
-    schema: 'public',
-    table: 'notifications',
-    filter: `user_id=eq.${userId}`
-  }, (payload) => {
-    showNotification(payload.new)
-  })
-  .subscribe()
-```
-
-## ⚡ Optimisations
+## Rate Limiting et Performance
 
 ### Pagination
 ```typescript
-// Pagination avec offset
-GET /rest/v1/items?select=*&order=created_at.desc&limit=20&offset=40
+const { data, error } = await supabase
+  .from('items')
+  .select('*')
+  .range(0, 19) // Première page (20 éléments)
+  .order('created_at', { ascending: false });
 
-// Pagination avec cursor
-GET /rest/v1/items?select=*&order=created_at.desc&limit=20&created_at=lt.2024-01-01T00:00:00Z
+// Page suivante
+const { data, error } = await supabase
+  .from('items')
+  .select('*')
+  .range(20, 39) // Deuxième page
+  .order('created_at', { ascending: false });
 ```
 
-### Sélection de colonnes
+### Optimisation des requêtes
 ```typescript
-// Sélectionner seulement les colonnes nécessaires
-GET /rest/v1/items?select=id,title,category,is_available,created_at
+// ✅ Bon : Sélection spécifique
+const { data } = await supabase
+  .from('items')
+  .select('id, title, category, latitude, longitude')
+  .eq('is_available', true);
 
-// Éviter les colonnes lourdes
-GET /rest/v1/profiles?select=id,full_name,avatar_url&exclude=bio,address
+// ❌ Éviter : Sélection de tout
+const { data } = await supabase
+  .from('items')
+  .select('*');
 ```
 
-### Cache et performance
+## Webhooks et Realtime
+
+### Écouter les changements en temps réel
 ```typescript
-// Utiliser les headers de cache
-GET /rest/v1/items?select=*
-Cache-Control: max-age=300
+const subscription = supabase
+  .channel('items_changes')
+  .on('postgres_changes', {
+    event: '*',
+    schema: 'public',
+    table: 'items'
+  }, (payload) => {
+    console.log('Changement détecté:', payload);
+    // Mettre à jour l'interface utilisateur
+  })
+  .subscribe();
 
-// Requêtes en batch
-GET /rest/v1/items?select=*&id=in.(id1,id2,id3)
-```
-
-## 🚨 Gestion d'Erreurs
-
-### Codes d'erreur courants
-```typescript
-// 400 - Bad Request
-{
-  "code": "23505",
-  "message": "duplicate key value violates unique constraint"
-}
-
-// 401 - Unauthorized
-{
-  "message": "JWT expired"
-}
-
-// 403 - Forbidden
-{
-  "message": "new row violates row-level security policy"
-}
-
-// 404 - Not Found
-{
-  "message": "No rows found"
-}
-```
-
-### Retry et fallback
-```typescript
-// Stratégie de retry
-const retryRequest = async (fn, retries = 3) => {
-  for (let i = 0; i < retries; i++) {
-    try {
-      return await fn()
-    } catch (error) {
-      if (i === retries - 1) throw error
-      await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)))
-    }
-  }
-}
+// Nettoyer l'abonnement
+subscription.unsubscribe();
 ```
 
 ---
 
-Cette documentation couvre tous les endpoints essentiels d'Échangeo. Pour plus de détails sur l'implémentation côté client, consultez les hooks dans `src/hooks/`.
+Cette documentation couvre les principaux patterns d'utilisation de l'API Supabase dans Échangeo. Pour plus de détails sur les fonctionnalités avancées, consultez la [documentation officielle Supabase](https://supabase.com/docs).
