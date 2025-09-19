@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, Search, MessageCircle, User, LogOut, Menu, X, Users, 
-  HelpCircle, Star, Settings, Sparkles, Trophy, CheckCircle, ChevronDown, Shield
+  HelpCircle, Star, Settings, Sparkles, Trophy, CheckCircle, ChevronDown, Shield, Zap
 } from 'lucide-react';
 import { Link, useNavigate, useLocation, NavLink } from 'react-router-dom';
 import Button from './ui/Button';
@@ -172,6 +172,7 @@ const Topbar: React.FC = () => {
               <UserMenuItem to="/items?favorites=1" icon={Star} label="Favoris" badge={favoritesCount} />
               <UserMenuItem to="/gamification" icon={Trophy} label="Récompenses" />
               <UserMenuItem to="/ai-features" icon={Sparkles} label="Fonctionnalités IA" />
+              <UserMenuItem to="/map-optimization-test" icon={Zap} label="Test Carte Optimisée" />
               {isAdmin && <UserMenuItem to="/admin" icon={Shield} label="Panel Admin" special />}
               <div className="h-px bg-gray-100 my-1" />
               <UserMenuItem to="/settings" icon={Settings} label="Paramètres" />
