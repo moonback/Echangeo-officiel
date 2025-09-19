@@ -18,6 +18,7 @@ export async function initializeGamificationData(profileId: string) {
     // Créer un niveau par défaut
     const { error: levelError } = await supabase
       .from('user_levels')
+      // @ts-expect-error - Table user_levels pas encore définie dans les types Supabase
       .insert({
         profile_id: profileId,
         level: 1,
@@ -40,7 +41,7 @@ export async function initializeGamificationData(profileId: string) {
 export async function ensureGamificationTables() {
   try {
     // Vérifier si la table user_levels existe
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('user_levels')
       .select('id')
       .limit(1);

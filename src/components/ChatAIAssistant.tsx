@@ -2,9 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Sparkles, 
-  MessageSquare, 
   Wand2, 
-  RefreshCw, 
   X, 
   Send,
   Brain,
@@ -67,8 +65,7 @@ const ChatAIAssistant: React.FC<ChatAIAssistantProps> = ({
   const { 
     analysis, 
     isAnalyzing, 
-    analyzeConversation, 
-    clearAnalysis 
+    analyzeConversation
   } = useChatAnalysis();
   
   const { 

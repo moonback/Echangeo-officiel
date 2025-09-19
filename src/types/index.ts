@@ -283,3 +283,14 @@ export interface NeighborhoodSuggestion {
   confidence: number;
   alternatives?: NeighborhoodSuggestion[];
 }
+
+// Types pour la gamification
+export interface UserLevel {
+  id: string;
+  profile_id: string;
+  level: number;
+  points: number;
+  title: string;
+  created_at: string;
+  updated_at: string;
+}
