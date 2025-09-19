@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Filter, RotateCcw } from 'lucide-react';
+import { X, Filter, RotateCcw, Gift, Handshake, RefreshCcw } from 'lucide-react';
 import { categories, getCategoryIcon } from '../utils/categories';
-import type { ItemCategory } from '../types';
+import type { ItemCategory, OfferType } from '../types';
 import Button from './ui/Button';
 import Badge from './ui/Badge';
 
@@ -18,6 +18,7 @@ interface FilterState {
   isAvailable: boolean;
   tags: string;
   favoritesOnly: boolean;
+  offerType: OfferType | undefined;
 }
 
 interface FiltersDrawerProps {
@@ -218,6 +219,145 @@ const FiltersDrawer: React.FC<FiltersDrawerProps> = ({
                       <p className="text-xs text-gray-500">Afficher seulement mes objets favoris</p>
                     </div>
                   </motion.label>
+                </motion.div>
+
+                {/* Type d'offre */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25 }}
+                >
+                  <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <div className="w-1 h-4 bg-brand-500 rounded-full"></div>
+                    Type d'offre
+                  </h3>
+                  <div className="space-y-3">
+                    {/* Bouton "Tous" */}
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => onFilterChange('offerType', undefined)}
+                      className={`w-full flex items-center justify-center px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                        !filters.offerType 
+                          ? 'bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg shadow-gray-500/25' 
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm'
+                      }`}
+                    >
+                      <span>Tous les types</span>
+                      {!filters.offerType && (
+                        <motion.div 
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="w-2 h-2 bg-white rounded-full ml-2" 
+                        />
+                      )}
+                    </motion.button>
+                    
+                    {/* Boutons par type d'offre */}
+                    <div className="grid grid-cols-1 gap-3">
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => onFilterChange('offerType', filters.offerType === 'donation' ? undefined : 'donation')}
+                        className={`flex items-center gap-3 p-4 rounded-xl text-sm font-medium transition-all duration-200 ${
+                          filters.offerType === 'donation' 
+                            ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg shadow-green-500/25' 
+                            : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm'
+                        }`}
+                      >
+                        <div className={`p-2 rounded-lg ${
+                          filters.offerType === 'donation' 
+                            ? 'bg-white/20' 
+                            : 'bg-gray-100'
+                        }`}>
+                          <Gift size={20} className={
+                            filters.offerType === 'donation' 
+                              ? 'text-white' 
+                              : 'text-gray-600'
+                          } />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <span className="font-medium">Dons</span>
+                          <p className="text-xs opacity-80">Objets offerts gratuitement</p>
+                        </div>
+                        {filters.offerType === 'donation' && (
+                          <motion.div 
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="w-2 h-2 bg-white rounded-full" 
+                          />
+                        )}
+                      </motion.button>
+                      
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => onFilterChange('offerType', filters.offerType === 'trade' ? undefined : 'trade')}
+                        className={`flex items-center gap-3 p-4 rounded-xl text-sm font-medium transition-all duration-200 ${
+                          filters.offerType === 'trade' 
+                            ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/25' 
+                            : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm'
+                        }`}
+                      >
+                        <div className={`p-2 rounded-lg ${
+                          filters.offerType === 'trade' 
+                            ? 'bg-white/20' 
+                            : 'bg-gray-100'
+                        }`}>
+                          <Handshake size={20} className={
+                            filters.offerType === 'trade' 
+                              ? 'text-white' 
+                              : 'text-gray-600'
+                          } />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <span className="font-medium">Échanges</span>
+                          <p className="text-xs opacity-80">Échanger contre autre chose</p>
+                        </div>
+                        {filters.offerType === 'trade' && (
+                          <motion.div 
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="w-2 h-2 bg-white rounded-full" 
+                          />
+                        )}
+                      </motion.button>
+                      
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => onFilterChange('offerType', filters.offerType === 'loan' ? undefined : 'loan')}
+                        className={`flex items-center gap-3 p-4 rounded-xl text-sm font-medium transition-all duration-200 ${
+                          filters.offerType === 'loan' 
+                            ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25' 
+                            : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm'
+                        }`}
+                      >
+                        <div className={`p-2 rounded-lg ${
+                          filters.offerType === 'loan' 
+                            ? 'bg-white/20' 
+                            : 'bg-gray-100'
+                        }`}>
+                          <RefreshCcw size={20} className={
+                            filters.offerType === 'loan' 
+                              ? 'text-white' 
+                              : 'text-gray-600'
+                          } />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <span className="font-medium">Prêts</span>
+                          <p className="text-xs opacity-80">Emprunter temporairement</p>
+                        </div>
+                        {filters.offerType === 'loan' && (
+                          <motion.div 
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="w-2 h-2 bg-white rounded-full" 
+                          />
+                        )}
+                      </motion.button>
+                    </div>
+                  </div>
                 </motion.div>
 
                 {/* Condition */}

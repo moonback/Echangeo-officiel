@@ -22,6 +22,16 @@ export interface MapboxMarker {
   createdAt?: string;
   offerType?: string;
   data?: Record<string, unknown>;
+  neighborhood?: string; // Ajout pour le clustering par quartier
+}
+
+export interface Cluster {
+  id: string;
+  latitude: number;
+  longitude: number;
+  count: number;
+  markers: MapboxMarker[];
+  neighborhood?: string;
 }
 
 interface MapboxMapProps {
@@ -31,9 +41,13 @@ interface MapboxMapProps {
   height?: number | string;
   markers?: MapboxMarker[];
   onMarkerClick?: (id: string) => void;
+  onClusterClick?: (cluster: Cluster) => void;
   autoFit?: boolean;
   userLocation?: { lat: number; lng: number };
   showUserLocation?: boolean;
+  enableClustering?: boolean;
+  clusterRadius?: number;
+  clusterMaxZoom?: number;
 }
 
 // Fonctions de popup supprimées pour simplifier
@@ -42,8 +56,9 @@ interface MapboxMapProps {
 function createMarkerContent(marker: MapboxMarker): string {
   const size = '80px';
 
-  // Afficher seulement les images des produits
+  // Gérer différents types de marqueurs
   let iconContent = '';
+  
   if (marker.type === 'item' && marker.imageUrl) {
     // Utiliser l'image du produit avec popup au survol
     iconContent = `
@@ -73,48 +88,166 @@ function createMarkerContent(marker: MapboxMarker): string {
             this.nextElementSibling.style.visibility='hidden';
           "
         />
-        <!-- Popup simplifié -->
+        <!-- Popup avec image agrandie -->
         <div style="
           position: absolute;
           bottom: 100%;
           left: 50%;
           transform: translateX(-50%);
-          width: 150px;
+          width: 200px;
           background: white;
-          border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          border-radius: 12px;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.2);
           border: 1px solid #e5e7eb;
           opacity: 0;
           visibility: hidden;
-          transition: all 0.2s ease;
+          transition: all 0.3s ease;
           z-index: 1000;
-          margin-bottom: 8px;
-          padding: 8px;
+          margin-bottom: 12px;
+          padding: 0;
+          overflow: hidden;
         ">
+          <!-- Image agrandie du produit -->
           <div style="
-            font-size: 12px;
-            font-weight: 600;
-            color: #374151;
-            text-align: center;
-            line-height: 1.3;
+            width: 100%;
+            height: 120px;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
           ">
-            ${marker.title || 'Produit'}
+            <img 
+              src="${marker.imageUrl}" 
+              alt="${marker.title || 'Produit'}"
+              style="
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                border-radius: 0;
+              "
+            />
           </div>
-          ${marker.distance !== undefined ? `
+          
+          <!-- Contenu du popup -->
+          <div style="padding: 12px;">
+            <!-- Titre du produit -->
             <div style="
-              font-size: 10px;
-              color: #6b7280;
+              font-size: 14px;
+              font-weight: 600;
+              color: #374151;
               text-align: center;
-              margin-top: 4px;
+              line-height: 1.3;
+              margin-bottom: 8px;
             ">
-              ${marker.distance < 1 ? Math.round(marker.distance * 1000) + 'm' : marker.distance.toFixed(1) + 'km'}
+              ${marker.title || 'Produit'}
             </div>
-          ` : ''}
+            
+            <!-- Badge type d'offre -->
+            ${marker.offerType ? `
+              <div style="
+                text-align: center;
+                margin-bottom: 8px;
+              ">
+                ${marker.offerType === 'loan' ? `
+                  <span style="
+                    background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+                    color: white;
+                    padding: 4px 12px;
+                    border-radius: 20px;
+                    font-size: 11px;
+                    font-weight: 600;
+                    display: inline-block;
+                  ">
+                    🔄 Prêt
+                  </span>
+                ` : marker.offerType === 'donation' ? `
+                  <span style="
+                    background: linear-gradient(135deg, #10B981, #059669);
+                    color: white;
+                    padding: 4px 12px;
+                    border-radius: 20px;
+                    font-size: 11px;
+                    font-weight: 600;
+                    display: inline-block;
+                  ">
+                    🎁 Don
+                  </span>
+                ` : marker.offerType === 'trade' ? `
+                  <span style="
+                    background: linear-gradient(135deg, #F59E0B, #D97706);
+                    color: white;
+                    padding: 4px 12px;
+                    border-radius: 20px;
+                    font-size: 11px;
+                    font-weight: 600;
+                    display: inline-block;
+                  ">
+                    🔄 Échange
+                  </span>
+                ` : `
+                  <span style="
+                    background: linear-gradient(135deg, #6B7280, #4B5563);
+                    color: white;
+                    padding: 4px 12px;
+                    border-radius: 20px;
+                    font-size: 11px;
+                    font-weight: 600;
+                    display: inline-block;
+                  ">
+                    📦 ${marker.offerType}
+                  </span>
+                `}
+              </div>
+            ` : ''}
+            
+            <!-- Distance -->
+            ${marker.distance !== undefined ? `
+              <div style="
+                font-size: 11px;
+                color: #6b7280;
+                text-align: center;
+                background: #f1f5f9;
+                padding: 4px 8px;
+                border-radius: 6px;
+                display: inline-block;
+                width: 100%;
+                box-sizing: border-box;
+              ">
+                📍 ${marker.distance < 1 ? Math.round(marker.distance * 1000) + 'm' : marker.distance.toFixed(1) + 'km'}
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  } else if (marker.type === 'community') {
+    // Marqueur de quartier/communauté
+    iconContent = `
+      <div style="position: relative;">
+      </div>
+        
+        <!-- Étiquette du quartier -->
+        <div style="
+          position: absolute;
+          bottom: -20px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(0, 0, 0, 0.8);
+          color: white;
+          padding: 4px 8px;
+          border-radius: 12px;
+          font-size: 11px;
+          font-weight: 600;
+          white-space: nowrap;
+          z-index: 5;
+        ">
+          ${marker.title || marker.neighborhood || 'Quartier'}
         </div>
       </div>
     `;
   } else {
-    // Ne pas afficher de marqueur si pas d'image
+    // Ne pas afficher de marqueur si pas d'image et pas de quartier
     iconContent = '';
   }
 
@@ -157,6 +290,115 @@ function createMarkerContent(marker: MapboxMarker): string {
           letter-spacing: 0.5px;
         ">
           ${Math.round(marker.distance * 1000)}m
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+// Fonction de clustering par quartier (pour les objets seulement)
+function createClusters(markers: MapboxMarker[], radius: number = 0.001): Cluster[] {
+  const clusters: Cluster[] = [];
+  const processed = new Set<string>();
+
+  // Filtrer seulement les marqueurs d'objets
+  const itemMarkers = markers.filter(marker => marker.type === 'item');
+
+  itemMarkers.forEach(marker => {
+    if (processed.has(marker.id)) return;
+
+    const cluster: Cluster = {
+      id: `cluster-${marker.id}`,
+      latitude: marker.latitude,
+      longitude: marker.longitude,
+      count: 1,
+      markers: [marker],
+      neighborhood: marker.neighborhood
+    };
+
+    // Trouver les marqueurs proches dans le même quartier
+    itemMarkers.forEach(otherMarker => {
+      if (processed.has(otherMarker.id) || marker.id === otherMarker.id) return;
+      
+      const distance = Math.sqrt(
+        Math.pow(marker.latitude - otherMarker.latitude, 2) + 
+        Math.pow(marker.longitude - otherMarker.longitude, 2)
+      );
+
+      // Regrouper si dans le même quartier et proche
+      if (distance <= radius && marker.neighborhood === otherMarker.neighborhood) {
+        cluster.markers.push(otherMarker);
+        cluster.count++;
+        processed.add(otherMarker.id);
+      }
+    });
+
+    // Calculer le centre du cluster
+    if (cluster.count > 1) {
+      cluster.latitude = cluster.markers.reduce((sum, m) => sum + m.latitude, 0) / cluster.count;
+      cluster.longitude = cluster.markers.reduce((sum, m) => sum + m.longitude, 0) / cluster.count;
+    }
+
+    clusters.push(cluster);
+    processed.add(marker.id);
+  });
+
+  return clusters;
+}
+
+// Fonction pour créer le contenu HTML d'un cluster
+function createClusterContent(cluster: Cluster): string {
+  const size = Math.min(60 + cluster.count * 5, 120); // Taille basée sur le nombre d'éléments
+  
+  return `
+    <div class="cluster-marker" style="
+      width: ${size}px;
+      height: ${size}px;
+      position: relative;
+      cursor: pointer;
+      z-index: 2;
+      pointer-events: auto;
+      display: inline-block;
+    ">
+      <!-- Cercle du cluster -->
+      <div style="
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #3B82F6, #1E40AF);
+        border-radius: 50%;
+        border: 3px solid #ffffff;
+        box-shadow: 
+          0 4px 12px rgba(59, 130, 246, 0.3),
+          0 2px 6px rgba(0, 0, 0, 0.15),
+          inset 0 1px 0 rgba(255, 255, 255, 0.8),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: ${Math.min(14 + cluster.count, 20)}px;
+      ">
+        ${cluster.count}
+      </div>
+      
+      <!-- Étiquette du quartier -->
+      ${cluster.neighborhood ? `
+        <div style="
+          position: absolute;
+          bottom: -20px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(0, 0, 0, 0.8);
+          color: white;
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-size: 10px;
+          font-weight: 600;
+          white-space: nowrap;
+          z-index: 5;
+        ">
+          ${cluster.neighborhood}
         </div>
       ` : ''}
     </div>
@@ -239,9 +481,13 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
   height = 360,
   markers = [],
   onMarkerClick,
+  onClusterClick,
   autoFit = false,
   userLocation,
-  showUserLocation = false
+  showUserLocation = false,
+  enableClustering = false,
+  clusterRadius = 0.001,
+  clusterMaxZoom = 14
 }, ref) => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -262,17 +508,114 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
   const updateMarkers = useCallback(() => {
     if (!mapRef.current || !isMapLoaded) return;
 
-    // Supprimer les marqueurs qui ne sont plus nécessaires
-    const currentMarkerIds = new Set(markers.map(m => m.id));
+    // Supprimer tous les marqueurs existants (sauf user-location)
     markersRef.current.forEach((marker, id) => {
-      if (!currentMarkerIds.has(id) && id !== 'user-location') {
+      if (id !== 'user-location') {
         marker.remove();
         markersRef.current.delete(id);
       }
     });
 
-    // Ajouter ou mettre à jour les marqueurs
-    markers.forEach(marker => {
+    // Séparer les marqueurs de quartiers des marqueurs d'objets
+    const communityMarkers = markers.filter(marker => marker.type === 'community');
+    const itemMarkers = markers.filter(marker => marker.type === 'item');
+
+    // Appliquer le clustering si activé et zoom suffisant
+    const currentZoom = mapRef.current.getZoom();
+    const shouldCluster = enableClustering && currentZoom < clusterMaxZoom;
+
+    if (shouldCluster) {
+      // Créer des clusters pour les objets seulement
+      const clusters = createClusters(itemMarkers, clusterRadius);
+      
+      clusters.forEach(cluster => {
+        const el = document.createElement('div');
+        el.className = 'cluster-marker';
+        el.innerHTML = createClusterContent(cluster);
+
+        // Ajouter un décalage basé sur l'ID pour éviter la superposition
+        const hash = cluster.id.split('').reduce((a, b) => {
+          a = ((a << 5) - a) + b.charCodeAt(0);
+          return a & a;
+        }, 0);
+        const offsetLng = (hash % 100 - 50) * 0.00001;
+        const offsetLat = ((hash >> 8) % 100 - 50) * 0.00001;
+
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          onClusterClick?.(cluster);
+        });
+
+        const mapboxMarker = new mapboxgl.Marker(el)
+          .setLngLat([cluster.longitude + offsetLng, cluster.latitude + offsetLat])
+          .addTo(mapRef.current!);
+          
+        markersRef.current.set(cluster.id, mapboxMarker);
+      });
+    }
+
+    // Toujours afficher les marqueurs de quartiers (communautés)
+    communityMarkers.forEach(marker => {
+      if (typeof marker.latitude !== 'number' || typeof marker.longitude !== 'number' ||
+          isNaN(marker.latitude) || isNaN(marker.longitude) ||
+          marker.latitude < -90 || marker.latitude > 90 ||
+          marker.longitude < -180 || marker.longitude > 180) {
+        return;
+      }
+
+      let mapboxMarker = markersRef.current.get(marker.id);
+      
+      if (!mapboxMarker) {
+        // Créer un nouveau marqueur de quartier
+        const el = document.createElement('div');
+        el.className = 'marker';
+        el.style.cssText = `
+          position: relative;
+          width: auto;
+          height: auto;
+          display: inline-block;
+          pointer-events: auto;
+          z-index: 1;
+        `;
+        el.innerHTML = createMarkerContent(marker);
+
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          onMarkerClick?.(marker.id);
+        });
+
+        // Ajouter un décalage basé sur l'ID pour éviter la superposition
+        const hash = marker.id.split('').reduce((a, b) => {
+          a = ((a << 5) - a) + b.charCodeAt(0);
+          return a & a;
+        }, 0);
+        const offsetLng = (hash % 100 - 50) * 0.00001;
+        const offsetLat = ((hash >> 8) % 100 - 50) * 0.00001;
+
+        mapboxMarker = new mapboxgl.Marker(el)
+          .setLngLat([marker.longitude + offsetLng, marker.latitude + offsetLat])
+          .addTo(mapRef.current!);
+          
+        markersRef.current.set(marker.id, mapboxMarker);
+      } else {
+        // Mettre à jour la position si nécessaire
+        const currentLngLat = mapboxMarker.getLngLat();
+        const hash = marker.id.split('').reduce((a, b) => {
+          a = ((a << 5) - a) + b.charCodeAt(0);
+          return a & a;
+        }, 0);
+        const offsetLng = (hash % 100 - 50) * 0.00001;
+        const offsetLat = ((hash >> 8) % 100 - 50) * 0.00001;
+        
+        if (currentLngLat.lng !== marker.longitude + offsetLng || currentLngLat.lat !== marker.latitude + offsetLat) {
+          mapboxMarker.setLngLat([marker.longitude + offsetLng, marker.latitude + offsetLat]);
+        }
+      }
+    });
+
+    // Afficher les marqueurs d'objets individuels si pas de clustering
+    if (!shouldCluster) {
+      itemMarkers.forEach(marker => {
       if (typeof marker.latitude !== 'number' || typeof marker.longitude !== 'number' ||
           isNaN(marker.latitude) || isNaN(marker.longitude) ||
           marker.latitude < -90 || marker.latitude > 90 ||
@@ -379,7 +722,8 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
             }
           }
         }
-  }, [markers, isMapLoaded, autoFit, showUserLocation, userLocation, onMarkerClick]);
+    }
+  }, [markers, isMapLoaded, autoFit, showUserLocation, userLocation, onMarkerClick, enableClustering, clusterRadius, clusterMaxZoom, onClusterClick]);
 
   // Gestion des popups supprimée
 
@@ -418,6 +762,13 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
         setIsMapLoaded(true);
       });
 
+      // Listener pour recalculer les clusters lors du changement de zoom
+      if (enableClustering) {
+        map.on('zoomend', () => {
+          updateMarkers();
+        });
+      }
+
     } catch (error) {
       console.error('Erreur lors de l\'initialisation de Mapbox:', error);
     }
@@ -438,6 +789,13 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
   useEffect(() => {
     updateMarkers();
   }, [markersHash, updateMarkers]);
+
+  // Recalculer les clusters lors du changement de zoom
+  useEffect(() => {
+    if (enableClustering && mapRef.current && isMapLoaded) {
+      updateMarkers();
+    }
+  }, [enableClustering, updateMarkers, isMapLoaded]);
 
   // Mettre à jour le marqueur utilisateur de manière optimisée
   useEffect(() => {

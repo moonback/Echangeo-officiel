@@ -15,7 +15,10 @@ import {
   Grid3X3,
   Zap,
   Target,
-  TrendingUp
+  TrendingUp,
+  Gift,
+  Handshake,
+  RefreshCcw
 } from 'lucide-react';
 import { useItems } from '../hooks/useItems';
 import { useCommunities, useCommunityItems } from '../hooks/useCommunities';
@@ -24,7 +27,7 @@ import Card from './ui/Card';
 import Button from './ui/Button';
 import Badge from './ui/Badge';
 import EmptyState from './EmptyState';
-import type { Community } from '../types';
+import type { Community, OfferType } from '../types';
 
 interface NearbyItemsMapProps {
   className?: string;
@@ -64,7 +67,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedCondition, setSelectedCondition] = useState<string>('');
-  const [selectedType, setSelectedType] = useState<string>('');
+  const [selectedType, setSelectedType] = useState<OfferType | ''>('');
   const [maxDistance, setMaxDistance] = useState<number>(10); // km
   
   // Nouveaux états pour l'amélioration du design
@@ -206,7 +209,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
         return false;
       }
 
-      // Filtre par type (prêt ou échange)
+      // Filtre par type d'offre (don, échange, prêt)
       if (selectedType && item.offer_type !== selectedType) {
         return false;
       }
@@ -597,24 +600,140 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
                   </div>
                 </div>
 
-                {/* Filtre par type */}
+                {/* Filtre par type d'offre */}
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <Layers size={18} className="text-brand-600" />
                       <label className="text-sm font-semibold text-gray-700">
-                    Type d'échange
+                    Type d'offre
                   </label>
                     </div>
-                    <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/50 overflow-hidden">
-                  <select
-                    value={selectedType}
-                    onChange={(e) => setSelectedType(e.target.value)}
-                        className="w-full p-4 bg-transparent border-none focus:ring-0 focus:outline-none text-gray-700 font-medium"
-                  >
-                    <option value="">Tous les types</option>
-                        <option value="loan">📤 Prêt</option>
-                        <option value="trade">🔄 Échange</option>
-                  </select>
+                    <div className="space-y-2">
+                      {/* Bouton "Tous" */}
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setSelectedType('')}
+                        className={`w-full flex items-center gap-3 p-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                          !selectedType 
+                            ? 'bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg shadow-gray-500/25' 
+                            : 'bg-white/60 text-gray-700 hover:bg-white/80 border border-gray-200/50'
+                        }`}
+                      >
+                        <span>Tous les types</span>
+                        {!selectedType && (
+                          <motion.div 
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="w-2 h-2 bg-white rounded-full ml-auto" 
+                          />
+                        )}
+                      </motion.button>
+                      
+                      {/* Boutons par type d'offre */}
+                      <div className="grid grid-cols-1 gap-2">
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => setSelectedType(selectedType === 'donation' ? '' : 'donation')}
+                          className={`flex items-center gap-3 p-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                            selectedType === 'donation' 
+                              ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg shadow-green-500/25' 
+                              : 'bg-white/60 text-gray-700 hover:bg-white/80 border border-gray-200/50'
+                          }`}
+                        >
+                          <div className={`p-1.5 rounded-lg ${
+                            selectedType === 'donation' 
+                              ? 'bg-white/20' 
+                              : 'bg-gray-100'
+                          }`}>
+                            <Gift size={16} className={
+                              selectedType === 'donation' 
+                                ? 'text-white' 
+                                : 'text-gray-600'
+                            } />
+                          </div>
+                          <div className="flex-1 text-left">
+                            <span className="font-medium">Dons</span>
+                            <p className="text-xs opacity-80">Objets offerts gratuitement</p>
+                          </div>
+                          {selectedType === 'donation' && (
+                            <motion.div 
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="w-2 h-2 bg-white rounded-full" 
+                            />
+                          )}
+                        </motion.button>
+                        
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => setSelectedType(selectedType === 'trade' ? '' : 'trade')}
+                          className={`flex items-center gap-3 p-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                            selectedType === 'trade' 
+                              ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/25' 
+                              : 'bg-white/60 text-gray-700 hover:bg-white/80 border border-gray-200/50'
+                          }`}
+                        >
+                          <div className={`p-1.5 rounded-lg ${
+                            selectedType === 'trade' 
+                              ? 'bg-white/20' 
+                              : 'bg-gray-100'
+                          }`}>
+                            <Handshake size={16} className={
+                              selectedType === 'trade' 
+                                ? 'text-white' 
+                                : 'text-gray-600'
+                            } />
+                          </div>
+                          <div className="flex-1 text-left">
+                            <span className="font-medium">Échanges</span>
+                            <p className="text-xs opacity-80">Échanger contre autre chose</p>
+                          </div>
+                          {selectedType === 'trade' && (
+                            <motion.div 
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="w-2 h-2 bg-white rounded-full" 
+                            />
+                          )}
+                        </motion.button>
+                        
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => setSelectedType(selectedType === 'loan' ? '' : 'loan')}
+                          className={`flex items-center gap-3 p-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                            selectedType === 'loan' 
+                              ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25' 
+                              : 'bg-white/60 text-gray-700 hover:bg-white/80 border border-gray-200/50'
+                          }`}
+                        >
+                          <div className={`p-1.5 rounded-lg ${
+                            selectedType === 'loan' 
+                              ? 'bg-white/20' 
+                              : 'bg-gray-100'
+                          }`}>
+                            <RefreshCcw size={16} className={
+                              selectedType === 'loan' 
+                                ? 'text-white' 
+                                : 'text-gray-600'
+                            } />
+                          </div>
+                          <div className="flex-1 text-left">
+                            <span className="font-medium">Prêts</span>
+                            <p className="text-xs opacity-80">Emprunter temporairement</p>
+                          </div>
+                          {selectedType === 'loan' && (
+                            <motion.div 
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="w-2 h-2 bg-white rounded-full" 
+                            />
+                          )}
+                        </motion.button>
+                      </div>
                     </div>
                 </div>
 
@@ -922,6 +1041,28 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
                     </div>
                   )}
                   
+                    {/* Légende des types d'offre */}
+                    <div className="border-t border-gray-200 pt-3 mt-3">
+                      <div className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-2">
+                        <Layers size={12} />
+                        Types d'offre
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 p-1.5 bg-green-50/50 rounded-lg">
+                          <div className="w-3 h-3 bg-gradient-to-r from-green-500 to-green-600 rounded-full shadow-sm"></div>
+                          <span className="text-xs font-medium text-gray-700">🎁 Dons</span>
+                        </div>
+                        <div className="flex items-center gap-2 p-1.5 bg-orange-50/50 rounded-lg">
+                          <div className="w-3 h-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full shadow-sm"></div>
+                          <span className="text-xs font-medium text-gray-700">🤝 Échanges</span>
+                        </div>
+                        <div className="flex items-center gap-2 p-1.5 bg-blue-50/50 rounded-lg">
+                          <div className="w-3 h-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full shadow-sm"></div>
+                          <span className="text-xs font-medium text-gray-700">🔄 Prêts</span>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Légende des catégories améliorée */}
                     <div className="border-t border-gray-200 pt-3 mt-3">
                       <div className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-2">

@@ -335,7 +335,9 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation 
               >
                 <MapPin className="w-3.5 h-3.5 mr-1 group-hover:text-brand-600 transition-colors duration-300" />
                 <span className="font-medium group-hover:text-brand-700 transition-colors duration-300">
-                  {distanceKm != null ? `${distanceKm.toFixed(1)} km` : 'À proximité'}
+                  {distanceKm != null ? 
+                    (distanceKm < 1 ? `${Math.round(distanceKm * 1000)}m` : `${distanceKm.toFixed(1)} km`) 
+                    : 'Distance inconnue'}
                 </span>
               </motion.div>
             </motion.div>
