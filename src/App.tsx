@@ -24,6 +24,8 @@ import GamificationPage from './pages/GamificationPage';
 import { useAuthStore } from './store/authStore';
 import LandingPage from './pages/LandingPage';
 import ProPage from './pages/ProPage';
+import MapPage from './pages/MapPage';
+import StatsTestPage from './pages/StatsTestPage';
 import AdminGuard from './components/admin/AdminGuard';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
@@ -99,6 +101,7 @@ function App() {
         <Shell>
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/map" element={<MapPage />} />
             <Route path="/items" element={<ItemsPage />} />
             <Route path="/items/:id" element={<ItemDetailPage />} />
             <Route path="/items/:id/edit" element={<EditItemPage />} />
@@ -115,6 +118,7 @@ function App() {
             <Route path="/help" element={<HelpPage />} />
             <Route path="/ai-features" element={<AIFeaturesPage />} />
             <Route path="/gamification" element={<GamificationPage />} />
+            <Route path="/stats-test" element={<StatsTestPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Shell>

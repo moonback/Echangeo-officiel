@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, Search, MessageCircle, User, LogOut, Menu, X, Users, 
-  HelpCircle, Star, Settings, Sparkles, Trophy, CheckCircle, ChevronDown, Shield, Zap
+  HelpCircle, Star, Settings, Sparkles, Trophy, CheckCircle, ChevronDown, Shield, Zap, MapPin
 } from 'lucide-react';
 import { Link, useNavigate, useLocation, NavLink } from 'react-router-dom';
 import Button from './ui/Button';
@@ -172,6 +172,7 @@ const Topbar: React.FC = () => {
               <UserMenuItem to="/items?favorites=1" icon={Star} label="Favoris" badge={favoritesCount} />
               <UserMenuItem to="/gamification" icon={Trophy} label="Récompenses" />
               <UserMenuItem to="/ai-features" icon={Sparkles} label="Fonctionnalités IA" />
+              <UserMenuItem to="/stats-test" icon={Sparkles} label="Test Stats" />
               {isAdmin && <UserMenuItem to="/admin" icon={Shield} label="Panel Admin" special />}
               <div className="h-px bg-gray-100 my-1" />
               <UserMenuItem to="/settings" icon={Settings} label="Paramètres" />
@@ -227,6 +228,7 @@ const Topbar: React.FC = () => {
             </div>
             <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
                 <MobileNavItem to="/items" icon={Search} label="Objets" />
+                <MobileNavItem to="/map" icon={MapPin} label="Carte" />
                 <MobileNavItem to="/communities" icon={Users} label="Quartiers" />
                 <MobileNavItem to="/messages" icon={MessageCircle} label="Messages" />
                 <MobileNavItem to="/requests" icon={CheckCircle} label="Échanges" />
@@ -342,6 +344,7 @@ const Topbar: React.FC = () => {
 
             <div className="flex items-center gap-2">
               <Button variant="primary" size="sm" onClick={() => navigate('/create')} leftIcon={<Plus size={16} />}>Publier</Button>
+              <Link to="/map" title="Carte" className="p-2.5 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"><MapPin size={18} /></Link>
               <Link to="/messages" title="Messages" className="p-2.5 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"><MessageCircle size={18} /></Link>
               <NotificationSystem notifications={notifications} onMarkAsRead={markAsRead} onDismiss={dismiss} />
               {user ? (
