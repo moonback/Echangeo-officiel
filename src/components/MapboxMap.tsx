@@ -130,67 +130,84 @@ function createMarkerContent(marker: MapboxMarker): string {
   const icon = marker.type === 'community' ? icons.community : 
                icons[marker.category as keyof typeof icons] || icons.other;
 
+  // Amélioration du design du marqueur
   return `
     <div class="enhanced-marker" style="
       width: ${size};
       height: ${size};
       position: relative;
       cursor: pointer;
-      filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
-      z-index: 1;
+      filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.30));
+      z-index: 2;
       pointer-events: auto;
       display: inline-block;
       transform-origin: center;
+      transition: transform 0.18s cubic-bezier(.4,2,.6,1);
     ">
       <!-- Effet de pulsation pour les communautés -->
       ${marker.type === 'community' ? `
-      <div style="
-        position: absolute;
-          inset: -8px;
+        <div style="
+          position: absolute;
+          inset: -10px;
           border-radius: 50%;
-          background: ${color}40;
-          animation: communityPulse 3s ease-in-out infinite;
-      "></div>
+          background: radial-gradient(circle, ${color}55 0%, ${color}00 80%);
+          animation: communityPulse 2.5s cubic-bezier(.4,0,.2,1) infinite;
+          z-index: 0;
+        "></div>
       ` : ''}
-      
-      <!-- Cercle de base avec dégradé -->
+
+      <!-- Cercle principal avec effet néomorphisme -->
       <div style="
         width: 100%;
         height: 100%;
-        background: linear-gradient(145deg, ${color}, ${color}DD);
+        background: linear-gradient(135deg, ${color}, ${color}EE 80%);
         border-radius: 50%;
-        border: ${borderSize} solid white;
+        border: ${borderSize} solid #fff;
+        box-shadow: 0 2px 12px 0 ${color}33, 0 1.5px 0 0 #fff inset;
         position: relative;
-        overflow: hidden;
-        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        overflow: visible;
+        transition: box-shadow 0.25s cubic-bezier(.4,2,.6,1);
       ">
+        <!-- Halo lumineux -->
+        <div style="
+          position: absolute;
+          top: 8%;
+          left: 8%;
+          width: 84%;
+          height: 84%;
+          background: radial-gradient(circle, #fff8 0%, #fff0 80%);
+          border-radius: 50%;
+          z-index: 1;
+          pointer-events: none;
+        "></div>
+        <!-- Reflet glassmorphism -->
+        <div style="
+          position: absolute;
+          top: 18%;
+          left: 18%;
+          width: 28%;
+          height: 28%;
+          background: rgba(255,255,255,0.7);
+          border-radius: 50%;
+          filter: blur(3px);
+          opacity: 0.7;
+          pointer-events: none;
+          z-index: 2;
+        "></div>
         <!-- Effet de lumière interne -->
-      <div style="
-        position: absolute;
+        <div style="
+          position: absolute;
           top: 2px;
           left: 2px;
           right: 2px;
-          height: 40%;
-          background: linear-gradient(to bottom, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1));
+          height: 38%;
+          background: linear-gradient(to bottom, rgba(255,255,255,0.45), rgba(255,255,255,0.08));
           border-radius: 50% 50% 0 0;
           pointer-events: none;
-      "></div>
-        
-        <!-- Reflet glassmorphism -->
-      <div style="
-        position: absolute;
-          top: 15%;
-          left: 15%;
-          width: 25%;
-          height: 25%;
-          background: rgba(255, 255, 255, 0.6);
-          border-radius: 50%;
-          filter: blur(2px);
-          pointer-events: none;
-      "></div>
-
-        <!-- Icône avec effet -->
-    <div style="
+          z-index: 2;
+        "></div>
+        <!-- Icône centrale avec ombre -->
+        <div style="
           color: white;
           display: flex;
           align-items: center;
@@ -198,70 +215,77 @@ function createMarkerContent(marker: MapboxMarker): string {
           width: 100%;
           height: 100%;
           position: relative;
-          z-index: 2;
-          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+          z-index: 3;
+          filter: drop-shadow(0 2px 8px rgba(0,0,0,0.25));
+          font-size: 1.1em;
         ">
           ${icon}
         </div>
       </div>
-      
+
       <!-- Anneau d'activité pour les objets récents -->
       ${marker.createdAt && new Date().getTime() - new Date(marker.createdAt).getTime() < 24 * 60 * 60 * 1000 ? `
-              <div style="
+        <div style="
           position: absolute;
-          inset: -6px;
-          border: 2px solid #10B981;
-                border-radius: 50%;
+          inset: -8px;
+          border: 2.5px solid #10B981;
+          border-radius: 50%;
           border-top-color: transparent;
           border-right-color: transparent;
-          animation: newItemRotate 2s linear infinite;
+          animation: newItemRotate 1.5s linear infinite;
+          box-shadow: 0 0 8px #10B98188;
+          z-index: 4;
         "></div>
-          ` : ''}
-          
+      ` : ''}
+
       <!-- Badge pour le type d'offre -->
       ${marker.offerType ? `
-              <div style="
+        <div style="
           position: absolute;
-          top: -6px;
-          right: -6px;
-          width: 16px;
-          height: 16px;
-          background: ${marker.offerType === 'loan' ? 'linear-gradient(135deg, #3B82F6, #1E40AF)' : 'linear-gradient(135deg, #8B5CF6, #7C3AED)'};
-          border: 2px solid white;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-          font-size: 8px;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+          top: -8px;
+          right: -8px;
+          width: 20px;
+          height: 20px;
+          background: ${marker.offerType === 'loan' ? 'linear-gradient(135deg, #3B82F6 60%, #1E40AF 100%)' : 'linear-gradient(135deg, #8B5CF6 60%, #7C3AED 100%)'};
+          border: 2.5px solid #fff;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 11px;
+          font-weight: bold;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+          z-index: 5;
         ">
           <span style="color: white; font-weight: bold;">
             ${marker.offerType === 'loan' ? '📤' : '🔄'}
-        </span>
-      </div>
-          ` : ''}
-          
+          </span>
+        </div>
+      ` : ''}
+
       <!-- Indicateur de distance (si proche) -->
       ${marker.distance !== undefined && marker.distance < 0.5 ? `
-              <div style="
+        <div style="
           position: absolute;
-          bottom: -8px;
+          bottom: -12px;
           left: 50%;
           transform: translateX(-50%);
-          background: linear-gradient(135deg, #10B981, #059669);
-                color: white;
-          font-size: 10px;
+          background: linear-gradient(135deg, #10B981 60%, #059669 100%);
+          color: white;
+          font-size: 11px;
           font-weight: 700;
-          padding: 2px 6px;
-          border-radius: 8px;
-          border: 1px solid white;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-          animation: bounce 2s ease-in-out infinite;
+          padding: 3px 10px;
+          border-radius: 10px;
+          border: 1.5px solid #fff;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+          animation: bounce 1.8s cubic-bezier(.4,0,.2,1) infinite;
+          z-index: 6;
+          letter-spacing: 0.5px;
         ">
           ${Math.round(marker.distance * 1000)}m
-      </div>
-          ` : ''}
-  </div>
+        </div>
+      ` : ''}
+    </div>
   `;
 }
 
