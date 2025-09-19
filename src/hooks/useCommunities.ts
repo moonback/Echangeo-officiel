@@ -22,17 +22,111 @@ export function useCommunities() {
   return useQuery({
     queryKey: ['communities'],
     queryFn: async (): Promise<CommunityOverview[]> => {
-      const { data, error } = await supabase
+      // Récupérer les communautés avec leurs statistiques calculées directement
+      const { data: communities, error: communitiesError } = await supabase
         .from('communities')
         .select(`
-          *,
-          stats:community_stats(*)
+          id,
+          name,
+          description,
+          city,
+          postal_code,
+          country,
+          center_latitude,
+          center_longitude,
+          radius_km,
+          is_active,
+          activity_level,
+          created_by,
+          created_at,
+          updated_at
         `)
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data || [];
+      if (communitiesError) throw communitiesError;
+
+      if (!communities || communities.length === 0) {
+        return [];
+      }
+
+      // Calculer les statistiques pour chaque communauté
+      const communitiesWithStats = await Promise.all(
+        communities.map(async (community) => {
+          try {
+            // Compter les membres actifs
+            const { count: totalMembers } = await supabase
+              .from('community_members')
+              .select('*', { count: 'exact', head: true })
+              .eq('community_id', community.id)
+              .eq('is_active', true);
+
+            // Compter les objets disponibles
+            const { count: totalItems } = await supabase
+              .from('items')
+              .select('*', { count: 'exact', head: true })
+              .eq('community_id', community.id)
+              .eq('is_available', true);
+
+            // Compter les échanges complétés
+            const { count: totalExchanges } = await supabase
+              .from('requests')
+              .select('*', { count: 'exact', head: true })
+              .eq('status', 'completed')
+              .in('item_id', 
+                await supabase
+                  .from('items')
+                  .select('id')
+                  .eq('community_id', community.id)
+                  .then(({ data }) => data?.map(item => item.id) || [])
+              );
+
+            // Compter les événements actifs
+            const { count: totalEvents } = await supabase
+              .from('community_events')
+              .select('*', { count: 'exact', head: true })
+              .eq('community_id', community.id)
+              .eq('is_active', true);
+
+            // Récupérer la dernière activité
+            const { data: lastActivityData } = await supabase
+              .from('community_members')
+              .select('joined_at')
+              .eq('community_id', community.id)
+              .order('joined_at', { ascending: false })
+              .limit(1);
+
+            return {
+              ...community,
+              stats: {
+                total_members: totalMembers || 0,
+                active_members: totalMembers || 0,
+                total_items: totalItems || 0,
+                total_exchanges: totalExchanges || 0,
+                total_events: totalEvents || 0,
+                last_activity: lastActivityData?.[0]?.joined_at || community.created_at,
+                calculated_at: new Date().toISOString()
+              }
+            };
+          } catch (error) {
+            console.warn(`Erreur lors du calcul des stats pour ${community.name}:`, error);
+            return {
+              ...community,
+              stats: {
+                total_members: 0,
+                active_members: 0,
+                total_items: 0,
+                total_exchanges: 0,
+                total_events: 0,
+                last_activity: community.created_at,
+                calculated_at: new Date().toISOString()
+              }
+            };
+          }
+        })
+      );
+
+      return communitiesWithStats;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });

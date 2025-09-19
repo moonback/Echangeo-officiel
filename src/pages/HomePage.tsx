@@ -337,7 +337,7 @@ const HomePage: React.FC = () => {
                           <div className="flex-1 min-w-0">
                             <h4 className="font-medium text-gray-900 truncate">{community.name}</h4>
                             <p className="text-sm text-gray-600">
-                              {community.stats?.total_members || 0} membres
+                              {community.city} • {community.stats?.total_members || 0} membres
                             </p>
                           </div>
                           <ArrowRight size={16} className="text-gray-400" />

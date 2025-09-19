@@ -23,6 +23,7 @@ export interface MapboxMarker {
   offerType?: string;
   data?: Record<string, unknown>;
   neighborhood?: string; // Ajout pour le clustering par quartier
+  is_available?: boolean; // Disponibilité de l'objet
 }
 
 export interface Cluster {
@@ -62,9 +63,51 @@ function createMarkerContent(marker: MapboxMarker): string {
   let iconContent = '';
   
   if (marker.type === 'item' && marker.imageUrl) {
-    // Utiliser l'image du produit avec popup au survol
+    // Utiliser l'image du produit avec design amélioré
+    const categoryColors = {
+      'tools': '#F59E0B',
+      'electronics': '#3B82F6', 
+      'books': '#8B5CF6',
+      'sports': '#10B981',
+      'kitchen': '#EF4444',
+      'garden': '#059669',
+      'toys': '#EC4899',
+      'fashion': '#F97316',
+      'furniture': '#6B7280',
+      'music': '#7C3AED',
+      'baby': '#F472B6',
+      'art': '#8B5CF6',
+      'services': '#06B6D4',
+      'auto': '#374151',
+      'office': '#1F2937',
+      'other': '#6B7280'
+    };
+    
+    const categoryColor = categoryColors[marker.category as keyof typeof categoryColors] || '#6B7280';
+    
     iconContent = `
       <div style="position: relative;">
+        <!-- Badge de catégorie -->
+        <div style="
+          position: absolute;
+          top: -8px;
+          right: -8px;
+          width: 24px;
+          height: 24px;
+          background: ${categoryColor};
+          border-radius: 50%;
+          border: 2px solid #ffffff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          z-index: 10;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        ">
+          ${getCategoryIcon(marker.category)}
+        </div>
+        
+        <!-- Image principale -->
         <img 
           src="${marker.imageUrl}" 
           alt="${marker.title || 'Produit'}"
@@ -75,17 +118,60 @@ function createMarkerContent(marker: MapboxMarker): string {
             border-radius: 50%;
             border: 3px solid #ffffff;
             box-shadow: 
-              0 4px 8px rgba(0, 0, 0, 0.15),
-              0 2px 4px rgba(0, 0, 0, 0.1),
+              0 6px 20px rgba(0, 0, 0, 0.15),
+              0 3px 8px rgba(0, 0, 0, 0.1),
               inset 0 1px 0 rgba(255, 255, 255, 0.8),
               inset 0 -1px 0 rgba(0, 0, 0, 0.1);
             cursor: pointer;
+            transition: all 0.3s ease;
           "
         />
+        
+        <!-- Indicateur de disponibilité -->
+        <div style="
+          position: absolute;
+          bottom: -2px;
+          right: -2px;
+          width: 20px;
+          height: 20px;
+          background: ${marker.is_available !== false ? '#10B981' : '#EF4444'};
+          border-radius: 50%;
+          border: 2px solid #ffffff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 10px;
+          z-index: 10;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        ">
+          ${marker.is_available !== false ? '✓' : '✗'}
+        </div>
+        
+        <!-- Badge de prix (si disponible) -->
+        ${marker.price ? `
+          <div style="
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #1F2937, #374151);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            white-space: nowrap;
+            z-index: 5;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+          ">
+            ${marker.price}€
+          </div>
+        ` : ''}
       </div>
     `;
   } else if (marker.type === 'community') {
-    // Marqueur de quartier/communauté
+    // Marqueur de quartier/communauté amélioré
     iconContent = `
       <div style="position: relative;">
         <!-- Marqueur principal de communauté -->
@@ -94,10 +180,10 @@ function createMarkerContent(marker: MapboxMarker): string {
           height: 100%;
           background: linear-gradient(135deg, #8B5CF6, #7C3AED);
           border-radius: 50%;
-          border: 3px solid #ffffff;
+          border: 4px solid #ffffff;
           box-shadow: 
-            0 4px 12px rgba(139, 92, 246, 0.3),
-            0 2px 6px rgba(0, 0, 0, 0.15),
+            0 8px 25px rgba(139, 92, 246, 0.4),
+            0 4px 12px rgba(0, 0, 0, 0.15),
             inset 0 1px 0 rgba(255, 255, 255, 0.8),
             inset 0 -1px 0 rgba(0, 0, 0, 0.1);
           display: flex;
@@ -105,43 +191,115 @@ function createMarkerContent(marker: MapboxMarker): string {
           justify-content: center;
           color: white;
           font-weight: bold;
-          font-size: 14px;
+          font-size: 16px;
           cursor: pointer;
           animation: communityPulse 2s ease-in-out infinite;
+          position: relative;
+          overflow: hidden;
         ">
+          <!-- Effet de brillance -->
+          <div style="
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: shine 3s ease-in-out infinite;
+          "></div>
           🏘️
         </div>
         
-        <!-- Étiquette du quartier -->
+        <!-- Étiquette du quartier améliorée -->
         <div style="
           position: absolute;
-          bottom: -20px;
+          bottom: -30px;
           left: 50%;
           transform: translateX(-50%);
-          background: rgba(0, 0, 0, 0.8);
+          background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.8));
           color: white;
-          padding: 4px 8px;
-          border-radius: 12px;
-          font-size: 11px;
+          padding: 6px 12px;
+          border-radius: 16px;
+          font-size: 12px;
           font-weight: 600;
           white-space: nowrap;
           z-index: 5;
+          border: 1px solid rgba(255,255,255,0.1);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+          backdrop-filter: blur(10px);
         ">
           ${marker.title || marker.neighborhood || 'Quartier'}
+        </div>
+        
+        <!-- Indicateur d'activité -->
+        <div style="
+          position: absolute;
+          top: -5px;
+          left: -5px;
+          width: 16px;
+          height: 16px;
+          background: #10B981;
+          border-radius: 50%;
+          border: 2px solid #ffffff;
+          z-index: 10;
+          animation: pulse 2s ease-in-out infinite;
+        "></div>
+      </div>
+    `;
+  } else if (marker.type === 'user') {
+    // Marqueur utilisateur amélioré
+    iconContent = `
+      <div style="position: relative;">
+        <div style="
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+          border-radius: 50%;
+          border: 3px solid #ffffff;
+          box-shadow: 
+            0 6px 20px rgba(59, 130, 246, 0.3),
+            0 3px 8px rgba(0, 0, 0, 0.15);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-weight: bold;
+          font-size: 14px;
+          cursor: pointer;
+          animation: userBounce 2s ease-in-out infinite;
+        ">
+          👤
         </div>
       </div>
     `;
   } else {
-    // Ne pas afficher de marqueur si pas d'image et pas de quartier
-    iconContent = '';
+    // Marqueur par défaut pour les autres types
+    iconContent = `
+      <div style="position: relative;">
+        <div style="
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(135deg, #6B7280, #4B5563);
+          border-radius: 50%;
+          border: 3px solid #ffffff;
+          box-shadow: 
+            0 4px 12px rgba(107, 114, 128, 0.3),
+            0 2px 6px rgba(0, 0, 0, 0.15);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-weight: bold;
+          font-size: 14px;
+          cursor: pointer;
+        ">
+          📍
+        </div>
+      </div>
+    `;
   }
 
-  // Ne pas afficher de marqueur si pas d'image
-  if (!iconContent) {
-    return '';
-  }
-
-  // Marqueur simplifié
+  // Marqueur avec conteneur amélioré
   return `
     <div class="enhanced-marker" style="
       width: ${size};
@@ -151,34 +309,58 @@ function createMarkerContent(marker: MapboxMarker): string {
       z-index: 2;
       pointer-events: auto;
       display: inline-block;
+      transition: all 0.2s ease;
     ">
       ${iconContent}
 
-
-      <!-- Indicateur de distance (si proche) -->
+      <!-- Indicateur de distance amélioré (si proche) -->
       ${marker.distance !== undefined && marker.distance < 0.5 ? `
         <div style="
           position: absolute;
-          bottom: -12px;
+          bottom: -15px;
           left: 50%;
           transform: translateX(-50%);
           background: linear-gradient(135deg, #10B981 60%, #059669 100%);
           color: white;
           font-size: 11px;
           font-weight: 700;
-          padding: 3px 10px;
-          border-radius: 10px;
-          border: 1.5px solid #fff;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+          padding: 4px 12px;
+          border-radius: 12px;
+          border: 2px solid #fff;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
           animation: bounce 1.8s cubic-bezier(.4,0,.2,1) infinite;
           z-index: 5;
           letter-spacing: 0.5px;
+          backdrop-filter: blur(10px);
         ">
           ${Math.round(marker.distance * 1000)}m
         </div>
       ` : ''}
     </div>
   `;
+}
+
+// Fonction pour obtenir l'icône de catégorie
+function getCategoryIcon(category?: string): string {
+  const icons: Record<string, string> = {
+    'tools': '🔧',
+    'electronics': '📱',
+    'books': '📚',
+    'sports': '⚽',
+    'kitchen': '🍳',
+    'garden': '🌱',
+    'toys': '🧸',
+    'fashion': '👕',
+    'furniture': '🪑',
+    'music': '🎵',
+    'baby': '👶',
+    'art': '🎨',
+    'services': '🛠️',
+    'auto': '🚗',
+    'office': '💼',
+    'other': '📦'
+  };
+  return icons[category || 'other'] || '📦';
 }
 
 // Fonction de clustering par quartier (pour les objets seulement)
@@ -234,6 +416,7 @@ function createClusters(markers: MapboxMarker[], radius: number = 0.001): Cluste
 // Fonction pour créer le contenu HTML d'un cluster
 function createClusterContent(cluster: Cluster): string {
   const size = Math.min(60 + cluster.count * 5, 120); // Taille basée sur le nombre d'éléments
+  const color = cluster.count > 10 ? '#EF4444' : cluster.count > 5 ? '#F59E0B' : '#10B981';
   
   return `
     <div class="cluster-marker" style="
@@ -244,17 +427,18 @@ function createClusterContent(cluster: Cluster): string {
       z-index: 2;
       pointer-events: auto;
       display: inline-block;
+      transition: all 0.3s ease;
     ">
-      <!-- Cercle du cluster -->
+      <!-- Cercle du cluster amélioré -->
       <div style="
         width: 100%;
         height: 100%;
-        background: linear-gradient(135deg, #3B82F6, #1E40AF);
+        background: linear-gradient(135deg, ${color}, ${color}dd);
         border-radius: 50%;
-        border: 3px solid #ffffff;
+        border: 4px solid #ffffff;
         box-shadow: 
-          0 4px 12px rgba(59, 130, 246, 0.3),
-          0 2px 6px rgba(0, 0, 0, 0.15),
+          0 8px 25px rgba(0, 0, 0, 0.2),
+          0 4px 12px rgba(0, 0, 0, 0.15),
           inset 0 1px 0 rgba(255, 255, 255, 0.8),
           inset 0 -1px 0 rgba(0, 0, 0, 0.1);
         display: flex;
@@ -262,30 +446,80 @@ function createClusterContent(cluster: Cluster): string {
         justify-content: center;
         color: white;
         font-weight: bold;
-        font-size: ${Math.min(14 + cluster.count, 20)}px;
+        font-size: ${Math.min(18, 14 + cluster.count)}px;
+        animation: clusterPulse 2s ease-in-out infinite;
+        position: relative;
+        overflow: hidden;
       ">
+        <!-- Effet de brillance -->
+        <div style="
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+          animation: shine 3s ease-in-out infinite;
+        "></div>
         ${cluster.count}
       </div>
       
-      <!-- Étiquette du quartier -->
+      <!-- Badge de catégorie dominante -->
+      <div style="
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 24px;
+        height: 24px;
+        background: #ffffff;
+        border-radius: 50%;
+        border: 2px solid ${color};
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        z-index: 10;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      ">
+        📦
+      </div>
+      
+      <!-- Étiquette du quartier améliorée -->
       ${cluster.neighborhood ? `
         <div style="
           position: absolute;
-          bottom: -20px;
+          bottom: -30px;
           left: 50%;
           transform: translateX(-50%);
-          background: rgba(0, 0, 0, 0.8);
+          background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.8));
           color: white;
-          padding: 2px 8px;
-          border-radius: 12px;
-          font-size: 10px;
+          padding: 6px 12px;
+          border-radius: 16px;
+          font-size: 12px;
           font-weight: 600;
           white-space: nowrap;
           z-index: 5;
+          border: 1px solid rgba(255,255,255,0.1);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+          backdrop-filter: blur(10px);
         ">
           ${cluster.neighborhood}
         </div>
       ` : ''}
+      
+      <!-- Indicateur d'activité -->
+      <div style="
+        position: absolute;
+        top: -5px;
+        left: -5px;
+        width: 16px;
+        height: 16px;
+        background: #10B981;
+        border-radius: 50%;
+        border: 2px solid #ffffff;
+        z-index: 10;
+        animation: pulse 2s ease-in-out infinite;
+      "></div>
     </div>
   `;
 }
@@ -846,14 +1080,93 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
 
           /* Animations pour les marqueurs de communauté */
           @keyframes communityPulse {
-            0%, 100% {
-              opacity: 0.6;
+            0%, 100% { 
               transform: scale(1);
-             }
-             50% {
-              opacity: 0.3;
-              transform: scale(1.2);
+              box-shadow: 
+                0 8px 25px rgba(139, 92, 246, 0.4),
+                0 4px 12px rgba(0, 0, 0, 0.15);
             }
+            50% { 
+              transform: scale(1.05);
+              box-shadow: 
+                0 12px 35px rgba(139, 92, 246, 0.6),
+                0 6px 18px rgba(0, 0, 0, 0.2);
+            }
+          }
+
+          @keyframes userBounce {
+            0%, 100% { 
+              transform: translateY(0);
+            }
+            50% { 
+              transform: translateY(-3px);
+            }
+          }
+
+          @keyframes pulse {
+            0%, 100% { 
+              opacity: 1;
+              transform: scale(1);
+            }
+            50% { 
+              opacity: 0.7;
+              transform: scale(1.1);
+            }
+          }
+
+          @keyframes shine {
+            0% { 
+              transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+            100% { 
+              transform: translateX(100%) translateY(100%) rotate(45deg);
+            }
+          }
+
+          @keyframes bounce {
+            0%, 100% { 
+              transform: translateX(-50%) translateY(0);
+            }
+            50% { 
+              transform: translateX(-50%) translateY(-2px);
+            }
+          }
+
+          @keyframes clusterPulse {
+            0%, 100% { 
+              transform: scale(1);
+              box-shadow: 
+                0 8px 25px rgba(0, 0, 0, 0.2),
+                0 4px 12px rgba(0, 0, 0, 0.15);
+            }
+            50% { 
+              transform: scale(1.05);
+              box-shadow: 
+                0 12px 35px rgba(0, 0, 0, 0.3),
+                0 6px 18px rgba(0, 0, 0, 0.2);
+            }
+          }
+
+          /* Effet de survol amélioré pour tous les marqueurs */
+          .enhanced-marker:hover {
+            transform: scale(1.1) translateZ(0) !important;
+            z-index: 10 !important;
+          }
+
+          /* Marqueur au survol - premier plan */
+          .marker:hover {
+            z-index: 10 !important;
+            transform: scale(1.1) translateZ(0) !important;
+          }
+          
+          /* Effet de survol pour les images des marqueurs */
+          .marker:hover img {
+            box-shadow: 
+              0 8px 16px rgba(0, 0, 0, 0.25),
+              0 4px 8px rgba(0, 0, 0, 0.15),
+              inset 0 1px 0 rgba(255, 255, 255, 0.9),
+              inset 0 -1px 0 rgba(0, 0, 0, 0.1) !important;
+            border-color: #3B82F6 !important;
           }
 
           /* Animation pour les nouveaux objets */

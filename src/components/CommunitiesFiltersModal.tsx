@@ -5,7 +5,7 @@ import Button from './ui/Button';
 
 interface CommunitiesFilters {
   search: string;
-  sortBy: 'members' | 'activity' | 'name' | 'distance';
+  sortBy: 'activity' | 'members' | 'activity_date' | 'name' | 'distance';
   selectedCity: string;
   minMembers: number;
   viewMode: 'grid' | 'list';
@@ -35,8 +35,9 @@ const CommunitiesFiltersModal: React.FC<CommunitiesFiltersModalProps> = ({
   cities
 }) => {
   const sortOptions = [
+    { value: 'activity', label: 'Par activité globale', icon: '🔥' },
     { value: 'members', label: 'Par nombre de membres', icon: '👥' },
-    { value: 'activity', label: 'Par activité récente', icon: '📈' },
+    { value: 'activity_date', label: 'Par activité récente', icon: '📈' },
     { value: 'name', label: 'Par nom', icon: '🔤' },
     { value: 'distance', label: 'Par distance', icon: '📍' }
   ];

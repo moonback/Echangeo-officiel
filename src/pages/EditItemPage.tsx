@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useItem, useUpdateItem, useDeleteItem } from '../hooks/useItems';
+import { useCommunities } from '../hooks/useCommunities';
 import { categories } from '../utils/categories';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -25,6 +26,7 @@ const schema = z.object({
   location_hint: z.string().max(200).optional(),
   latitude: z.preprocess((v) => (v === '' || v === undefined ? undefined : Number(v)), z.number().min(-90).max(90).optional()),
   longitude: z.preprocess((v) => (v === '' || v === undefined ? undefined : Number(v)), z.number().min(-180).max(180).optional()),
+  community_id: z.string().optional(),
   is_available: z
     .preprocess((v) => (v === 'true' ? true : v === 'false' ? false : v), z.boolean().optional()),
 });
@@ -35,6 +37,7 @@ const EditItemPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: item, isLoading } = useItem(id!);
+  const { data: communities } = useCommunities();
   const updateItem = useUpdateItem();
   const deleteItem = useDeleteItem();
 
@@ -58,6 +61,7 @@ const EditItemPage: React.FC = () => {
         location_hint: item.location_hint ?? '',
         latitude: item.latitude as any,
         longitude: item.longitude as any,
+        community_id: item.community_id ?? '',
         is_available: item.is_available,
       });
     }
@@ -171,6 +175,23 @@ const EditItemPage: React.FC = () => {
           <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
             <Input {...register('location_hint')} />
           </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Quartier</label>
+          <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
+            <Select {...register('community_id')}>
+              <option value="">Aucun quartier sélectionné</option>
+              {communities?.map((community) => (
+                <option key={community.id} value={community.id}>
+                  {community.name} - {community.city}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">
+            Sélectionnez le quartier où se trouve cet objet pour le rendre visible aux membres de cette communauté
+          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

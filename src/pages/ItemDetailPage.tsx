@@ -31,6 +31,7 @@ import { useCommunity } from '../hooks/useCommunities';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
 import Card from '../components/ui/Card';
+import MapboxMap from '../components/MapboxMap';
 
 const ItemDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -712,100 +713,87 @@ const ItemDetailPage: React.FC = () => {
                  <div className="sm:col-span-2 lg:col-span-3 xl:col-span-4">
                    <span className="text-gray-500 block mb-3">Position</span>
                    <div className="space-y-3">
-                     {/* Carte Mapbox interactive - hauteur augmentée */}
-                     <div className="relative rounded-lg overflow-hidden border border-gray-200 shadow-lg bg-gray-100">
-                       <div className="w-full h-96 bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center relative">
-                         {/* Carte Mapbox avec deux marqueurs */}
-                           <iframe
-                             src={(() => {
-                               if (userLocation) {
-                                 // Carte avec deux marqueurs : utilisateur (bleu) et objet (rouge)
-                                 const centerLng = (userLocation.lng + item.longitude) / 2;
-                                 const centerLat = (userLocation.lat + item.latitude) / 2;
-                                 const pins = `pin-s+3b82f6(${userLocation.lng},${userLocation.lat}),pin-s+ff0000(${item.longitude},${item.latitude})`;
-                                 return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${pins}/${centerLng},${centerLat},13,0/800x600@2x?access_token=${import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw'}`;
-                               } else {
-                                 // Carte avec seulement le marqueur de l'objet
-                                 return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+ff0000(${item.longitude},${item.latitude})/${item.longitude},${item.latitude},15,0/800x600@2x?access_token=${import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw'}`;
-                               }
-                             })()}
-                             width="100%"
-                             height="100%"
-                             style={{ border: 0 }}
-                             allowFullScreen
-                             loading="lazy"
-                             referrerPolicy="no-referrer-when-downgrade"
-                             className="w-full h-full rounded-lg"
-                             title="Position de l'objet et de l'utilisateur"
-                           />
-                         
-                         {/* Overlay avec légende */}
-                         <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border border-gray-200">
-                           <div className="flex items-center gap-3">
-                             {userLocation && (
-                               <div className="flex items-center gap-1">
-                                 <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                                 <span className="text-xs font-medium text-gray-800">Vous</span>
-                               </div>
-                             )}
-                             <div className="flex items-center gap-1">
-                               <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                               <span className="text-xs font-medium text-gray-800">Objet</span>
-                             </div>
-                           </div>
-                         </div>
-                         
-                         {/* Coordonnées en overlay */}
-                         {/* <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border border-gray-200">
-                           <div className="text-xs font-mono text-gray-600">
-                             <div className="font-semibold text-gray-800 mb-1">Coordonnées</div>
-                             {userLocation && (
-                               <div className="mb-1">
-                                 <div className="text-blue-600 font-medium">Votre position:</div>
-                                 <div>Lat: {userLocation.lat.toFixed(6)}</div>
-                                 <div>Lng: {userLocation.lng.toFixed(6)}</div>
-                               </div>
-                             )}
-                             <div>
-                               <div className="text-red-600 font-medium">Position objet:</div>
-                               <div>Lat: {item.latitude?.toFixed(6)}</div>
-                               <div>Lng: {item.longitude?.toFixed(6)}</div>
-                             </div>
-                           </div>
-                         </div> */}
-                         
-                         {/* Boutons d'action */}
-                         <div className="absolute top-3 right-3 flex gap-2">
+                     {/* Carte Mapbox interactive */}
+                     <div className="relative rounded-lg overflow-hidden border border-gray-200 shadow-lg">
+                       <MapboxMap
+                         center={{ lat: item.latitude, lng: item.longitude }}
+                         zoom={userLocation ? 13 : 15}
+                         height={384}
+                         markers={[
+                           {
+                             id: 'item-location',
+                             latitude: item.latitude,
+                             longitude: item.longitude,
+                             title: item.title,
+                             imageUrl: item.images && item.images.length > 0 ? item.images[0].url : undefined,
+                             category: item.category,
+                             type: 'item',
+                             description: item.description,
+                             owner: item.owner?.full_name || 'Propriétaire anonyme',
+                             condition: item.condition,
+                             price: item.estimated_value,
+                             offerType: item.offer_type,
+                             data: item as Record<string, unknown>
+                           },
+                           ...(userLocation ? [{
+                             id: 'user-location',
+                             latitude: userLocation.lat,
+                             longitude: userLocation.lng,
+                             title: 'Votre position',
+                             type: 'user' as const,
+                             color: '#3B82F6'
+                           }] : [])
+                         ]}
+                         showUserLocation={!!userLocation}
+                         userLocation={userLocation || undefined}
+                         autoFit={true}
+                       />
+                       
+                       {/* Overlay avec légende */}
+                       <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border border-gray-200 z-10">
+                         <div className="flex items-center gap-3">
                            {userLocation && (
-                             <div className="bg-white/95 backdrop-blur-sm rounded-lg px-2 py-1 shadow-lg border border-gray-200">
-                               <div className="text-xs font-medium text-gray-800">
-                                 Distance: {(() => {
-                                   const R = 6371; // Rayon de la Terre en km
-                                   const dLat = (item.latitude - userLocation.lat) * Math.PI / 180;
-                                   const dLng = (item.longitude - userLocation.lng) * Math.PI / 180;
-                                   const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                                     Math.cos(userLocation.lat * Math.PI / 180) * Math.cos(item.latitude * Math.PI / 180) *
-                                     Math.sin(dLng/2) * Math.sin(dLng/2);
-                                   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-                                   return (R * c).toFixed(1);
-                                 })()} km
-                               </div>
+                             <div className="flex items-center gap-1">
+                               <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                               <span className="text-xs font-medium text-gray-800">Vous</span>
                              </div>
                            )}
-                           <button
-                             onClick={() => window.open(`https://www.mapbox.com/maps?q=${item.latitude},${item.longitude}`, '_blank')}
-                             className="bg-white/95 backdrop-blur-sm rounded-lg p-2 shadow-lg border border-gray-200 hover:bg-white transition-colors duration-200"
-                             title="Ouvrir en plein écran"
-                           >
-                             <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                             </svg>
-                           </button>
+                           <div className="flex items-center gap-1">
+                             <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                             <span className="text-xs font-medium text-gray-800">Objet</span>
+                           </div>
                          </div>
                        </div>
+                       
+                       {/* Distance et boutons d'action */}
+                       <div className="absolute top-3 right-3 flex gap-2 z-10">
+                         {userLocation && (
+                           <div className="bg-white/95 backdrop-blur-sm rounded-lg px-2 py-1 shadow-lg border border-gray-200">
+                             <div className="text-xs font-medium text-gray-800">
+                               Distance: {(() => {
+                                 const R = 6371; // Rayon de la Terre en km
+                                 const dLat = (item.latitude - userLocation.lat) * Math.PI / 180;
+                                 const dLng = (item.longitude - userLocation.lng) * Math.PI / 180;
+                                 const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                                   Math.cos(userLocation.lat * Math.PI / 180) * Math.cos(item.latitude * Math.PI / 180) *
+                                   Math.sin(dLng/2) * Math.sin(dLng/2);
+                                 const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                                 return (R * c).toFixed(1);
+                               })()} km
+                             </div>
+                           </div>
+                         )}
+                         <button
+                           onClick={() => window.open(`https://www.google.com/maps?q=${item.latitude},${item.longitude}`, '_blank')}
+                           className="bg-white/95 backdrop-blur-sm rounded-lg p-2 shadow-lg border border-gray-200 hover:bg-white transition-colors duration-200"
+                           title="Ouvrir dans Google Maps"
+                         >
+                           <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                           </svg>
+                         </button>
+                       </div>
                      </div>
-                     
-                     
                    </div>
                  </div>
                )}

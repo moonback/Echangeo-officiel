@@ -15,7 +15,7 @@ import EmptyState from '../components/EmptyState';
 const CommunitiesPage: React.FC = () => {
   const { data: communities, isLoading } = useCommunities();
   const [searchQuery, setSearchQuery] = React.useState('');
-  const [sortBy, setSortBy] = React.useState<'members' | 'activity' | 'name' | 'distance'>('members');
+  const [sortBy, setSortBy] = React.useState<'activity' | 'members' | 'activity_date' | 'name' | 'distance'>('activity');
   const [viewMode, setViewMode] = React.useState<'grid' | 'list'>('grid');
   const [showFiltersModal, setShowFiltersModal] = React.useState(false);
   const [selectedCity, setSelectedCity] = React.useState('');
@@ -48,12 +48,32 @@ const CommunitiesPage: React.FC = () => {
       );
     }
 
-    // Tri
+    // Tri avec priorité pour les quartiers actifs
     filtered.sort((a, b) => {
+      // Calculer le score d'activité pour chaque quartier
+      const getActivityScore = (community: { stats?: { total_members?: number; total_items?: number; total_exchanges?: number; total_events?: number } }) => {
+        const members = community.stats?.total_members || 0;
+        const items = community.stats?.total_items || 0;
+        const exchanges = community.stats?.total_exchanges || 0;
+        const events = community.stats?.total_events || 0;
+        
+        // Score basé sur l'activité (membres + objets + échanges + événements)
+        return members + items + exchanges + events;
+      };
+
+      const scoreA = getActivityScore(a);
+      const scoreB = getActivityScore(b);
+
+      // Si les scores sont différents, trier par score décroissant
+      if (scoreA !== scoreB) {
+        return scoreB - scoreA;
+      }
+
+      // Si les scores sont égaux, appliquer le tri secondaire selon sortBy
       switch (sortBy) {
         case 'members':
           return (b.stats?.total_members || 0) - (a.stats?.total_members || 0);
-        case 'activity':
+        case 'activity_date':
           return new Date(b.stats?.last_activity || 0).getTime() - new Date(a.stats?.last_activity || 0).getTime();
         case 'name':
           return a.name.localeCompare(b.name);
@@ -90,7 +110,7 @@ const CommunitiesPage: React.FC = () => {
         setSearchQuery(value as string);
         break;
       case 'sortBy':
-        setSortBy(value as 'members' | 'activity' | 'name' | 'distance');
+        setSortBy(value as 'activity' | 'members' | 'activity_date' | 'name' | 'distance');
         break;
       case 'viewMode':
         setViewMode(value as 'grid' | 'list');
@@ -110,7 +130,7 @@ const CommunitiesPage: React.FC = () => {
     setSearchQuery('');
     setSelectedCity('');
     setMinMembers(0);
-    setSortBy('members');
+    setSortBy('activity');
   };
 
   const handleApplyFilters = () => {
@@ -265,11 +285,12 @@ const CommunitiesPage: React.FC = () => {
                 <TrendingUp className="text-brand-600" size={14} />
                 <select
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as 'members' | 'activity' | 'name' | 'distance')}
+                  onChange={(e) => setSortBy(e.target.value as 'activity' | 'members' | 'activity_date' | 'name' | 'distance')}
                   className="bg-transparent border-0 text-sm font-medium text-gray-700 focus:ring-0"
                 >
+                  <option value="activity">Activité globale</option>
                   <option value="members">Membres</option>
-                  <option value="activity">Activité</option>
+                  <option value="activity_date">Dernière activité</option>
                   <option value="name">Nom</option>
                   <option value="distance">Distance</option>
                 </select>
