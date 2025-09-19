@@ -16,6 +16,7 @@ export function useItems(filters?: {
   tags?: string[];
   favoritesOnly?: boolean;
   userId?: string;
+  limit?: number; // Nouveau paramètre pour limiter les résultats
 }) {
   return useQuery({
     queryKey: ['items', filters],
@@ -34,6 +35,11 @@ export function useItems(filters?: {
         ` as any)
         .eq('suspended_by_admin', false) // Exclure les objets suspendus par l'admin
         .order('created_at', { ascending: false });
+
+      // Limiter les résultats pour la performance
+      if (filters?.limit) {
+        query = query.limit(filters.limit);
+      }
 
       if (filters?.favoritesOnly) {
         if (!filters?.userId) return [] as Item[];
@@ -113,6 +119,8 @@ export function useItems(filters?: {
 
       return items.map((i) => ({ ...i, ...map.get(i.id) }));
     },
+    staleTime: 1000 * 60 * 5, // 5 minutes de cache
+    gcTime: 1000 * 60 * 10, // 10 minutes de garbage collection
   });
 }
 
