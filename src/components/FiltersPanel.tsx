@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { RotateCcw, Filter } from 'lucide-react';
+import { RotateCcw, Filter, Gift, Handshake, RefreshCcw } from 'lucide-react';
 import { categories, getCategoryIcon } from '../utils/categories';
-import type { ItemCategory } from '../types';
+import type { ItemCategory, OfferType } from '../types';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import Badge from './ui/Badge';
@@ -19,6 +19,7 @@ interface FilterState {
   isAvailable: boolean;
   tags: string;
   favoritesOnly: boolean;
+  offerType: OfferType | undefined;
 }
 
 interface FiltersPanelProps {
@@ -161,6 +162,71 @@ const FiltersPanel: React.FC<FiltersPanelProps> = ({
               />
               <span className="text-sm font-medium text-gray-700">Mes favoris uniquement</span>
             </label>
+
+            {/* Type d'offre */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Type d'offre</label>
+              <div className="space-y-2">
+                <button
+                  onClick={() => onFilterChange('offerType', undefined)}
+                  className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    !filters.offerType 
+                      ? 'bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg shadow-gray-500/25' 
+                      : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <span>Tous les types</span>
+                  {!filters.offerType && (
+                    <div className="w-2 h-2 bg-white rounded-full ml-auto" />
+                  )}
+                </button>
+                
+                <button
+                  onClick={() => onFilterChange('offerType', filters.offerType === 'donation' ? undefined : 'donation')}
+                  className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    filters.offerType === 'donation' 
+                      ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg shadow-green-500/25' 
+                      : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <Gift size={16} />
+                  <span>Dons</span>
+                  {filters.offerType === 'donation' && (
+                    <div className="w-2 h-2 bg-white rounded-full ml-auto" />
+                  )}
+                </button>
+                
+                <button
+                  onClick={() => onFilterChange('offerType', filters.offerType === 'trade' ? undefined : 'trade')}
+                  className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    filters.offerType === 'trade' 
+                      ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/25' 
+                      : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <Handshake size={16} />
+                  <span>Échanges</span>
+                  {filters.offerType === 'trade' && (
+                    <div className="w-2 h-2 bg-white rounded-full ml-auto" />
+                  )}
+                </button>
+                
+                <button
+                  onClick={() => onFilterChange('offerType', filters.offerType === 'loan' ? undefined : 'loan')}
+                  className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    filters.offerType === 'loan' 
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25' 
+                      : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <RefreshCcw size={16} />
+                  <span>Prêts</span>
+                  {filters.offerType === 'loan' && (
+                    <div className="w-2 h-2 bg-white rounded-full ml-auto" />
+                  )}
+                </button>
+              </div>
+            </div>
 
             {/* Condition */}
             <div>

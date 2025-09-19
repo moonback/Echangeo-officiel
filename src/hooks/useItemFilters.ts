@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useItems } from './useItems';
 import { useAuthStore } from '../store/authStore';
-import type { ItemCategory } from '../types';
+import type { ItemCategory, OfferType } from '../types';
 
 type SortOption = 'newest' | 'oldest' | 'value_asc' | 'value_desc' | 'title_asc' | 'title_desc';
 type ViewMode = 'grid' | 'list';
@@ -20,6 +20,7 @@ interface FilterState {
   isAvailable: boolean;
   tags: string;
   favoritesOnly: boolean;
+  offerType: OfferType | undefined;
   sortBy: SortOption;
   viewMode: ViewMode;
 }
@@ -46,6 +47,7 @@ interface UseItemFiltersReturn {
   setIsAvailable: (isAvailable: boolean) => void;
   setTags: (tags: string) => void;
   setFavoritesOnly: (favoritesOnly: boolean) => void;
+  setOfferType: (offerType: OfferType | undefined) => void;
   setSortBy: (sortBy: SortOption) => void;
   setViewMode: (viewMode: ViewMode) => void;
   setShowFilters: (show: boolean) => void;
@@ -75,6 +77,7 @@ export const useItemFilters = (): UseItemFiltersReturn => {
     isAvailable: true,
     tags: '',
     favoritesOnly: false,
+    offerType: undefined,
     sortBy: 'newest',
     viewMode: 'grid',
   });
@@ -106,6 +109,7 @@ export const useItemFilters = (): UseItemFiltersReturn => {
     tags: filters.tags ? filters.tags.split(',').map(t => t.trim()).filter(Boolean) : undefined,
     favoritesOnly: filters.favoritesOnly || undefined,
     userId: filters.favoritesOnly ? user?.id : undefined,
+    offerType: filters.offerType,
   });
 
   // Tri des objets
@@ -145,6 +149,7 @@ export const useItemFilters = (): UseItemFiltersReturn => {
     if (filters.hasImages) count++;
     if (filters.tags) count++;
     if (filters.favoritesOnly) count++;
+    if (filters.offerType) count++;
     return count;
   }, [filters]);
 
@@ -167,6 +172,7 @@ export const useItemFilters = (): UseItemFiltersReturn => {
       hasImages: false,
       tags: '',
       favoritesOnly: false,
+      offerType: undefined,
     }));
   }, []);
 
@@ -185,6 +191,7 @@ export const useItemFilters = (): UseItemFiltersReturn => {
     if (filters.hasImages) params.set('hasImages', 'true');
     if (filters.tags) params.set('tags', filters.tags);
     if (filters.favoritesOnly) params.set('favoritesOnly', 'true');
+    if (filters.offerType) params.set('offerType', filters.offerType);
     if (filters.sortBy !== 'newest') params.set('sortBy', filters.sortBy);
     if (filters.viewMode !== 'grid') params.set('viewMode', filters.viewMode);
 
@@ -211,6 +218,7 @@ export const useItemFilters = (): UseItemFiltersReturn => {
       hasImages: params.get('hasImages') === 'true',
       tags: params.get('tags') || '',
       favoritesOnly: params.get('favoritesOnly') === 'true',
+      offerType: params.get('offerType') as OfferType || undefined,
       sortBy: (params.get('sortBy') as SortOption) || 'newest',
       viewMode: (params.get('viewMode') as ViewMode) || 'grid',
     }));
@@ -243,6 +251,7 @@ export const useItemFilters = (): UseItemFiltersReturn => {
     setIsAvailable: (isAvailable: boolean) => updateFilter('isAvailable', isAvailable),
     setTags: (tags: string) => updateFilter('tags', tags),
     setFavoritesOnly: (favoritesOnly: boolean) => updateFilter('favoritesOnly', favoritesOnly),
+    setOfferType: (offerType: OfferType | undefined) => updateFilter('offerType', offerType),
     setSortBy: (sortBy: SortOption) => updateFilter('sortBy', sortBy),
     setViewMode: (viewMode: ViewMode) => updateFilter('viewMode', viewMode),
     setShowFilters,

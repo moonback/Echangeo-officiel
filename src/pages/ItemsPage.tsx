@@ -37,6 +37,7 @@ const ItemsPage: React.FC = () => {
     setIsAvailable,
     setTags,
     setFavoritesOnly,
+    setOfferType,
     setSortBy,
     setViewMode,
     setShowFilters,
@@ -88,6 +89,9 @@ const ItemsPage: React.FC = () => {
       case 'favoritesOnly':
         setFavoritesOnly(value as typeof filters.favoritesOnly);
         break;
+      case 'offerType':
+        setOfferType(value as typeof filters.offerType);
+        break;
     }
   };
 
@@ -119,9 +123,11 @@ const ItemsPage: React.FC = () => {
               viewMode={filters.viewMode}
               activeFiltersCount={activeFiltersCount}
               showFilters={showFilters}
+              offerType={filters.offerType}
               onSortChange={setSortBy}
               onViewModeChange={setViewMode}
               onToggleFilters={() => setShowFilters(!showFilters)}
+              onOfferTypeChange={setOfferType}
               onRefresh={refetch}
               isLoading={isLoading}
             />

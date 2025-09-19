@@ -16,6 +16,7 @@ export function useItems(filters?: {
   tags?: string[];
   favoritesOnly?: boolean;
   userId?: string;
+  offerType?: OfferType;
 }) {
   return useQuery({
     queryKey: ['items', filters],
@@ -80,6 +81,10 @@ export function useItems(filters?: {
       if (filters?.tags && filters.tags.length > 0) {
         // tags is text[]; use contains operator
         query = query.contains('tags', filters.tags);
+      }
+
+      if (filters?.offerType) {
+        query = query.eq('offer_type', filters.offerType);
       }
 
       const { data, error } = await query;
