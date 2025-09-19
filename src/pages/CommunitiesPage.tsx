@@ -3,10 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { 
   Search, Plus, Users, TrendingUp, MapPin, Calendar, 
-  Filter, Grid, List, Star, Shield, Zap, Heart
+  Filter, Grid, List, Star, Shield, Zap, Heart, RefreshCw
 } from 'lucide-react';
 import { useCommunities } from '../hooks/useCommunities';
 import CommunityCard from '../components/CommunityCard';
+import CommunitiesFiltersModal from '../components/CommunitiesFiltersModal';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import EmptyState from '../components/EmptyState';
@@ -18,7 +19,7 @@ const CommunitiesPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [sortBy, setSortBy] = React.useState<'members' | 'activity' | 'name' | 'distance'>('members');
   const [viewMode, setViewMode] = React.useState<'grid' | 'list'>('grid');
-  const [showFilters, setShowFilters] = React.useState(false);
+  const [showFiltersModal, setShowFiltersModal] = React.useState(false);
   const [selectedCity, setSelectedCity] = React.useState('');
   const [minMembers, setMinMembers] = React.useState(0);
 
@@ -78,10 +79,53 @@ const CommunitiesPage: React.FC = () => {
   // Compter les filtres actifs
   const activeFiltersCount = React.useMemo(() => {
     let count = 0;
+    if (searchQuery.trim()) count++;
     if (selectedCity) count++;
     if (minMembers > 0) count++;
     return count;
-  }, [selectedCity, minMembers]);
+  }, [searchQuery, selectedCity, minMembers]);
+
+  // Gestion des filtres
+  const handleFilterChange = (key: string, value: any) => {
+    switch (key) {
+      case 'search':
+        setSearchQuery(value);
+        break;
+      case 'sortBy':
+        setSortBy(value);
+        break;
+      case 'viewMode':
+        setViewMode(value);
+        break;
+      case 'selectedCity':
+        setSelectedCity(value);
+        break;
+      case 'minMembers':
+        setMinMembers(value);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setSelectedCity('');
+    setMinMembers(0);
+    setSortBy('members');
+  };
+
+  const handleApplyFilters = () => {
+    setShowFiltersModal(false);
+  };
+
+  const currentFilters = {
+    search: searchQuery,
+    sortBy,
+    viewMode,
+    selectedCity,
+    minMembers
+  };
 
   if (isLoading) {
     return (
@@ -254,157 +298,116 @@ const CommunitiesPage: React.FC = () => {
             </Card>
           </motion.div>
 
-          {/* Filters */}
+          {/* Compact Header */}
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}
             className="mb-6"
           >
-            <Card className="p-4">
-              <div className="space-y-4">
-                {/* Top row */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  {/* Search */}
+            <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-200">
+              {/* Search Toggle */}
+              <button
+                onClick={() => setSearchQuery(searchQuery ? '' : ' ')}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                title="Rechercher"
+              >
+                <Search className="w-4 h-4 text-gray-600" />
+              </button>
+
+              {/* Sort */}
+              <div className="flex items-center gap-2">
+                <TrendingUp className="text-brand-600" size={14} />
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as 'members' | 'activity' | 'name' | 'distance')}
+                  className="bg-transparent border-0 text-sm font-medium text-gray-700 focus:ring-0"
+                >
+                  <option value="members">Membres</option>
+                  <option value="activity">Activité</option>
+                  <option value="name">Nom</option>
+                  <option value="distance">Distance</option>
+                </select>
+              </div>
+
+              {/* View Mode */}
+              <div className="flex bg-gray-100 rounded-lg p-0.5">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-1.5 rounded-md transition-colors ${
+                    viewMode === 'grid' 
+                      ? 'bg-white text-brand-600 shadow-sm' 
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  <Grid size={14} />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-1.5 rounded-md transition-colors ${
+                    viewMode === 'list' 
+                      ? 'bg-white text-brand-600 shadow-sm' 
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  <List size={14} />
+                </button>
+              </div>
+
+              {/* Filters */}
+              <button
+                onClick={() => setShowFiltersModal(true)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
+              >
+                <Filter size={14} />
+                <span className="text-sm font-medium">Filtres</span>
+                {activeFiltersCount > 0 && (
+                  <span className="bg-brand-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Results Count */}
+              <div className="ml-auto bg-brand-50 px-2 py-1 rounded-md border border-brand-200">
+                <span className="text-sm font-medium text-brand-700">
+                  {filteredCommunities.length} quartier{filteredCommunities.length > 1 ? 's' : ''}
+                </span>
+              </div>
+
+              {/* Refresh */}
+              <button
+                onClick={() => window.location.reload()}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                title="Actualiser"
+              >
+                <RefreshCw className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
+
+            {/* Search Bar */}
+            <AnimatePresence>
+              {searchQuery && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="mt-3"
+                >
                   <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                     <input
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Rechercher un quartier..."
-                      className="w-full pl-12 pr-4 py-3 rounded-2xl border border-gray-200 bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all duration-200"
+                      className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all duration-200 text-sm"
                     />
                   </div>
-
-                  {/* Sort */}
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="text-brand-600" size={16} />
-                    <select
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value as 'members' | 'activity' | 'name' | 'distance')}
-                      className="flex-1 bg-white border border-gray-200 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all duration-200"
-                    >
-                      <option value="members">Par nombre de membres</option>
-                      <option value="activity">Par activité récente</option>
-                      <option value="name">Par nom</option>
-                      <option value="distance">Par distance</option>
-                    </select>
-                  </div>
-
-                  {/* View Mode */}
-                  <div className="flex items-center gap-2">
-                    <div className="flex bg-gray-100 rounded-2xl p-1">
-                      <button
-                        onClick={() => setViewMode('grid')}
-                        className={`p-2 rounded-xl transition-colors ${
-                          viewMode === 'grid' 
-                            ? 'bg-white text-brand-600 shadow-sm' 
-                            : 'text-gray-500 hover:text-gray-700'
-                        }`}
-                      >
-                        <Grid size={16} />
-                      </button>
-                      <button
-                        onClick={() => setViewMode('list')}
-                        className={`p-2 rounded-xl transition-colors ${
-                          viewMode === 'list' 
-                            ? 'bg-white text-brand-600 shadow-sm' 
-                            : 'text-gray-500 hover:text-gray-700'
-                        }`}
-                      >
-                        <List size={16} />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Filters Toggle */}
-                  <div className="flex items-center justify-between">
-                    <button
-                      onClick={() => setShowFilters(!showFilters)}
-                      className="flex items-center gap-2 px-4 py-3 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
-                    >
-                      <Filter size={16} />
-                      <span className="text-sm font-medium">Filtres</span>
-                      {activeFiltersCount > 0 && (
-                        <span className="bg-brand-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                          {activeFiltersCount}
-                        </span>
-                      )}
-                    </button>
-                    <div className="bg-brand-50 px-3 py-1 rounded-full border border-brand-200">
-                      <span className="text-sm font-medium text-brand-700">
-                        {filteredCommunities.length} quartier{filteredCommunities.length > 1 ? 's' : ''}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-              {/* Advanced Filters */}
-              <AnimatePresence>
-                {showFilters && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="border-t border-gray-200 pt-4"
-                  >
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {/* City Filter */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Ville
-                        </label>
-                        <select
-                          value={selectedCity}
-                          onChange={(e) => setSelectedCity(e.target.value)}
-                          className="w-full bg-white border border-gray-200 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
-                        >
-                          <option value="">Toutes les villes</option>
-                          {cities.map(city => (
-                            <option key={city} value={city}>{city}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* Min Members Filter */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Membres minimum
-                        </label>
-                        <select
-                          value={minMembers}
-                          onChange={(e) => setMinMembers(Number(e.target.value))}
-                          className="w-full bg-white border border-gray-200 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
-                        >
-                          <option value={0}>Tous</option>
-                          <option value={10}>10+ membres</option>
-                          <option value={25}>25+ membres</option>
-                          <option value={50}>50+ membres</option>
-                          <option value={100}>100+ membres</option>
-                        </select>
-                      </div>
-
-                      {/* Clear Filters */}
-                      <div className="flex items-end">
-                        <button
-                          onClick={() => {
-                            setSelectedCity('');
-                            setMinMembers(0);
-                            setSearchQuery('');
-                          }}
-                          className="w-full px-4 py-3 bg-gray-100 text-gray-700 rounded-2xl hover:bg-gray-200 transition-colors"
-                        >
-                          Effacer les filtres
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </Card>
-        </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
 
         {/* Communities Grid/List */}
         <motion.div
@@ -507,6 +510,19 @@ const CommunitiesPage: React.FC = () => {
           )}
         </motion.div>
       </div>
+
+      {/* Filters Modal */}
+      <CommunitiesFiltersModal
+        isOpen={showFiltersModal}
+        onClose={() => setShowFiltersModal(false)}
+        filters={currentFilters}
+        onFilterChange={handleFilterChange}
+        onResetFilters={handleResetFilters}
+        onApplyFilters={handleApplyFilters}
+        activeFiltersCount={activeFiltersCount}
+        filteredCount={filteredCommunities.length}
+        cities={cities}
+      />
     </div>
   );
 };

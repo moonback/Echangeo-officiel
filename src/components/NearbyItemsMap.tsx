@@ -1,28 +1,21 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import mapboxgl from 'mapbox-gl';
 import { 
   MapPin, 
   RefreshCw, 
-  Eye, 
   Users, 
   ArrowLeft, 
-  Filter, 
   X, 
   SlidersHorizontal,
-  Navigation,
   Layers,
-  Grid3X3,
   Zap,
-  Target,
-  TrendingUp,
-  Gift,
-  Handshake,
-  RefreshCcw
+  Grid3X3
 } from 'lucide-react';
 import { useItems } from '../hooks/useItems';
 import { useCommunities, useCommunityItems } from '../hooks/useCommunities';
 import MapboxMap from './MapboxMap';
+import MapFiltersModal from './MapFiltersModal';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import Badge from './ui/Badge';
@@ -40,7 +33,6 @@ interface NearbyItemsMapProps {
   onItemClick?: (itemId: string) => void;
   showCommunities?: boolean;
   onCommunityClick?: (communityId: string) => void;
-  showSidebar?: boolean;
 }
 
 const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
@@ -53,8 +45,7 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
   maxItems,
   onItemClick,
   showCommunities = true,
-  onCommunityClick,
-  showSidebar = true
+  onCommunityClick
 }) => {
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
   const [, setUserLocationInfo] = useState<{ neighborhood: string; city: string } | null>(null);
@@ -63,8 +54,8 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
   const [selectedCommunity, setSelectedCommunity] = useState<Community | null>(null);
   const [viewMode, setViewMode] = useState<'communities' | 'items'>('communities');
   
-  // États pour les filtres de la sidebar
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  // États pour les filtres du modal
+  const [showFiltersModal, setShowFiltersModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedCondition, setSelectedCondition] = useState<string>('');
   const [selectedType, setSelectedType] = useState<OfferType | ''>('');
@@ -349,14 +340,6 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
     setViewMode('communities');
   };
 
-  // Réinitialiser les filtres
-  const resetFilters = () => {
-    setSelectedCategory('');
-    setSelectedCondition('');
-    setSelectedType('');
-    setMaxDistance(10);
-    setShowOnlyWithImages(false);
-  };
 
   // Compter les filtres actifs
   const activeFiltersCount = [
@@ -366,6 +349,53 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
     maxDistance < 10,
     showOnlyWithImages
   ].filter(Boolean).length;
+
+  // Gestion des filtres
+  const handleFilterChange = (key: string, value: string | number | boolean) => {
+    switch (key) {
+      case 'selectedCategory':
+        setSelectedCategory(value as string);
+        break;
+      case 'selectedCondition':
+        setSelectedCondition(value as string);
+        break;
+      case 'selectedType':
+        setSelectedType(value as OfferType | '');
+        break;
+      case 'maxDistance':
+        setMaxDistance(value as number);
+        break;
+      case 'showOnlyWithImages':
+        setShowOnlyWithImages(value as boolean);
+        break;
+      case 'viewMode':
+        setViewMode(value as 'communities' | 'items');
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleResetFilters = () => {
+    setSelectedCategory('');
+    setSelectedCondition('');
+    setSelectedType('');
+    setMaxDistance(10);
+    setShowOnlyWithImages(false);
+  };
+
+  const handleApplyFilters = () => {
+    setShowFiltersModal(false);
+  };
+
+  const currentFilters = {
+    selectedCategory,
+    selectedCondition,
+    selectedType,
+    maxDistance,
+    showOnlyWithImages,
+    viewMode
+  };
 
   // Coordonnées par défaut (Paris)
   const defaultCenter = { lat: 48.8566, lng: 2.3522 };
@@ -384,389 +414,9 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`${className} ${isSidebarOpen ? 'flex' : ''} relative`}
+      className={`${className} relative`}
     >
-      {/* Sidebar des filtres améliorée */}
-      <AnimatePresence>
-      {showSidebar && isSidebarOpen && (
-        <motion.div
-            initial={{ x: -400, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -400, opacity: 0 }}
-            transition={{ 
-              duration: 0.4,
-              ease: [0.4, 0, 0.2, 1]
-            }}
-            className="w-96 bg-gradient-to-br from-white/95 to-gray-50/95 backdrop-blur-xl border-r border-gray-200/60 flex-shrink-0 shadow-2xl"
-          >
-            {/* Header de la sidebar */}
-            <div className="p-6 border-b border-gray-200/50 bg-gradient-to-r from-brand-50/50 to-blue-50/50">
-            <div className="flex items-center justify-between mb-4">
-                <motion.h3 
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="text-xl font-bold text-gray-900 flex items-center gap-3"
-                >
-                  <div className="p-2 bg-gradient-to-r from-brand-500 to-blue-500 rounded-xl shadow-lg">
-                    <Filter size={20} className="text-white" />
-                  </div>
-                  Filtres avancés
-                </motion.h3>
-              <Button
-                onClick={() => setIsSidebarOpen(false)}
-                variant="ghost"
-                size="sm"
-                  className="p-2 hover:bg-red-50 hover:text-red-600 transition-colors"
-              >
-                  <X size={18} />
-              </Button>
-            </div>
-            
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-              >
-            <Button
-              onClick={resetFilters}
-              variant="ghost"
-              size="sm"
-                  className="w-full text-gray-600 hover:text-brand-600 hover:bg-brand-50/50 transition-all"
-                  leftIcon={<Zap size={16} />}
-            >
-                  Réinitialiser tous les filtres
-            </Button>
-              </motion.div>
-          </div>
-
-            {/* Contenu des filtres */}
-            <div className="p-6 space-y-8 overflow-y-auto" style={{ height: 'calc(100vh - 200px)' }}>
-            {viewMode === 'communities' ? (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="space-y-6"
-                >
-                  {/* Filtre de distance avec design amélioré */}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Target size={18} className="text-brand-600" />
-                      <label className="text-sm font-semibold text-gray-700">
-                        Rayon de recherche
-                  </label>
-                    </div>
-                    <div className="bg-gradient-to-r from-brand-50 to-blue-50 rounded-2xl p-4 border border-brand-100">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-lg font-bold text-brand-700">{maxDistance} km</span>
-                        <Badge variant="brand" size="sm">
-                          <Navigation size={12} className="mr-1" />
-                          Rayon
-                        </Badge>
-                      </div>
-                  <input
-                    type="range"
-                    min="1"
-                    max="50"
-                    value={maxDistance}
-                    onChange={(e) => setMaxDistance(Number(e.target.value))}
-                        className="w-full h-2 bg-gradient-to-r from-brand-200 to-blue-200 rounded-lg appearance-none cursor-pointer slider"
-                  />
-                      <div className="flex justify-between text-xs text-gray-500 mt-2">
-                    <span>1km</span>
-                    <span>50km</span>
-                      </div>
-                  </div>
-                </div>
-
-                  {/* Filtre avec photos */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Eye size={18} className="text-brand-600" />
-                      <label className="text-sm font-semibold text-gray-700">
-                        Affichage
-                      </label>
-                    </div>
-                    <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-4 border border-gray-200/50">
-                      <label className="flex items-center gap-3 cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      checked={showOnlyWithImages}
-                      onChange={(e) => setShowOnlyWithImages(e.target.checked)}
-                          className="w-5 h-5 rounded-lg border-2 border-gray-300 text-brand-600 focus:ring-brand-500 focus:ring-2 transition-all"
-                    />
-                        <span className="text-sm font-medium text-gray-700 group-hover:text-brand-700 transition-colors">
-                      Quartiers avec objets seulement
-                    </span>
-                  </label>
-                </div>
-                  </div>
-                </motion.div>
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="space-y-6"
-                >
-                  {/* Filtre par catégorie avec design amélioré */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Grid3X3 size={18} className="text-brand-600" />
-                      <label className="text-sm font-semibold text-gray-700">
-                    Catégorie
-                  </label>
-                    </div>
-                    <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/50 overflow-hidden">
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                        className="w-full p-4 bg-transparent border-none focus:ring-0 focus:outline-none text-gray-700 font-medium"
-                  >
-                    <option value="">Toutes les catégories</option>
-                        <option value="tools">🔨 Outils</option>
-                        <option value="electronics">📱 Électronique</option>
-                        <option value="books">📚 Livres</option>
-                        <option value="sports">⚽ Sport</option>
-                        <option value="kitchen">🍳 Cuisine</option>
-                        <option value="garden">🌱 Jardin</option>
-                        <option value="toys">🧸 Jouets</option>
-                        <option value="fashion">👗 Mode</option>
-                        <option value="furniture">🪑 Meubles</option>
-                        <option value="music">🎵 Musique</option>
-                        <option value="baby">👶 Bébé</option>
-                        <option value="art">🎨 Art</option>
-                        <option value="beauty">💄 Beauté</option>
-                        <option value="auto">🚗 Auto</option>
-                        <option value="office">💼 Bureau</option>
-                        <option value="services">🛠️ Services</option>
-                        <option value="other">📦 Autres</option>
-                  </select>
-                    </div>
-                </div>
-
-                {/* Filtre par condition */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <TrendingUp size={18} className="text-brand-600" />
-                      <label className="text-sm font-semibold text-gray-700">
-                        État de l'objet
-                  </label>
-                    </div>
-                    <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/50 overflow-hidden">
-                  <select
-                    value={selectedCondition}
-                    onChange={(e) => setSelectedCondition(e.target.value)}
-                        className="w-full p-4 bg-transparent border-none focus:ring-0 focus:outline-none text-gray-700 font-medium"
-                  >
-                    <option value="">Tous les états</option>
-                        <option value="new">✨ Neuf</option>
-                        <option value="excellent">⭐ Excellent</option>
-                        <option value="good">👍 Bon</option>
-                        <option value="fair">✅ Correct</option>
-                        <option value="poor">⚠️ Usé</option>
-                  </select>
-                    </div>
-                </div>
-
-                {/* Filtre par distance */}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Target size={18} className="text-brand-600" />
-                      <label className="text-sm font-semibold text-gray-700">
-                        Distance maximale
-                  </label>
-                    </div>
-                    <div className="bg-gradient-to-r from-brand-50 to-blue-50 rounded-2xl p-4 border border-brand-100">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-lg font-bold text-brand-700">{maxDistance} km</span>
-                        <Badge variant="brand" size="sm">
-                          <Navigation size={12} className="mr-1" />
-                          Rayon
-                        </Badge>
-                      </div>
-                  <input
-                    type="range"
-                    min="1"
-                    max="50"
-                    value={maxDistance}
-                    onChange={(e) => setMaxDistance(Number(e.target.value))}
-                        className="w-full h-2 bg-gradient-to-r from-brand-200 to-blue-200 rounded-lg appearance-none cursor-pointer slider"
-                  />
-                      <div className="flex justify-between text-xs text-gray-500 mt-2">
-                    <span>1km</span>
-                    <span>50km</span>
-                      </div>
-                  </div>
-                </div>
-
-                {/* Filtre par type d'offre */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Layers size={18} className="text-brand-600" />
-                      <label className="text-sm font-semibold text-gray-700">
-                    Type d'offre
-                  </label>
-                    </div>
-                    <div className="space-y-2">
-                      {/* Bouton "Tous" */}
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => setSelectedType('')}
-                        className={`w-full flex items-center gap-3 p-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                          !selectedType 
-                            ? 'bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg shadow-gray-500/25' 
-                            : 'bg-white/60 text-gray-700 hover:bg-white/80 border border-gray-200/50'
-                        }`}
-                      >
-                        <span>Tous les types</span>
-                        {!selectedType && (
-                          <motion.div 
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            className="w-2 h-2 bg-white rounded-full ml-auto" 
-                          />
-                        )}
-                      </motion.button>
-                      
-                      {/* Boutons par type d'offre */}
-                      <div className="grid grid-cols-1 gap-2">
-                        <motion.button
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => setSelectedType(selectedType === 'donation' ? '' : 'donation')}
-                          className={`flex items-center gap-3 p-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                            selectedType === 'donation' 
-                              ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg shadow-green-500/25' 
-                              : 'bg-white/60 text-gray-700 hover:bg-white/80 border border-gray-200/50'
-                          }`}
-                        >
-                          <div className={`p-1.5 rounded-lg ${
-                            selectedType === 'donation' 
-                              ? 'bg-white/20' 
-                              : 'bg-gray-100'
-                          }`}>
-                            <Gift size={16} className={
-                              selectedType === 'donation' 
-                                ? 'text-white' 
-                                : 'text-gray-600'
-                            } />
-                          </div>
-                          <div className="flex-1 text-left">
-                            <span className="font-medium">Dons</span>
-                            <p className="text-xs opacity-80">Objets offerts gratuitement</p>
-                          </div>
-                          {selectedType === 'donation' && (
-                            <motion.div 
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="w-2 h-2 bg-white rounded-full" 
-                            />
-                          )}
-                        </motion.button>
-                        
-                        <motion.button
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => setSelectedType(selectedType === 'trade' ? '' : 'trade')}
-                          className={`flex items-center gap-3 p-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                            selectedType === 'trade' 
-                              ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/25' 
-                              : 'bg-white/60 text-gray-700 hover:bg-white/80 border border-gray-200/50'
-                          }`}
-                        >
-                          <div className={`p-1.5 rounded-lg ${
-                            selectedType === 'trade' 
-                              ? 'bg-white/20' 
-                              : 'bg-gray-100'
-                          }`}>
-                            <Handshake size={16} className={
-                              selectedType === 'trade' 
-                                ? 'text-white' 
-                                : 'text-gray-600'
-                            } />
-                          </div>
-                          <div className="flex-1 text-left">
-                            <span className="font-medium">Échanges</span>
-                            <p className="text-xs opacity-80">Échanger contre autre chose</p>
-                          </div>
-                          {selectedType === 'trade' && (
-                            <motion.div 
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="w-2 h-2 bg-white rounded-full" 
-                            />
-                          )}
-                        </motion.button>
-                        
-                        <motion.button
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => setSelectedType(selectedType === 'loan' ? '' : 'loan')}
-                          className={`flex items-center gap-3 p-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                            selectedType === 'loan' 
-                              ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25' 
-                              : 'bg-white/60 text-gray-700 hover:bg-white/80 border border-gray-200/50'
-                          }`}
-                        >
-                          <div className={`p-1.5 rounded-lg ${
-                            selectedType === 'loan' 
-                              ? 'bg-white/20' 
-                              : 'bg-gray-100'
-                          }`}>
-                            <RefreshCcw size={16} className={
-                              selectedType === 'loan' 
-                                ? 'text-white' 
-                                : 'text-gray-600'
-                            } />
-                          </div>
-                          <div className="flex-1 text-left">
-                            <span className="font-medium">Prêts</span>
-                            <p className="text-xs opacity-80">Emprunter temporairement</p>
-                          </div>
-                          {selectedType === 'loan' && (
-                            <motion.div 
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="w-2 h-2 bg-white rounded-full" 
-                            />
-                          )}
-                        </motion.button>
-                      </div>
-                    </div>
-                </div>
-
-                {/* Filtre par images */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Eye size={18} className="text-brand-600" />
-                      <label className="text-sm font-semibold text-gray-700">
-                        Affichage
-                      </label>
-                    </div>
-                    <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-4 border border-gray-200/50">
-                      <label className="flex items-center gap-3 cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      checked={showOnlyWithImages}
-                      onChange={(e) => setShowOnlyWithImages(e.target.checked)}
-                          className="w-5 h-5 rounded-lg border-2 border-gray-300 text-brand-600 focus:ring-brand-500 focus:ring-2 transition-all"
-                    />
-                        <span className="text-sm font-medium text-gray-700 group-hover:text-brand-700 transition-colors">
-                      Avec photos seulement
-                    </span>
-                  </label>
-                </div>
-                  </div>
-                </motion.div>
-            )}
-          </div>
-        </motion.div>
-      )}
-      </AnimatePresence>
-
-      <Card className={`p-0 glass ${className.includes('h-full') ? 'h-full flex flex-col' : ''} ${className.includes('w-full') ? 'w-full' : ''} ${isSidebarOpen ? 'flex-1' : ''}`}>
+      <Card className={`p-0 glass ${className.includes('h-full') ? 'h-full flex flex-col' : ''} ${className.includes('w-full') ? 'w-full' : ''}`}>
         {/* Carte sans header */}
                   
         {/* Carte améliorée */}
@@ -867,30 +517,28 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
                   </Button>
 
                   {/* Bouton de filtres */}
-                  {showSidebar && (
-                    <Button
-                      onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                      variant="ghost"
-                      size="sm"
-                      className={`bg-white/95 backdrop-blur-xl shadow-lg hover:bg-white hover:shadow-xl transition-all border border-gray-200/50 relative ${
-                        activeFiltersCount > 0 
-                          ? 'text-brand-600' 
-                          : 'text-gray-600'
-                      }`}
-                      leftIcon={<SlidersHorizontal size={14} />}
-                    >
-                      Filtres
-                      {activeFiltersCount > 0 && (
-                        <Badge 
-                          variant="brand" 
-                          size="sm"
-                          className="absolute -top-1 -right-1 animate-pulse"
-                        >
-                          {activeFiltersCount}
-                        </Badge>
-                      )}
-                    </Button>
-                  )}
+                  <Button
+                    onClick={() => setShowFiltersModal(true)}
+                    variant="ghost"
+                    size="sm"
+                    className={`bg-white/95 backdrop-blur-xl shadow-lg hover:bg-white hover:shadow-xl transition-all border border-gray-200/50 relative ${
+                      activeFiltersCount > 0 
+                        ? 'text-brand-600' 
+                        : 'text-gray-600'
+                    }`}
+                    leftIcon={<SlidersHorizontal size={14} />}
+                  >
+                    Filtres
+                    {activeFiltersCount > 0 && (
+                      <Badge 
+                        variant="brand" 
+                        size="sm"
+                        className="absolute -top-1 -right-1 animate-pulse"
+                      >
+                        {activeFiltersCount}
+                      </Badge>
+                    )}
+                  </Button>
                 </motion.div>
               )}
             </div>
@@ -1285,6 +933,18 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
           </motion.div>
         )}
       </Card>
+
+      {/* Filters Modal */}
+      <MapFiltersModal
+        isOpen={showFiltersModal}
+        onClose={() => setShowFiltersModal(false)}
+        filters={currentFilters}
+        onFilterChange={handleFilterChange}
+        onResetFilters={handleResetFilters}
+        onApplyFilters={handleApplyFilters}
+        activeFiltersCount={activeFiltersCount}
+        viewMode={viewMode}
+      />
     </motion.div>
   );
 };
