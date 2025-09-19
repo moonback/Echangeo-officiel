@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Filter, RotateCcw } from 'lucide-react';
 import { categories, getCategoryIcon } from '../utils/categories';
 import type { ItemCategory } from '../types';
-import Card from './ui/Card';
 import Button from './ui/Button';
 import Badge from './ui/Badge';
 
@@ -26,7 +25,7 @@ interface FiltersDrawerProps {
   onClose: () => void;
   filters: FilterState;
   activeFiltersCount: number;
-  onFilterChange: (key: keyof FilterState, value: any) => void;
+  onFilterChange: (key: keyof FilterState, value: string | boolean | undefined) => void;
   onResetFilters: () => void;
 }
 
@@ -53,96 +52,182 @@ const FiltersDrawer: React.FC<FiltersDrawerProps> = ({
 
           {/* Drawer */}
           <motion.div
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-xl z-50 lg:hidden overflow-y-auto"
+            initial={{ x: '100%', opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: '100%', opacity: 0 }}
+            transition={{ 
+              type: 'spring', 
+              damping: 30, 
+              stiffness: 300,
+              opacity: { duration: 0.2 }
+            }}
+            className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl z-50 lg:hidden overflow-y-auto border-l border-gray-200"
           >
-            <div className="p-4">
+            <div className="p-6 bg-gradient-to-b from-white to-gray-50 min-h-full">
               {/* Header */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2">
-                  <Filter className="w-5 h-5 text-gray-600" />
-                  <h2 className="text-lg font-semibold text-gray-900">Filtres</h2>
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-brand-100 rounded-lg">
+                    <Filter className="w-5 h-5 text-brand-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Filtres</h2>
+                    <p className="text-sm text-gray-500">Affinez votre recherche</p>
+                  </div>
                   {activeFiltersCount > 0 && (
-                    <Badge variant="brand" size="sm">
-                      {activeFiltersCount}
-                    </Badge>
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.2 }}
+                    >
+                      <Badge variant="brand" size="sm" className="ml-2">
+                        {activeFiltersCount}
+                      </Badge>
+                    </motion.div>
                   )}
                 </div>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                   onClick={onClose}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
                 >
                   <X className="w-5 h-5 text-gray-600" />
-                </button>
-              </div>
+                </motion.button>
+              </motion.div>
 
               {/* Filters Content */}
               <div className="space-y-6">
                 {/* Categories */}
-                <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-3">Catégories</h3>
-                  <div className="space-y-2">
-                    <button
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <div className="w-1 h-4 bg-brand-500 rounded-full"></div>
+                    Catégories
+                  </h3>
+                  <div className="space-y-3">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                       onClick={() => onFilterChange('selectedCategory', undefined)}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
                         !filters.selectedCategory 
-                          ? 'bg-blue-100 text-blue-700' 
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25' 
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm'
                       }`}
                     >
                       <span>Toutes les catégories</span>
                       {!filters.selectedCategory && (
-                        <div className="w-2 h-2 bg-blue-600 rounded-full" />
+                        <motion.div 
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="w-2 h-2 bg-white rounded-full" 
+                        />
                       )}
-                    </button>
-                    {categories.map((category) => {
+                    </motion.button>
+                    {categories.map((category, index) => {
                       const Icon = getCategoryIcon(category.value);
                       return (
-                        <button
+                        <motion.button
                           key={category.value}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.1 + index * 0.05 }}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
                           onClick={() => onFilterChange('selectedCategory', category.value)}
-                          className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
                             filters.selectedCategory === category.value 
-                              ? 'bg-brand-50 text-brand-700' 
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              ? 'bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-lg shadow-brand-500/25' 
+                              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm'
                           }`}
                         >
-                          <div className="flex items-center gap-2">
-                            <Icon size={16} />
+                          <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-lg ${
+                              filters.selectedCategory === category.value 
+                                ? 'bg-white/20' 
+                                : 'bg-gray-100'
+                            }`}>
+                              <Icon size={16} className={
+                                filters.selectedCategory === category.value 
+                                  ? 'text-white' 
+                                  : 'text-gray-600'
+                              } />
+                            </div>
                             <span>{category.label}</span>
                           </div>
                           {filters.selectedCategory === category.value && (
-                            <div className="w-2 h-2 bg-brand-600 rounded-full" />
+                            <motion.div 
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="w-2 h-2 bg-white rounded-full" 
+                            />
                           )}
-                        </button>
+                        </motion.button>
                       );
                     })}
                   </div>
-                </div>
+                </motion.div>
 
                 {/* Favorites */}
-                <div>
-                  <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      checked={filters.favoritesOnly} 
-                      onChange={(e) => onFilterChange('favoritesOnly', e.target.checked)}
-                      className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
-                    />
-                    <span className="text-sm font-medium text-gray-700">Mes favoris uniquement</span>
-                  </label>
-                </div>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <div className="w-1 h-4 bg-brand-500 rounded-full"></div>
+                    Options rapides
+                  </h3>
+                  <motion.label 
+                    whileHover={{ scale: 1.02 }}
+                    className="flex items-center gap-4 p-4 bg-white rounded-xl cursor-pointer border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200"
+                  >
+                    <div className="relative">
+                      <input 
+                        type="checkbox" 
+                        checked={filters.favoritesOnly} 
+                        onChange={(e) => onFilterChange('favoritesOnly', e.target.checked)}
+                        className="w-5 h-5 rounded border-2 border-gray-300 text-brand-600 focus:ring-brand-500 focus:ring-2"
+                      />
+                      {filters.favoritesOnly && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="absolute inset-0 flex items-center justify-center"
+                        >
+                          <div className="w-3 h-3 bg-brand-600 rounded-sm"></div>
+                        </motion.div>
+                      )}
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-700">Mes favoris uniquement</span>
+                      <p className="text-xs text-gray-500">Afficher seulement mes objets favoris</p>
+                    </div>
+                  </motion.label>
+                </motion.div>
 
                 {/* Condition */}
-                <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-3">État</h3>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <div className="w-1 h-4 bg-brand-500 rounded-full"></div>
+                    État de l'objet
+                  </h3>
                   <select 
                     value={filters.condition || ''} 
                     onChange={(e) => onFilterChange('condition', e.target.value || undefined)} 
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white shadow-sm"
                   >
                     <option value="">Tous les états</option>
                     <option value="excellent">Excellent</option>
@@ -150,129 +235,215 @@ const FiltersDrawer: React.FC<FiltersDrawerProps> = ({
                     <option value="fair">Correct</option>
                     <option value="poor">Usé</option>
                   </select>
-                </div>
+                </motion.div>
 
                 {/* Brand */}
-                <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-3">Marque</h3>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <div className="w-1 h-4 bg-brand-500 rounded-full"></div>
+                    Marque
+                  </h3>
                   <input 
                     value={filters.brand} 
                     onChange={(e) => onFilterChange('brand', e.target.value)} 
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500" 
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white shadow-sm" 
                     placeholder="ex: Bosch, Apple..." 
                   />
-                </div>
+                </motion.div>
 
                 {/* Tags */}
-                <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-3">Tags</h3>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <div className="w-1 h-4 bg-brand-500 rounded-full"></div>
+                    Tags
+                  </h3>
                   <input 
                     value={filters.tags} 
                     onChange={(e) => onFilterChange('tags', e.target.value)} 
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500" 
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white shadow-sm" 
                     placeholder="ex: perceuse, 18v..." 
                   />
-                </div>
+                </motion.div>
 
                 {/* Value Range */}
-                <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-3">Valeur estimée</h3>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <div className="w-1 h-4 bg-brand-500 rounded-full"></div>
+                    Valeur estimée
+                  </h3>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">Min (€)</label>
+                      <label className="block text-xs text-gray-500 mb-2 font-medium">Min (€)</label>
                       <input 
                         type="number" 
                         step="0.01" 
                         value={filters.minValue} 
                         onChange={(e) => onFilterChange('minValue', e.target.value)} 
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500" 
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white shadow-sm" 
                         placeholder="0"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">Max (€)</label>
+                      <label className="block text-xs text-gray-500 mb-2 font-medium">Max (€)</label>
                       <input 
                         type="number" 
                         step="0.01" 
                         value={filters.maxValue} 
                         onChange={(e) => onFilterChange('maxValue', e.target.value)} 
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500" 
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white shadow-sm" 
                         placeholder="∞"
                       />
                     </div>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* Availability */}
-                <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-3">Disponibilité</h3>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7 }}
+                >
+                  <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <div className="w-1 h-4 bg-brand-500 rounded-full"></div>
+                    Disponibilité
+                  </h3>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">À partir du</label>
+                      <label className="block text-xs text-gray-500 mb-2 font-medium">À partir du</label>
                       <input 
                         type="date" 
                         value={filters.availableFrom} 
                         onChange={(e) => onFilterChange('availableFrom', e.target.value)} 
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500" 
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white shadow-sm" 
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">Jusqu'au</label>
+                      <label className="block text-xs text-gray-500 mb-2 font-medium">Jusqu'au</label>
                       <input 
                         type="date" 
                         value={filters.availableTo} 
                         onChange={(e) => onFilterChange('availableTo', e.target.value)} 
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500" 
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white shadow-sm" 
                       />
                     </div>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* Options */}
-                <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-3">Options</h3>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.8 }}
+                >
+                  <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <div className="w-1 h-4 bg-brand-500 rounded-full"></div>
+                    Options avancées
+                  </h3>
                   <div className="space-y-3">
-                    <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={filters.hasImages} 
-                        onChange={(e) => onFilterChange('hasImages', e.target.checked)}
-                        className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
-                      />
-                      <span className="text-sm font-medium text-gray-700">Avec photos uniquement</span>
-                    </label>
-                    <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={filters.isAvailable} 
-                        onChange={(e) => onFilterChange('isAvailable', e.target.checked)}
-                        className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
-                      />
-                      <span className="text-sm font-medium text-gray-700">Disponibles uniquement</span>
-                    </label>
+                    <motion.label 
+                      whileHover={{ scale: 1.02 }}
+                      className="flex items-center gap-4 p-4 bg-white rounded-xl cursor-pointer border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200"
+                    >
+                      <div className="relative">
+                        <input 
+                          type="checkbox" 
+                          checked={filters.hasImages} 
+                          onChange={(e) => onFilterChange('hasImages', e.target.checked)}
+                          className="w-5 h-5 rounded border-2 border-gray-300 text-brand-600 focus:ring-brand-500 focus:ring-2"
+                        />
+                        {filters.hasImages && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="absolute inset-0 flex items-center justify-center"
+                          >
+                            <div className="w-3 h-3 bg-brand-600 rounded-sm"></div>
+                          </motion.div>
+                        )}
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-gray-700">Avec photos uniquement</span>
+                        <p className="text-xs text-gray-500">Filtrer les objets avec des images</p>
+                      </div>
+                    </motion.label>
+                    <motion.label 
+                      whileHover={{ scale: 1.02 }}
+                      className="flex items-center gap-4 p-4 bg-white rounded-xl cursor-pointer border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200"
+                    >
+                      <div className="relative">
+                        <input 
+                          type="checkbox" 
+                          checked={filters.isAvailable} 
+                          onChange={(e) => onFilterChange('isAvailable', e.target.checked)}
+                          className="w-5 h-5 rounded border-2 border-gray-300 text-brand-600 focus:ring-brand-500 focus:ring-2"
+                        />
+                        {filters.isAvailable && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="absolute inset-0 flex items-center justify-center"
+                          >
+                            <div className="w-3 h-3 bg-brand-600 rounded-sm"></div>
+                          </motion.div>
+                        )}
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-gray-700">Disponibles uniquement</span>
+                        <p className="text-xs text-gray-500">Filtrer les objets disponibles</p>
+                      </div>
+                    </motion.label>
                   </div>
-                </div>
+                </motion.div>
               </div>
 
               {/* Footer */}
-              <div className="mt-8 pt-6 border-t border-gray-200">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.9 }}
+                className="mt-8 pt-6 border-t border-gray-200"
+              >
                 <div className="flex gap-3">
-                  <Button
-                    onClick={onResetFilters}
-                    variant="ghost"
-                    className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <RotateCcw className="w-4 h-4 mr-2" />
-                    Réinitialiser
-                  </Button>
-                  <Button
-                    onClick={onClose}
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     className="flex-1"
                   >
-                    Appliquer
-                  </Button>
+                    <Button
+                      onClick={onResetFilters}
+                      variant="ghost"
+                      className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200"
+                    >
+                      <RotateCcw className="w-4 h-4 mr-2" />
+                      Réinitialiser
+                    </Button>
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex-1"
+                  >
+                    <Button
+                      onClick={onClose}
+                      className="w-full bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 shadow-lg shadow-brand-500/25"
+                    >
+                      Appliquer les filtres
+                    </Button>
+                  </motion.div>
                 </div>
-              </div>
+              </motion.div>
             </div>
           </motion.div>
         </>

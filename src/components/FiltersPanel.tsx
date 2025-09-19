@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, Filter } from 'lucide-react';
 import { categories, getCategoryIcon } from '../utils/categories';
 import type { ItemCategory } from '../types';
 import Card from './ui/Card';
@@ -24,7 +24,7 @@ interface FilterState {
 interface FiltersPanelProps {
   filters: FilterState;
   activeFiltersCount: number;
-  onFilterChange: (key: keyof FilterState, value: any) => void;
+  onFilterChange: (key: keyof FilterState, value: string | boolean | undefined) => void;
   onResetFilters: () => void;
 }
 
@@ -42,27 +42,48 @@ const FiltersPanel: React.FC<FiltersPanelProps> = ({
       className="overflow-hidden mb-6"
     >
       <Card className="p-6 space-y-6 glass">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h3 className="text-lg font-semibold text-gray-900">Filtres avancés</h3>
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-between"
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-brand-100 rounded-lg">
+              <Filter className="w-5 h-5 text-brand-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">Filtres avancés</h3>
+              <p className="text-sm text-gray-500">Affinez votre recherche</p>
+            </div>
             {activeFiltersCount > 0 && (
-              <Badge variant="brand" size="sm">
-                {activeFiltersCount} actif{activeFiltersCount > 1 ? 's' : ''}
-              </Badge>
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                <Badge variant="brand" size="sm">
+                  {activeFiltersCount} actif{activeFiltersCount > 1 ? 's' : ''}
+                </Badge>
+              </motion.div>
             )}
           </div>
           {activeFiltersCount > 0 && (
-            <Button
-              onClick={onResetFilters}
-              variant="ghost"
-              size="sm"
-              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <RotateCcw className="w-4 h-4 mr-2" />
-              Réinitialiser
-            </Button>
+              <Button
+                onClick={onResetFilters}
+                variant="ghost"
+                size="sm"
+                className="text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200"
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Réinitialiser
+              </Button>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {/* Categories */}
