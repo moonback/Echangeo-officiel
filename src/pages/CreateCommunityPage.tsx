@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, MapPin, Sparkles, CheckCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Sparkles, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { useCreateCommunity } from '../hooks/useCommunities';
 import { supabase } from '../services/supabase';
 import Button from '../components/ui/Button';
@@ -44,6 +44,7 @@ const CreateCommunityPage: React.FC = () => {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors, isSubmitting }
   } = useForm<CreateCommunityForm>({
     resolver: zodResolver(createCommunitySchema),
@@ -298,7 +299,7 @@ const CreateCommunityPage: React.FC = () => {
           <div className="flex gap-3 mb-4">
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               onClick={handleOpenNeighborhoodModal}
               disabled={isLocating}
               className="flex items-center gap-2"
@@ -308,7 +309,7 @@ const CreateCommunityPage: React.FC = () => {
             </Button>
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               onClick={getCurrentLocation}
               disabled={isLocating}
               className="flex items-center gap-2"
@@ -439,7 +440,7 @@ const CreateCommunityPage: React.FC = () => {
         <div className="flex items-center justify-end gap-3">
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             onClick={() => navigate(-1)}
           >
             Annuler
@@ -466,6 +467,7 @@ const CreateCommunityPage: React.FC = () => {
         onSelectNeighborhood={handleSelectNeighborhood}
         onSuggestionsFound={handleSuggestionsFound}
         existingCommunities={[]}
+        userLocation={undefined}
         searchInput={detectedAddress}
       />
     </div>

@@ -137,6 +137,7 @@ const Topbar: React.FC = () => {
   const mainNavLinks = useMemo(() => [
     { to: '/items', label: 'Objets' },
     { to: '/communities', label: 'Quartiers' },
+    { to: '/neighbours', label: 'Voisins' },
   ], []);
 
   const UserMenu = () => (
@@ -228,6 +229,7 @@ const Topbar: React.FC = () => {
             <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
                 <MobileNavItem to="/items" icon={Search} label="Objets" />
                 <MobileNavItem to="/communities" icon={Users} label="Quartiers" />
+                <MobileNavItem to="/neighbours" icon={Users} label="Voisins" />
                 <MobileNavItem to="/messages" icon={MessageCircle} label="Messages" />
                 <MobileNavItem to="/requests" icon={CheckCircle} label="Échanges" />
                 <MobileNavItem to="/me" icon={User} label="Mon Profil" />

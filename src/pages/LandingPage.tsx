@@ -457,6 +457,7 @@ const LandingPage: React.FC = () => {
               <ul className="space-y-3">
                 <li><Link to="/items" className="text-gray-400 hover:text-white transition-colors">Objets</Link></li>
                 <li><Link to="/communities" className="text-gray-400 hover:text-white transition-colors">Quartiers</Link></li>
+                <li><Link to="/neighbours" className="text-gray-400 hover:text-white transition-colors">Voisins</Link></li>
                 <li><Link to="/messages" className="text-gray-400 hover:text-white transition-colors">Messages</Link></li>
                 <li><Link to="/help" className="text-gray-400 hover:text-white transition-colors">Aide</Link></li>
               </ul>
