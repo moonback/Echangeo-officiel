@@ -1,27 +1,21 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Sparkles, 
   Wand2, 
   X, 
-  Send,
   Brain,
   Heart,
   Meh,
-  Frown,
-  ChevronDown,
-  ChevronUp
+  Frown
 } from 'lucide-react';
-import { useChatSuggestions, useChatAnalysis, useMessageImprovement } from '../hooks/useChatAI';
+import { useChatAnalysis, useMessageImprovement } from '../hooks/useChatAI';
 import type { Message } from '../types';
-import type { ChatAISuggestion } from '../services/chatAI';
 import Button from './ui/Button';
 import Card from './ui/Card';
-import Badge from './ui/Badge';
 
 interface ChatAIAssistantProps {
   messages: Message[];
-  onSuggestionSelect: (suggestion: string) => void;
+  onSuggestionSelect?: (suggestion: string) => void; // Optionnel maintenant
   context?: {
     itemTitle?: string;
     itemCategory?: string;
@@ -46,21 +40,14 @@ const SentimentIcon: React.FC<{ sentiment: 'positive' | 'neutral' | 'negative' }
 
 const ChatAIAssistant: React.FC<ChatAIAssistantProps> = ({
   messages,
-  onSuggestionSelect,
   context,
   currentMessage = '',
   onMessageImprove,
   className = '',
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
   
-  const { 
-    suggestions, 
-    isLoading: suggestionsLoading, 
-    generateSuggestions, 
-    clearSuggestions 
-  } = useChatSuggestions();
+  // Suggestions IA désactivées - garder seulement l'analyse et l'amélioration
   
   const { 
     analysis, 
@@ -73,14 +60,7 @@ const ChatAIAssistant: React.FC<ChatAIAssistantProps> = ({
     isImproving 
   } = useMessageImprovement();
 
-  const handleGenerateSuggestions = async () => {
-    try {
-      await generateSuggestions({ messages, context });
-      setIsExpanded(true);
-    } catch (error) {
-      console.error('Erreur génération suggestions:', error);
-    }
-  };
+  // Fonction de génération de suggestions désactivée
 
   const handleAnalyzeConversation = async () => {
     try {
@@ -105,31 +85,7 @@ const ChatAIAssistant: React.FC<ChatAIAssistantProps> = ({
     }
   };
 
-  const getSuggestionIcon = (type: ChatAISuggestion['type']) => {
-    switch (type) {
-      case 'question':
-        return '❓';
-      case 'polite':
-        return '🤝';
-      case 'practical':
-        return '⚡';
-      default:
-        return '💬';
-    }
-  };
-
-  const getSuggestionColor = (type: ChatAISuggestion['type']) => {
-    switch (type) {
-      case 'question':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
-      case 'polite':
-        return 'bg-green-50 text-green-700 border-green-200';
-      case 'practical':
-        return 'bg-orange-50 text-orange-700 border-orange-200';
-      default:
-        return 'bg-gray-50 text-gray-700 border-gray-200';
-    }
-  };
+  // Fonctions de suggestions désactivées
 
   if (!import.meta.env.VITE_GEMINI_API_KEY) {
     return null; // Ne pas afficher si pas d'API configurée
@@ -137,19 +93,8 @@ const ChatAIAssistant: React.FC<ChatAIAssistantProps> = ({
 
   return (
     <div className={`space-y-3 ${className}`}>
-      {/* Boutons d'action principaux */}
+      {/* Boutons d'action principaux - Suggestions IA retirées */}
       <div className="flex flex-wrap gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleGenerateSuggestions}
-          disabled={suggestionsLoading || messages.length === 0}
-          leftIcon={<Sparkles size={14} />}
-          className="border border-purple-200 text-purple-700 hover:bg-purple-50"
-        >
-          {suggestionsLoading ? 'Génération...' : 'Suggestions IA'}
-        </Button>
-
         <Button
           variant="ghost"
           size="sm"
@@ -216,103 +161,7 @@ const ChatAIAssistant: React.FC<ChatAIAssistantProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Suggestions de réponse */}
-      <AnimatePresence>
-        {suggestions.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Card className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-purple-600" />
-                  <span className="text-sm font-medium text-gray-900">Suggestions de réponse</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setIsExpanded(!isExpanded)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                  </button>
-                  <button
-                    onClick={clearSuggestions}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              </div>
-
-              <AnimatePresence>
-                {isExpanded && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="space-y-2"
-                  >
-                    {suggestions.map((suggestion, index) => (
-                      <motion.button
-                        key={suggestion.id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        onClick={() => onSuggestionSelect(suggestion.text)}
-                        className={`w-full text-left p-3 rounded-xl border transition-all hover:scale-[1.02] hover:shadow-md ${getSuggestionColor(suggestion.type)}`}
-                      >
-                        <div className="flex items-start gap-2">
-                          <span className="text-lg">{getSuggestionIcon(suggestion.type)}</span>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium">{suggestion.text}</p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <Badge 
-                                size="sm" 
-                                className="text-xs opacity-75"
-                              >
-                                {suggestion.type}
-                              </Badge>
-                              <span className="text-xs opacity-60">
-                                {Math.round(suggestion.confidence * 100)}% confiance
-                              </span>
-                            </div>
-                          </div>
-                          <Send className="w-4 h-4 opacity-40" />
-                        </div>
-                      </motion.button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {!isExpanded && suggestions.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {suggestions.slice(0, 2).map((suggestion) => (
-                    <button
-                      key={suggestion.id}
-                      onClick={() => onSuggestionSelect(suggestion.text)}
-                      className="px-3 py-1.5 bg-purple-50 text-purple-700 rounded-full text-xs font-medium border border-purple-200 hover:bg-purple-100 transition-colors"
-                    >
-                      {getSuggestionIcon(suggestion.type)} {suggestion.text}
-                    </button>
-                  ))}
-                  {suggestions.length > 2 && (
-                    <button
-                      onClick={() => setIsExpanded(true)}
-                      className="px-3 py-1.5 bg-gray-50 text-gray-600 rounded-full text-xs font-medium border border-gray-200 hover:bg-gray-100 transition-colors"
-                    >
-                      +{suggestions.length - 2} autres
-                    </button>
-                  )}
-                </div>
-              )}
-            </Card>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Section des suggestions IA retirée */}
     </div>
   );
 };

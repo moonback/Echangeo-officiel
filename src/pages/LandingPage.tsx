@@ -330,7 +330,7 @@ const LandingPage: React.FC = () => {
             </motion.p>
           </div>
 
-          <div className="relative max-w-4xl mx-auto">
+          <div className="relative max-w-12xl mx-auto">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentTestimonial}

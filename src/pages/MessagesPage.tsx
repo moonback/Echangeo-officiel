@@ -5,7 +5,6 @@ import {
   MessageCircle, 
   Search, 
   Filter, 
-  MoreVertical, 
   User, 
   Clock,
   CheckCircle,
@@ -32,6 +31,24 @@ interface Conversation {
   };
   unread_count: number;
   updated_at: string;
+}
+
+interface MessageData {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  content: string;
+  created_at: string;
+  sender?: {
+    id: string;
+    full_name: string;
+    avatar_url?: string;
+  };
+  receiver?: {
+    id: string;
+    full_name: string;
+    avatar_url?: string;
+  };
 }
 
 const MessagesPage: React.FC = () => {
@@ -84,7 +101,7 @@ const MessagesPage: React.FC = () => {
         // Grouper les messages par conversation
         const conversationMap = new Map<string, Conversation>();
 
-        data?.forEach((message) => {
+        (data as MessageData[])?.forEach((message) => {
           const otherUserId = message.sender_id === user.id ? message.receiver_id : message.sender_id;
           const otherUser = message.sender_id === user.id ? message.receiver : message.sender;
           
@@ -186,7 +203,7 @@ const MessagesPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="p-4 max-w-4xl mx-auto">
+      <div className="p-4 max-w-12xl mx-auto">
         <div className="animate-pulse space-y-4">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="bg-gray-200 rounded-xl h-20"></div>
@@ -197,7 +214,7 @@ const MessagesPage: React.FC = () => {
   }
 
   return (
-    <div className="p-4 max-w-4xl mx-auto">
+    <div className="p-4 max-w-12xl mx-auto">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
