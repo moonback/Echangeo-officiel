@@ -395,16 +395,7 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
         `;
         el.innerHTML = createMarkerContent(marker);
         
-        // Ajouter les événements d'interaction simples
-        el.addEventListener('mouseenter', () => {
-          el.style.transform = 'scale(1.15) translateZ(0)';
-          el.style.zIndex = '1000';
-        });
-
-        el.addEventListener('mouseleave', () => {
-          el.style.transform = 'scale(1) translateZ(0)';
-          el.style.zIndex = 'auto';
-        });
+        // Pas d'interaction au survol, seulement au clic
 
         el.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -559,19 +550,8 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
           /* Styles de popup supprimés */
 
           .enhanced-marker {
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            will-change: transform;
             position: relative;
             z-index: 1;
-          }
-
-          .enhanced-marker:hover {
-            transform: scale(1.15) translateZ(0) !important;
-            z-index: 1000 !important;
-          }
-
-          .enhanced-marker:active {
-            transform: scale(0.95) translateZ(0) !important;
           }
 
           /* Assurer que les marqueurs restent visibles et bien positionnés */
@@ -585,9 +565,7 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
             transform-origin: center !important;
           }
 
-          .marker:hover {
-            z-index: 1000 !important;
-          }
+          /* Pas d'interaction au survol */
 
           /* Corriger le positionnement des marqueurs Mapbox */
           .mapboxgl-marker {
