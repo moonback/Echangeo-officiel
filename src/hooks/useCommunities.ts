@@ -18,11 +18,11 @@ import type {
 /**
  * Hook pour récupérer toutes les communautés actives
  */
-export function useCommunities() {
+export function useCommunities(limit?: number) {
   return useQuery({
-    queryKey: ['communities'],
+    queryKey: ['communities', limit],
     queryFn: async (): Promise<CommunityOverview[]> => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('communities')
         .select(`
           *,
@@ -31,10 +31,18 @@ export function useCommunities() {
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
+      // Limiter les résultats pour la performance
+      if (limit) {
+        query = query.limit(limit);
+      }
+
+      const { data, error } = await query;
+
       if (error) throw error;
       return data || [];
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 10, // 10 minutes de cache
+    gcTime: 1000 * 60 * 20, // 20 minutes de garbage collection
   });
 }
 
