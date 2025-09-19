@@ -9,6 +9,7 @@ interface NeighborhoodSelectionModalProps {
   onSelectNeighborhood: (neighborhood: NeighborhoodSuggestion) => void;
   onSuggestionsFound?: (suggestions: NeighborhoodSuggestion[]) => void; // Callback pour stocker toutes les suggestions
   existingCommunities: Community[];
+  userLocation?: { lat: number; lng: number };
   searchInput?: string; // Entrée de recherche pré-remplie
 }
 
@@ -18,6 +19,7 @@ const NeighborhoodSelectionModal: React.FC<NeighborhoodSelectionModalProps> = ({
   onSelectNeighborhood,
   onSuggestionsFound,
   existingCommunities,
+  userLocation,
   searchInput = ''
 }) => {
   const [inputValue, setInputValue] = useState(searchInput);
@@ -45,7 +47,7 @@ const NeighborhoodSelectionModal: React.FC<NeighborhoodSelectionModalProps> = ({
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [isOpen, searchInput]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isOpen, searchInput]);
 
   const handleSearch = async () => {
     if (!inputValue.trim()) {
@@ -70,10 +72,9 @@ const NeighborhoodSelectionModal: React.FC<NeighborhoodSelectionModalProps> = ({
           onSuggestionsFound(uniqueSuggestions);
         }
       }
-    } catch (err: unknown) {
+    } catch (err: any) {
       console.error('Erreur lors de la recherche de quartiers:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la recherche de quartiers';
-      setError(errorMessage);
+      setError(err.message || 'Erreur lors de la recherche de quartiers');
     } finally {
       setIsLoading(false);
     }
@@ -100,9 +101,9 @@ const NeighborhoodSelectionModal: React.FC<NeighborhoodSelectionModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <MapPin className="w-6 h-6 text-blue-600" />
             <h2 className="text-xl font-semibold text-gray-900">
@@ -117,8 +118,8 @@ const NeighborhoodSelectionModal: React.FC<NeighborhoodSelectionModalProps> = ({
           </button>
         </div>
 
-        {/* Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        {/* Content */}
+        <div className="p-6 space-y-6">
           {/* Search Section */}
           <div className="space-y-4">
             <div>
@@ -198,7 +199,7 @@ const NeighborhoodSelectionModal: React.FC<NeighborhoodSelectionModalProps> = ({
               <h3 className="text-lg font-medium text-gray-900">
                 Quartiers suggérés ({suggestions.length})
               </h3>
-              <div className="space-y-3">
+              <div className="space-y-3 max-h-60 overflow-y-auto">
                 {suggestions.map((suggestion, index) => (
                   <div
                     key={index}
@@ -264,8 +265,8 @@ const NeighborhoodSelectionModal: React.FC<NeighborhoodSelectionModalProps> = ({
           )}
         </div>
 
-        {/* Footer - Always visible */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50 flex-shrink-0">
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
           <button
             onClick={onClose}
             className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"

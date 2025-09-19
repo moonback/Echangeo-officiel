@@ -50,7 +50,7 @@ const AIFeaturesPage: React.FC = () => {
         'Réponses rapides',
         'Communication optimisée'
       ],
-      demoUrl: '/communities',
+      demoUrl: '/neighbours',
     },
     {
       id: 'conflict-mediation',
