@@ -783,7 +783,7 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
         mapRef.current = null;
       }
     };
-  }, [accessToken, center.lat, center.lng, zoom]);
+  }, [accessToken, center.lat, center.lng, zoom, enableClustering, updateMarkers]);
 
   // Mise à jour optimisée des marqueurs basée sur le hash (optimisation majeure)
   useEffect(() => {
