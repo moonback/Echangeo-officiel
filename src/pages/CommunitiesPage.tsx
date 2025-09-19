@@ -2,8 +2,8 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { 
-  Search, Plus, Users, TrendingUp, MapPin, Calendar, 
-  Filter, Grid, List, Star, Shield, Zap, Heart, RefreshCw
+  Search, Plus, Users, TrendingUp, MapPin, 
+  Filter, Grid, List, RefreshCw
 } from 'lucide-react';
 import { useCommunities } from '../hooks/useCommunities';
 import CommunityCard from '../components/CommunityCard';
@@ -11,11 +11,9 @@ import CommunitiesFiltersModal from '../components/CommunitiesFiltersModal';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import EmptyState from '../components/EmptyState';
-import { useAppStats } from '../hooks/useStats';
 
 const CommunitiesPage: React.FC = () => {
   const { data: communities, isLoading } = useCommunities();
-  const { data: appStats } = useAppStats();
   const [searchQuery, setSearchQuery] = React.useState('');
   const [sortBy, setSortBy] = React.useState<'members' | 'activity' | 'name' | 'distance'>('members');
   const [viewMode, setViewMode] = React.useState<'grid' | 'list'>('grid');
@@ -86,22 +84,22 @@ const CommunitiesPage: React.FC = () => {
   }, [searchQuery, selectedCity, minMembers]);
 
   // Gestion des filtres
-  const handleFilterChange = (key: string, value: any) => {
+  const handleFilterChange = (key: string, value: string | number) => {
     switch (key) {
       case 'search':
-        setSearchQuery(value);
+        setSearchQuery(value as string);
         break;
       case 'sortBy':
-        setSortBy(value);
+        setSortBy(value as 'members' | 'activity' | 'name' | 'distance');
         break;
       case 'viewMode':
-        setViewMode(value);
+        setViewMode(value as 'grid' | 'list');
         break;
       case 'selectedCity':
-        setSelectedCity(value);
+        setSelectedCity(value as string);
         break;
       case 'minMembers':
-        setMinMembers(value);
+        setMinMembers(value as number);
         break;
       default:
         break;
@@ -216,7 +214,7 @@ const CommunitiesPage: React.FC = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.5 }}
-            className="sticky top-16 z-10 bg-gray-50/80 backdrop-blur-sm border-b border-gray-200/50 -mx-4 px-4 py-6 mb-8"
+            className="sticky top-16 z-10 bg-gray-50/80 backdrop-blur-sm border-b border-gray-200/50 -mx-4 px-4 mb-8"
           >
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div>
@@ -244,59 +242,6 @@ const CommunitiesPage: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* Stats Overview */}
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="mb-8"
-          >
-            <Card className="p-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div className="text-center group">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-200">
-                    <Users className="w-6 h-6 text-white" />
-                  </div>
-                  <span className="text-2xl font-bold text-gray-900 block">
-                    {communities?.length || 0}
-                  </span>
-                  <span className="text-sm text-gray-600">Quartiers actifs</span>
-                  {appStats && (
-                    <div className="text-xs text-gray-500 mt-1">
-                      {appStats.totalCommunities} total
-                    </div>
-                  )}
-                </div>
-                <div className="text-center group">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-200">
-                    <Heart className="w-6 h-6 text-white" />
-                  </div>
-                  <span className="text-2xl font-bold text-gray-900 block">
-                    {communities?.reduce((sum, c) => sum + (c.stats?.total_members || 0), 0) || 0}
-                  </span>
-                  <span className="text-sm text-gray-600">Membres total</span>
-                </div>
-                <div className="text-center group">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-200">
-                    <Zap className="w-6 h-6 text-white" />
-                  </div>
-                  <span className="text-2xl font-bold text-gray-900 block">
-                    {communities?.reduce((sum, c) => sum + (c.stats?.total_exchanges || 0), 0) || 0}
-                  </span>
-                  <span className="text-sm text-gray-600">Échanges réalisés</span>
-                </div>
-                <div className="text-center group">
-                  <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-200">
-                    <Calendar className="w-6 h-6 text-white" />
-                  </div>
-                  <span className="text-2xl font-bold text-gray-900 block">
-                    {communities?.reduce((sum, c) => sum + (c.stats?.total_events || 0), 0) || 0}
-                  </span>
-                  <span className="text-sm text-gray-600">Événements</span>
-                </div>
-              </div>
-            </Card>
-          </motion.div>
 
           {/* Compact Header */}
           <motion.div 

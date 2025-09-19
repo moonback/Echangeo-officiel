@@ -26,7 +26,7 @@ const Shell: React.FC<ShellProps> = ({ children }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.22, ease: 'easeOut' }}
-            className="max-w-12xl mx-auto px-4 py-6"
+            className="max-w-12xl mx-auto px-4"
           >
             {children}
           </motion.div>

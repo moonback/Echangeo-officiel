@@ -10,16 +10,12 @@ import FiltersModal from '../components/FiltersModal';
 import EmptyStateEnhanced from '../components/EmptyStateEnhanced';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
-import { useAppStats } from '../hooks/useStats';
 
 const ItemsPage: React.FC = () => {
   const [showSearch, setShowSearch] = React.useState(false);
   
   // Géolocalisation de l'utilisateur
   const { userLocation, getCurrentLocation } = useGeolocation();
-  
-  // Statistiques de l'application
-  const { data: appStats } = useAppStats();
   
   const {
     filters,
@@ -104,13 +100,6 @@ const ItemsPage: React.FC = () => {
     }
   };
 
-  // Formater les nombres
-  const formatNumber = (num: number) => {
-    if (num >= 1000) {
-      return (num / 1000).toFixed(1) + 'K';
-    }
-    return num.toString();
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -306,61 +295,6 @@ const ItemsPage: React.FC = () => {
                 </span>
               )}
             </div>
-          </motion.div>
-          {/* Stats Overview */}
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="mb-8"
-          >
-            <Card className="p-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div className="text-center group">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-200">
-                    <Image className="w-6 h-6 text-white" />
-                  </div>
-                  <span className="text-2xl font-bold text-gray-900 block">
-                    {formatNumber(sortedItems?.length || 0)}
-                  </span>
-                  <span className="text-sm text-gray-600">Objets disponibles</span>
-                  {appStats && (
-                    <div className="text-xs text-gray-500 mt-1">
-                      {formatNumber(appStats.totalItems)} total
-                    </div>
-                  )}
-                </div>
-                <div className="text-center group">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-200">
-                    <MapPin className="w-6 h-6 text-white" />
-                  </div>
-                  <span className="text-2xl font-bold text-gray-900 block">
-                    {sortedItems?.filter(item => item.latitude && item.longitude).length || 0}
-                  </span>
-                  <span className="text-sm text-gray-600">Avec localisation</span>
-                </div>
-                <div className="text-center group">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-200">
-                    <Image className="w-6 h-6 text-white" />
-                  </div>
-                  <span className="text-2xl font-bold text-gray-900 block">
-                    {sortedItems?.filter(item => item.images && item.images.length > 0).length || 0}
-                  </span>
-                  <span className="text-sm text-gray-600">Avec photos</span>
-                </div>
-                <div className="text-center group">
-                  <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-200">
-                    <TrendingUp className="w-6 h-6 text-white" />
-                  </div>
-                  <span className="text-2xl font-bold text-gray-900 block">
-                    {filters.offerType === 'donation' ? 'Dons' : 
-                     filters.offerType === 'trade' ? 'Échanges' : 
-                     filters.offerType === 'loan' ? 'Prêts' : 'Tous'}
-                  </span>
-                  <span className="text-sm text-gray-600">Type d'offre</span>
-                </div>
-              </div>
-            </Card>
           </motion.div>
 
           {/* Filters */}

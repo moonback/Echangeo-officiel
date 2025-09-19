@@ -343,22 +343,37 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
 
   // Gérer le survol des marqueurs
   const handleMarkerHover = (id: string, position: { x: number; y: number }) => {
-    if (id.startsWith('community-')) {
-      const communityId = id.replace('community-', '');
-      const community = communities?.find(c => c.id === communityId);
-      if (community) {
-        setHoveredCommunity(community);
-        setHoveredItem(null);
-        setPopupPosition(position);
+    // D'abord, effacer tous les popups existants
+    setHoveredItem(null);
+    setHoveredCommunity(null);
+    setPopupPosition(null);
+    
+    // Petit délai pour éviter les conflits
+    setTimeout(() => {
+      if (id.startsWith('community-')) {
+        const communityId = id.replace('community-', '');
+        const community = communities?.find(c => c.id === communityId);
+        if (community) {
+          setHoveredCommunity(community);
+          setPopupPosition(position);
+        }
+      } else {
+        const item = filteredItems.find(i => i.id === id);
+        if (item) {
+          setHoveredItem(item);
+          setPopupPosition(position);
+          
+          // Centrer la carte sur l'item survolé
+          if (item.latitude && item.longitude && mapRef.current) {
+            mapRef.current.flyTo({
+              center: [item.longitude, item.latitude],
+              zoom: Math.max(mapRef.current.getZoom(), 14), // Zoom minimum de 14
+              duration: 800 // Animation de 800ms
+            });
+          }
+        }
       }
-    } else {
-      const item = filteredItems.find(i => i.id === id);
-      if (item) {
-        setHoveredItem(item);
-        setHoveredCommunity(null);
-        setPopupPosition(position);
-      }
-    }
+    }, 10);
   };
 
   // Gérer la fin du survol
@@ -971,13 +986,13 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
       </Card>
 
       {/* Popups au survol */}
-      {hoveredItem && popupPosition && (
+      {hoveredItem && popupPosition && !hoveredCommunity && (
         <div 
-          className="fixed pointer-events-none z-50"
+          className="fixed z-50"
           style={{
             left: popupPosition.x,
             top: popupPosition.y,
-            transform: 'translate(-50%, -100%)'
+            transform: 'translate(0, -50%)' // Centré verticalement
           }}
         >
           <MapMarkerPopup
@@ -989,9 +1004,9 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
         </div>
       )}
 
-      {hoveredCommunity && popupPosition && (
+      {hoveredCommunity && popupPosition && !hoveredItem && (
         <div 
-          className="fixed pointer-events-none z-50"
+          className="fixed z-50"
           style={{
             left: popupPosition.x,
             top: popupPosition.y,

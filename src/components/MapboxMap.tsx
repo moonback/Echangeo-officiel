@@ -81,146 +81,7 @@ function createMarkerContent(marker: MapboxMarker): string {
               inset 0 -1px 0 rgba(0, 0, 0, 0.1);
             cursor: pointer;
           "
-          onmouseover="
-            this.nextElementSibling.style.opacity='1';
-            this.nextElementSibling.style.visibility='visible';
-          "
-          onmouseout="
-            this.nextElementSibling.style.opacity='0';
-            this.nextElementSibling.style.visibility='hidden';
-          "
         />
-        <!-- Popup avec image agrandie -->
-        <div style="
-          position: absolute;
-          bottom: 100%;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 200px;
-          background: white;
-          border-radius: 12px;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-          border: 1px solid #e5e7eb;
-          opacity: 0;
-          visibility: hidden;
-          transition: all 0.3s ease;
-          z-index: 1000;
-          margin-bottom: 12px;
-          padding: 0;
-          overflow: hidden;
-        ">
-          <!-- Image agrandie du produit -->
-          <div style="
-            width: 100%;
-            height: 120px;
-            background: #f8fafc;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-          ">
-            <img 
-              src="${marker.imageUrl}" 
-              alt="${marker.title || 'Produit'}"
-              style="
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                border-radius: 0;
-              "
-            />
-          </div>
-          
-          <!-- Contenu du popup -->
-          <div style="padding: 12px;">
-            <!-- Titre du produit -->
-            <div style="
-              font-size: 14px;
-              font-weight: 600;
-              color: #374151;
-              text-align: center;
-              line-height: 1.3;
-              margin-bottom: 8px;
-            ">
-              ${marker.title || 'Produit'}
-            </div>
-            
-            <!-- Badge type d'offre -->
-            ${marker.offerType ? `
-              <div style="
-                text-align: center;
-                margin-bottom: 8px;
-              ">
-                ${marker.offerType === 'loan' ? `
-                  <span style="
-                    background: linear-gradient(135deg, #3B82F6, #1D4ED8);
-                    color: white;
-                    padding: 4px 12px;
-                    border-radius: 20px;
-                    font-size: 11px;
-                    font-weight: 600;
-                    display: inline-block;
-                  ">
-                    🔄 Prêt
-                  </span>
-                ` : marker.offerType === 'donation' ? `
-                  <span style="
-                    background: linear-gradient(135deg, #10B981, #059669);
-                    color: white;
-                    padding: 4px 12px;
-                    border-radius: 20px;
-                    font-size: 11px;
-                    font-weight: 600;
-                    display: inline-block;
-                  ">
-                    🎁 Don
-                  </span>
-                ` : marker.offerType === 'trade' ? `
-                  <span style="
-                    background: linear-gradient(135deg, #F59E0B, #D97706);
-                    color: white;
-                    padding: 4px 12px;
-                    border-radius: 20px;
-                    font-size: 11px;
-                    font-weight: 600;
-                    display: inline-block;
-                  ">
-                    🔄 Échange
-                  </span>
-                ` : `
-                  <span style="
-                    background: linear-gradient(135deg, #6B7280, #4B5563);
-                    color: white;
-                    padding: 4px 12px;
-                    border-radius: 20px;
-                    font-size: 11px;
-                    font-weight: 600;
-                    display: inline-block;
-                  ">
-                    📦 ${marker.offerType}
-                  </span>
-                `}
-              </div>
-            ` : ''}
-            
-            <!-- Distance -->
-            ${marker.distance !== undefined ? `
-              <div style="
-                font-size: 11px;
-                color: #6b7280;
-                text-align: center;
-                background: #f1f5f9;
-                padding: 4px 8px;
-                border-radius: 6px;
-                display: inline-block;
-                width: 100%;
-                box-sizing: border-box;
-              ">
-                📍 ${marker.distance < 1 ? Math.round(marker.distance * 1000) + 'm' : marker.distance.toFixed(1) + 'km'}
-              </div>
-            ` : ''}
-          </div>
-        </div>
       </div>
     `;
   } else if (marker.type === 'community') {
@@ -634,7 +495,8 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
         });
 
         // Ajouter les événements de survol
-        el.addEventListener('mouseenter', () => {
+        el.addEventListener('mouseenter', (e) => {
+          e.stopPropagation();
           const rect = el.getBoundingClientRect();
           const containerRect = mapContainerRef.current?.getBoundingClientRect();
           if (containerRect) {
@@ -646,7 +508,8 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
           }
         });
 
-        el.addEventListener('mouseleave', () => {
+        el.addEventListener('mouseleave', (e) => {
+          e.stopPropagation();
           onMarkerLeaveRef.current?.();
         });
 
@@ -707,31 +570,34 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
 
         el.addEventListener('click', (e) => {
           e.stopPropagation();
+          e.preventDefault();
           
           // Animation de clic simple
           el.style.transform = 'scale(0.95) translateZ(0)';
-                  setTimeout(() => {
+          setTimeout(() => {
             el.style.transform = 'scale(1) translateZ(0)';
-                  }, 150);
+          }, 150);
 
           // Appeler seulement la fonction de callback
           onMarkerClickRef.current?.(marker.id);
         });
 
         // Ajouter les événements de survol
-        el.addEventListener('mouseenter', () => {
+        el.addEventListener('mouseenter', (e) => {
+          e.stopPropagation();
           const rect = el.getBoundingClientRect();
           const containerRect = mapContainerRef.current?.getBoundingClientRect();
           if (containerRect) {
             const position = {
-              x: rect.left + rect.width / 2,
-              y: rect.top
+              x: rect.left + rect.width, // Position à droite du marqueur
+              y: rect.top + rect.height / 2 // Centré verticalement
             };
             onMarkerHoverRef.current?.(marker.id, position);
           }
         });
 
-        el.addEventListener('mouseleave', () => {
+        el.addEventListener('mouseleave', (e) => {
+          e.stopPropagation();
           onMarkerLeaveRef.current?.();
         });
 
@@ -961,6 +827,13 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
             height: auto !important;
             display: inline-block !important;
             transform-origin: center !important;
+            cursor: pointer !important;
+          }
+          
+          /* S'assurer que les marqueurs n'interfèrent pas avec les interactions de la carte */
+          .marker img {
+            pointer-events: auto !important;
+            cursor: pointer !important;
           }
 
           /* Pas d'interaction au survol */
