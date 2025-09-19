@@ -4,10 +4,6 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 // Cache global optimisé (garde pour futures optimisations)
 
-// Cache pour les popups HTML (optimisation majeure)
-const popupCache = new Map<string, string>();
-const MAX_POPUP_CACHE_SIZE = 100;
-
 // Types
 export interface MapboxMarker {
   id: string;
@@ -38,335 +34,11 @@ interface MapboxMapProps {
   autoFit?: boolean;
   userLocation?: { lat: number; lng: number };
   showUserLocation?: boolean;
-  showPopup?: boolean;
 }
 
-// La fonction de calcul de distance est maintenant dans le cache des popups
+// Fonctions de popup supprimées pour simplifier
 
-// Fonction optimisée pour créer le contenu HTML du popup avec cache
-function createOptimizedPopup(marker: MapboxMarker): string {
-  const cacheKey = `popup-${marker.id}-${marker.title}-${marker.category}-${marker.distance?.toFixed(1)}`;
-  
-  if (popupCache.has(cacheKey)) {
-    return popupCache.get(cacheKey)!;
-  }
-
-  // Labels des catégories avec icônes SVG et couleurs
-  const categoryLabels: Record<string, {label: string, color: string, icon: string}> = {
-    tools: {
-      label: 'Outils', 
-      color: '#EF4444',
-      icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>`
-    },
-    electronics: {
-      label: 'Électronique', 
-      color: '#3B82F6',
-      icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>`
-    },
-    books: {
-      label: 'Livres', 
-      color: '#8B5CF6',
-      icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>`
-    },
-    sports: {
-      label: 'Sport', 
-      color: '#10B981',
-      icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path></svg>`
-    },
-    kitchen: {
-      label: 'Cuisine', 
-      color: '#F59E0B',
-      icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2h7l4 4v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"></path><path d="M9 2v4"></path></svg>`
-    },
-    garden: {
-      label: 'Jardin', 
-      color: '#22C55E',
-      icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>`
-    },
-    toys: {
-      label: 'Jouets', 
-      color: '#EC4899',
-      icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>`
-    },
-    fashion: {
-      label: 'Mode', 
-      color: '#A855F7',
-      icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h12l4 6-10 13L2 8l4-6z"></path></svg>`
-    },
-    furniture: {
-      label: 'Meubles', 
-      color: '#6B7280',
-      icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>`
-    },
-    music: {
-      label: 'Musique', 
-      color: '#F97316',
-      icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>`
-    },
-    community: {
-      label: 'Communauté', 
-      color: '#8B5CF6',
-      icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>`
-    },
-    other: {
-      label: 'Autres', 
-      color: '#6B7280',
-      icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect></svg>`
-    },
-  };
-
-  const category = categoryLabels[marker.category || 'other'] || categoryLabels.other;
-
-  const content = `
-    <div class="compact-floating-popup" style="
-      width: 320px;
-      height: 380px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: white;
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      position: relative;
-    ">
-      ${marker.imageUrl ? `
-        <div style="
-          position: absolute;
-          inset: 0;
-          background-image: url('${marker.imageUrl}');
-          background-size: cover;
-          background-position: center;
-          background-color: #f3f4f6;
-        "></div>
-        <div style="
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 50%, transparent 80%);
-        "></div>
-        <div style="
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(135deg, ${category.color}20 0%, transparent 70%);
-        "></div>
-      ` : ''}
-
-      <div style="
-        position: relative;
-        z-index: 10;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        padding: 20px;
-      ">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
-          <div style="
-            background: linear-gradient(135deg, ${category.color}E6, ${category.color}CC);
-            backdrop-filter: blur(12px);
-            padding: 8px 16px;
-            border-radius: 25px;
-            font-size: 13px;
-            font-weight: 700;
-            color: white;
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-          ">
-            <span>${category.icon}</span>
-            ${category.label}
-          </div>
-          
-          ${marker.offerType ? `
-            <div style="
-              padding: 8px 16px;
-              border-radius: 25px;
-              font-size: 13px;
-              font-weight: 700;
-              box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-              border: 1px solid rgba(255, 255, 255, 0.2);
-              ${marker.offerType === 'loan' 
-                ? 'background: linear-gradient(135deg, #3B82F6E6, #1D4ED8CC); color: white;' 
-                : 'background: linear-gradient(135deg, #8B5CF6E6, #7C3AEDCC); color: white;'}
-            ">
-              ${marker.offerType === 'loan' ? '📤 PRÊT' : '🔄 ÉCHANGE'}
-            </div>
-          ` : ''}
-        </div>
-        
-        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
-          <h3 style="
-            font-size: 22px;
-            font-weight: 800;
-            color: white;
-            margin: 0 0 12px 0;
-            line-height: 1.2;
-            text-shadow: 0 3px 6px rgba(0, 0, 0, 0.6);
-          ">
-            ${marker.title || 'Objet sans titre'}
-          </h3>
-          
-          ${marker.description ? `
-            <p style="
-              font-size: 15px;
-              color: rgba(255, 255, 255, 0.95);
-              margin: 0 0 20px 0;
-              line-height: 1.5;
-              text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-              display: -webkit-box;
-              -webkit-line-clamp: 3;
-              -webkit-box-orient: vertical;
-              overflow: hidden;
-            ">
-              ${marker.description}
-            </p>
-          ` : ''}
-          
-          <div style="
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
-          ">
-            ${marker.owner ? `
-              <div style="
-                background: rgba(255, 255, 255, 0.25);
-                backdrop-filter: blur(12px);
-                border-radius: 12px;
-                padding: 10px;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                border: 1px solid rgba(255, 255, 255, 0.1);
-              ">
-                <div style="
-                  width: 24px;
-                  height: 24px;
-                  background: linear-gradient(135deg, #10B981, #059669);
-                  border-radius: 50%;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                ">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                </div>
-                <span style="font-size: 12px; color: white; font-weight: 600;">${marker.owner}</span>
-              </div>
-            ` : ''}
-            
-            ${marker.distance !== undefined ? `
-              <div style="
-                background: rgba(255, 255, 255, 0.25);
-                backdrop-filter: blur(12px);
-                border-radius: 12px;
-                padding: 10px;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                border: 1px solid rgba(255, 255, 255, 0.1);
-              ">
-                <div style="
-                  width: 24px;
-                  height: 24px;
-                  background: linear-gradient(135deg, #22C55E, #16A34A);
-                  border-radius: 50%;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                ">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                </div>
-                <span style="font-size: 12px; color: white; font-weight: 600;">
-                  ${marker.distance < 1 ? `${Math.round(marker.distance * 1000)}m` : `${marker.distance.toFixed(1)}km`}
-                </span>
-              </div>
-            ` : ''}
-          </div>
-        </div>
-        
-        <button onclick="window.location.href='/items/${marker.id || ''}'" style="
-          width: 100%;
-          background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9));
-          backdrop-filter: blur(16px);
-          color: #1f2937;
-          padding: 14px 20px;
-          border-radius: 16px;
-          font-size: 15px;
-          font-weight: 700;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-        ">
-          Voir les détails
-        </button>
-      </div>
-    </div>
-  `;
-
-  // Mise en cache du popup (optimisation)
-  if (popupCache.size >= MAX_POPUP_CACHE_SIZE) {
-    const firstKey = popupCache.keys().next().value;
-    if (firstKey) {
-      popupCache.delete(firstKey);
-    }
-  }
-  
-  popupCache.set(cacheKey, content);
-  return content;
-}
-
-// Fonction pour créer le contenu HTML du popup de communauté
-function createCommunityHoverPopup(marker: MapboxMarker): string {
-  return `
-    <div style="
-      background: linear-gradient(135deg, #8B5CF6, #7C3AED);
-      color: white;
-      padding: 12px 16px;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      min-width: 200px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    ">
-      <h3 style="font-size: 16px; font-weight: 700; margin: 0 0 8px 0;">
-        ${marker.title || 'Quartier'}
-      </h3>
-      ${marker.description ? `
-        <p style="font-size: 13px; color: rgba(255, 255, 255, 0.9); margin: 0 0 8px 0;">
-          ${marker.description}
-        </p>
-      ` : ''}
-      <button onclick="window.location.href='/communities/${marker.id ? marker.id.replace('community-', '') : ''}'" style="
-        width: 100%;
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: 8px;
-        padding: 8px 12px;
-        font-size: 12px;
-        font-weight: 600;
-        cursor: pointer;
-      ">
-        Voir la communauté
-      </button>
-    </div>
-  `;
-}
-
-// Fonction principale pour créer le contenu du popup
-function createPopupContent(marker: MapboxMarker): string {
-  if (marker.type === 'item') {
-    return createOptimizedPopup(marker);
-  }
-  return createCommunityHoverPopup(marker);
-}
-
-// Fonction pour créer le contenu HTML des marqueurs
+// Fonction améliorée pour créer le contenu HTML des marqueurs
 function createMarkerContent(marker: MapboxMarker): string {
   const markerColors = {
     community: '#8B5CF6',
@@ -388,62 +60,275 @@ function createMarkerContent(marker: MapboxMarker): string {
   };
 
   let color = '#6B7280';
-  let size = '28px';
+  let size = '34px';
+  let borderSize = '4px';
 
   if (marker.type === 'community') {
     color = markerColors.community;
-    size = '32px';
+    size = '42px';
+    borderSize = '5px';
   } else if (marker.type === 'item') {
     color = marker.color || markerColors.item[marker.category as keyof typeof markerColors.item] || markerColors.item.other;
   }
 
+  // Icônes améliorées avec plus de détails
   const icons = {
-    community: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>`,
-    tools: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>`,
-    electronics: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>`,
-    other: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle></svg>`
+    community: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="m22 21-3-3"></path>
+    </svg>`,
+    tools: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+    </svg>`,
+    electronics: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+      <line x1="8" y1="21" x2="16" y2="21"></line>
+      <line x1="12" y1="17" x2="12" y2="21"></line>
+    </svg>`,
+    books: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+    </svg>`,
+    sports: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <circle cx="12" cy="12" r="10"></circle>
+      <path d="M8.5 8.5 12 12l3.5-3.5"></path>
+      <path d="M8.5 15.5 12 12l3.5 3.5"></path>
+    </svg>`,
+    kitchen: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M3 2h18l-2 7H5L3 2Z"></path>
+      <path d="m3 9 2 13h14l2-13"></path>
+      <circle cx="9" cy="9" r="1"></circle>
+      <circle cx="15" cy="9" r="1"></circle>
+    </svg>`,
+    garden: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M12 22c7-5 11-10 8-16-1.5-3-4-4-8 0-4-4-6.5-3-8 0-3 6 1 11 8 16z"></path>
+    </svg>`,
+    toys: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+    </svg>`,
+    fashion: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M6 2h12l4 6-10 13L2 8l4-6z"></path>
+      <path d="M11 2 8 8l4 13"></path>
+    </svg>`,
+    furniture: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <rect x="3" y="8" width="18" height="4" rx="1"></rect>
+      <path d="M21 12v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+      <path d="M6 12V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4"></path>
+    </svg>`,
+    music: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M9 18V5l12-2v13"></path>
+      <circle cx="6" cy="18" r="3"></circle>
+      <circle cx="18" cy="16" r="3"></circle>
+    </svg>`,
+    other: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <circle cx="12" cy="12" r="3"></circle>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33"></path>
+    </svg>`
   };
 
   const icon = marker.type === 'community' ? icons.community : 
                icons[marker.category as keyof typeof icons] || icons.other;
 
   return `
-    <div style="
+    <div class="enhanced-marker" style="
       width: ${size};
       height: ${size};
-      background: ${color};
-      border-radius: 50%;
-      border: 4px solid white;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(255, 255, 255, 0.8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
       position: relative;
+      cursor: pointer;
+      filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.25));
+      z-index: 1;
+      pointer-events: auto;
+      display: inline-block;
+      transform-origin: center;
     ">
-      <div style="
-        position: absolute;
-        top: 2px;
-        left: 2px;
-        right: 2px;
-        height: 50%;
-        background: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), transparent);
-        border-radius: 50% 50% 0 0;
-        pointer-events: none;
-      "></div>
+      <!-- Effet de pulsation pour les communautés -->
+      ${marker.type === 'community' ? `
+        <div style="
+          position: absolute;
+          inset: -8px;
+          border-radius: 50%;
+          background: ${color}40;
+          animation: communityPulse 3s ease-in-out infinite;
+        "></div>
+      ` : ''}
       
+      <!-- Cercle de base avec dégradé -->
       <div style="
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
         width: 100%;
         height: 100%;
+        background: linear-gradient(145deg, ${color}, ${color}DD);
+        border-radius: 50%;
+        border: ${borderSize} solid white;
         position: relative;
-        z-index: 1;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       ">
-        ${icon}
+        <!-- Effet de lumière interne -->
+        <div style="
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          right: 2px;
+          height: 40%;
+          background: linear-gradient(to bottom, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1));
+          border-radius: 50% 50% 0 0;
+          pointer-events: none;
+        "></div>
+        
+        <!-- Reflet glassmorphism -->
+        <div style="
+          position: absolute;
+          top: 15%;
+          left: 15%;
+          width: 25%;
+          height: 25%;
+          background: rgba(255, 255, 255, 0.6);
+          border-radius: 50%;
+          filter: blur(2px);
+          pointer-events: none;
+        "></div>
+        
+        <!-- Icône avec effet -->
+        <div style="
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          height: 100%;
+          position: relative;
+          z-index: 2;
+          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        ">
+          ${icon}
+        </div>
+      </div>
+      
+      <!-- Anneau d'activité pour les objets récents -->
+      ${marker.createdAt && new Date().getTime() - new Date(marker.createdAt).getTime() < 24 * 60 * 60 * 1000 ? `
+        <div style="
+          position: absolute;
+          inset: -6px;
+          border: 2px solid #10B981;
+          border-radius: 50%;
+          border-top-color: transparent;
+          border-right-color: transparent;
+          animation: newItemRotate 2s linear infinite;
+        "></div>
+      ` : ''}
+      
+      <!-- Badge pour le type d'offre -->
+      ${marker.offerType ? `
+        <div style="
+          position: absolute;
+          top: -6px;
+          right: -6px;
+          width: 16px;
+          height: 16px;
+          background: ${marker.offerType === 'loan' ? 'linear-gradient(135deg, #3B82F6, #1E40AF)' : 'linear-gradient(135deg, #8B5CF6, #7C3AED)'};
+          border: 2px solid white;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 8px;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        ">
+          <span style="color: white; font-weight: bold;">
+            ${marker.offerType === 'loan' ? '📤' : '🔄'}
+          </span>
+        </div>
+      ` : ''}
+      
+      <!-- Indicateur de distance (si proche) -->
+      ${marker.distance !== undefined && marker.distance < 0.5 ? `
+        <div style="
+          position: absolute;
+          bottom: -8px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: linear-gradient(135deg, #10B981, #059669);
+          color: white;
+          font-size: 10px;
+          font-weight: 700;
+          padding: 2px 6px;
+          border-radius: 8px;
+          border: 1px solid white;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+          animation: bounce 2s ease-in-out infinite;
+        ">
+          ${Math.round(marker.distance * 1000)}m
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+// Fonction pour créer un marqueur utilisateur amélioré
+function createUserMarkerContent(): string {
+  return `
+    <div class="user-marker" style="
+      width: 24px;
+      height: 24px;
+      position: relative;
+      filter: drop-shadow(0 4px 12px rgba(37, 99, 235, 0.4));
+      display: inline-block;
+      transform-origin: center;
+    ">
+      <!-- Cercle pulsant externe -->
+      <div style="
+        position: absolute;
+        inset: -12px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(37, 99, 235, 0.3) 0%, rgba(37, 99, 235, 0.1) 50%, transparent 100%);
+        animation: userPulse 2s ease-in-out infinite;
+      "></div>
+      
+      <!-- Anneau animé -->
+      <div style="
+        position: absolute;
+        inset: -8px;
+        border: 2px solid #3B82F6;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: userRotate 3s linear infinite;
+        opacity: 0.6;
+      "></div>
+      
+      <!-- Marqueur principal -->
+      <div style="
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(145deg, #2563eb, #1d4ed8);
+        border: 3px solid white;
+        border-radius: 50%;
+        position: relative;
+        overflow: hidden;
+      ">
+        <!-- Effet de lumière -->
+        <div style="
+          position: absolute;
+          top: 1px;
+          left: 1px;
+          right: 1px;
+          height: 50%;
+          background: linear-gradient(to bottom, rgba(255, 255, 255, 0.6), transparent);
+          border-radius: 50% 50% 0 0;
+        "></div>
+        
+        <!-- Point central -->
+        <div style="
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 6px;
+          height: 6px;
+          background: white;
+          border-radius: 50%;
+          box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+        "></div>
       </div>
     </div>
   `;
@@ -458,22 +343,14 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
   onMarkerClick,
   autoFit = false,
   userLocation,
-  showUserLocation = false,
-  showPopup = true
+  showUserLocation = false
 }, ref) => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());
-  const popupRef = useRef<mapboxgl.Popup | null>(null);
-  const [hoveredCommunity, setHoveredCommunity] = React.useState<MapboxMarker | null>(null);
-  const [isCommunityPopupOpen, setIsCommunityPopupOpen] = React.useState(false);
   const [isMapLoaded, setIsMapLoaded] = React.useState(false);
 
-  // Fonction pour fermer le popup de communauté
-  const closeCommunityPopup = useCallback(() => {
-    setIsCommunityPopupOpen(false);
-    setHoveredCommunity(null);
-  }, []);
+  // Fonctions de popup supprimées pour simplifier
 
   // Mémorisation du hash des marqueurs pour éviter les re-renders (optimisation majeure)
   const markersHash = useMemo(() => {
@@ -508,56 +385,39 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
         // Créer un nouveau marqueur
         const el = document.createElement('div');
         el.className = 'marker';
+        el.style.cssText = `
+          position: relative;
+          width: auto;
+          height: auto;
+          display: inline-block;
+          pointer-events: auto;
+          z-index: 1;
+        `;
         el.innerHTML = createMarkerContent(marker);
         
+        // Ajouter les événements d'interaction simples
+        el.addEventListener('mouseenter', () => {
+          el.style.transform = 'scale(1.15) translateZ(0)';
+          el.style.zIndex = '1000';
+        });
+
+        el.addEventListener('mouseleave', () => {
+          el.style.transform = 'scale(1) translateZ(0)';
+          el.style.zIndex = 'auto';
+        });
+
         el.addEventListener('click', (e) => {
           e.stopPropagation();
           
-          // Fermer le popup existant
-          if (popupRef.current) {
-            popupRef.current.remove();
-          }
-          
-          if (showPopup) {
-            // Créer le nouveau popup au clic
-            const popup = new mapboxgl.Popup({
-              closeButton: true,
-              closeOnClick: false,
-              closeOnMove: true,
-              offset: 15,
-              className: 'custom-popup'
-            })
-              .setLngLat([marker.longitude, marker.latitude])
-              .setHTML(createPopupContent(marker))
-              .addTo(mapRef.current!);
-            
-            popupRef.current = popup;
-          }
+          // Animation de clic simple
+          el.style.transform = 'scale(0.95) translateZ(0)';
+          setTimeout(() => {
+            el.style.transform = 'scale(1) translateZ(0)';
+          }, 150);
 
+          // Appeler seulement la fonction de callback
           onMarkerClick?.(marker.id);
         });
-
-        // Ajouter les événements de survol pour les communautés
-        if (marker.type === 'community') {
-          el.addEventListener('mouseenter', () => {
-            if (!isCommunityPopupOpen) {
-              setHoveredCommunity(marker);
-            }
-          });
-
-          el.addEventListener('mouseleave', () => {
-            if (!isCommunityPopupOpen) {
-              setTimeout(() => {
-                setHoveredCommunity(null);
-              }, 150);
-            }
-          });
-
-          el.addEventListener('click', () => {
-            setIsCommunityPopupOpen(true);
-            setHoveredCommunity(marker);
-          });
-        }
 
         mapboxMarker = new mapboxgl.Marker(el)
           .setLngLat([marker.longitude, marker.latitude])
@@ -586,22 +446,9 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
       }
       mapRef.current!.fitBounds(bounds, { padding: 40, maxZoom: 14, duration: 600 });
     }
-  }, [markers, isMapLoaded, autoFit, showUserLocation, userLocation, showPopup, onMarkerClick, isCommunityPopupOpen]);
+  }, [markers, isMapLoaded, autoFit, showUserLocation, userLocation, onMarkerClick]);
 
-  // Gérer le clic sur le bouton de fermeture
-  useEffect(() => {
-    const handleCloseClick = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (target && target.id === 'close-community-popup') {
-        closeCommunityPopup();
-      }
-    };
-
-    if (isCommunityPopupOpen) {
-      document.addEventListener('click', handleCloseClick);
-      return () => document.removeEventListener('click', handleCloseClick);
-    }
-  }, [isCommunityPopupOpen, closeCommunityPopup]);
+  // Gestion des popups supprimée
 
   // Initialisation de la carte (optimisée)
   useEffect(() => {
@@ -613,7 +460,6 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
 
     // Copier les références pour le cleanup
     const currentMarkersRef = markersRef.current;
-    const currentPopupRef = popupRef;
 
     try {
       mapboxgl.accessToken = accessToken;
@@ -638,11 +484,6 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
 
     return () => {
       // Cleanup optimisé avec références copiées
-      if (currentPopupRef.current) {
-        currentPopupRef.current.remove();
-        currentPopupRef.current = null;
-      }
-      
       currentMarkersRef.forEach(marker => marker.remove());
       currentMarkersRef.clear();
       
@@ -670,17 +511,9 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
         // Mettre à jour la position
         existingUserMarker.setLngLat([userLocation.lng, userLocation.lat]);
       } else {
-        // Créer le marqueur utilisateur
+        // Créer le marqueur utilisateur amélioré
         const userEl = document.createElement('div');
-        userEl.style.cssText = `
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          background-color: #2563eb;
-          border: 3px solid white;
-          box-shadow: 0 0 0 6px rgba(37,99,235,0.3), 0 4px 12px rgba(0, 0, 0, 0.4);
-          animation: pulse 2s infinite;
-        `;
+        userEl.innerHTML = createUserMarkerContent();
 
         const userMarker = new mapboxgl.Marker(userEl)
           .setLngLat([userLocation.lng, userLocation.lat])
@@ -723,81 +556,109 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
     <>
       <style>
         {`
-          .custom-popup .mapboxgl-popup-content {
-            padding: 0;
-            border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: transparent;
-            max-width: none !important;
-          }
-          
-          .custom-popup .mapboxgl-popup-tip {
-            border-top-color: white;
-            border-bottom-color: white;
-          }
-          
-          .custom-popup .mapboxgl-popup-close-button {
-            background: rgba(255, 255, 255, 0.9);
-            color: #374151;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            font-size: 14px;
-            line-height: 1;
-            top: 8px;
-            right: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          /* Styles de popup supprimés */
+
+          .enhanced-marker {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            will-change: transform;
+            position: relative;
+            z-index: 1;
           }
 
-          .compact-floating-popup {
-            animation: popupScaleInEnhanced 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+          .enhanced-marker:hover {
+            transform: scale(1.15) translateZ(0) !important;
+            z-index: 1000 !important;
           }
 
-          @keyframes popupScaleInEnhanced {
-            0% {
-              opacity: 0;
-              transform: scale(0.8) translateY(-20px) rotateX(15deg);
-            }
-            50% {
-              opacity: 0.8;
-              transform: scale(1.02) translateY(-5px) rotateX(5deg);
-            }
-            100% {
-              opacity: 1;
-              transform: scale(1) translateY(0) rotateX(0deg);
-            }
+          .enhanced-marker:active {
+            transform: scale(0.95) translateZ(0) !important;
           }
 
-          .compact-floating-popup .action-button:hover {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 1), rgba(248, 250, 252, 0.95)) !important;
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25) !important;
-          }
-
+          /* Assurer que les marqueurs restent visibles et bien positionnés */
           .marker {
-            transition: all 0.3s ease;
+            position: relative !important;
+            z-index: 1 !important;
+            pointer-events: auto !important;
+            width: auto !important;
+            height: auto !important;
+            display: inline-block !important;
+            transform-origin: center !important;
           }
 
           .marker:hover {
-            transform: scale(1.15);
-            z-index: 1000;
+            z-index: 1000 !important;
           }
 
-          @keyframes pulse {
-            0% {
+          /* Corriger le positionnement des marqueurs Mapbox */
+          .mapboxgl-marker {
+            position: absolute !important;
+            transform-origin: center bottom !important;
+          }
+
+          /* Animations pour les marqueurs de communauté */
+          @keyframes communityPulse {
+            0%, 100% {
+              opacity: 0.6;
               transform: scale(1);
-              opacity: 1;
             }
             50% {
-              transform: scale(1.1);
-              opacity: 0.7;
-            }
-            100% {
-              transform: scale(1);
-              opacity: 1;
+              opacity: 0.3;
+              transform: scale(1.2);
             }
           }
+
+          /* Animation pour les nouveaux objets */
+          @keyframes newItemRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+
+          /* Animation pour les objets proches */
+          @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+              transform: translateX(-50%) translateY(0);
+            }
+            40% {
+              transform: translateX(-50%) translateY(-3px);
+            }
+            60% {
+              transform: translateX(-50%) translateY(-1px);
+            }
+          }
+
+          /* Animations pour le marqueur utilisateur */
+          @keyframes userPulse {
+            0%, 100% {
+              opacity: 0.8;
+              transform: scale(1);
+            }
+            50% {
+              opacity: 0.4;
+              transform: scale(1.5);
+            }
+          }
+
+          @keyframes userRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+
+          .user-marker {
+            animation: userBob 2s ease-in-out infinite;
+          }
+
+          @keyframes userBob {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-2px); }
+          }
+
+          /* Amélioration des performances */
+          .marker, .user-marker, .enhanced-marker {
+            backface-visibility: hidden;
+            perspective: 1000px;
+          }
+
+          /* Animations de popup supprimées */
         `}
       </style>
       <div
@@ -805,19 +666,6 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
         style={{ height: typeof height === 'number' ? `${height}px` : height }}
         className="rounded-xl overflow-hidden border border-gray-200 relative"
       >
-        {/* Popup de survol pour les communautés */}
-        {hoveredCommunity && (
-          <div 
-            className="absolute top-4 left-4 z-50"
-            style={{
-              animation: 'fadeInSlide 0.3s ease-out'
-            }}
-          >
-            <div dangerouslySetInnerHTML={{ 
-              __html: createCommunityHoverPopup(hoveredCommunity) 
-            }} />
-          </div>
-        )}
       </div>
     </>
   );
