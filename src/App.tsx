@@ -31,7 +31,6 @@ import AdminItemsPage from './pages/admin/AdminItemsPage';
 import AdminCommunitiesPage from './pages/admin/AdminCommunitiesPage';
 import AdminReportsPage from './pages/admin/AdminReportsPage';
 import AdminLogsPage from './pages/admin/AdminLogsPage';
-import MapOptimizationTestPage from './pages/MapOptimizationTestPage';
 
 function App() {
   const { user, loading } = useAuthStore();
@@ -116,7 +115,6 @@ function App() {
             <Route path="/help" element={<HelpPage />} />
             <Route path="/ai-features" element={<AIFeaturesPage />} />
             <Route path="/gamification" element={<GamificationPage />} />
-            <Route path="/map-optimization-test" element={<MapOptimizationTestPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Shell>

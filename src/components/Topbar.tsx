@@ -172,7 +172,6 @@ const Topbar: React.FC = () => {
               <UserMenuItem to="/items?favorites=1" icon={Star} label="Favoris" badge={favoritesCount} />
               <UserMenuItem to="/gamification" icon={Trophy} label="Récompenses" />
               <UserMenuItem to="/ai-features" icon={Sparkles} label="Fonctionnalités IA" />
-              <UserMenuItem to="/map-optimization-test" icon={Zap} label="Test Carte Optimisée" />
               {isAdmin && <UserMenuItem to="/admin" icon={Shield} label="Panel Admin" special />}
               <div className="h-px bg-gray-100 my-1" />
               <UserMenuItem to="/settings" icon={Settings} label="Paramètres" />
