@@ -375,9 +375,12 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
 
     // Ajouter ou mettre à jour les marqueurs
     markers.forEach(marker => {
-      if (typeof marker.latitude !== 'number' || typeof marker.longitude !== 'number') {
-      return;
-    }
+      if (typeof marker.latitude !== 'number' || typeof marker.longitude !== 'number' ||
+          isNaN(marker.latitude) || isNaN(marker.longitude) ||
+          marker.latitude < -90 || marker.latitude > 90 ||
+          marker.longitude < -180 || marker.longitude > 180) {
+        return;
+      }
 
       let mapboxMarker = markersRef.current.get(marker.id);
       
@@ -427,16 +430,42 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
         // Auto-fit si demandé
         if (autoFit && markers.length > 0) {
           const bounds = new mapboxgl.LngLatBounds();
+          let validMarkersCount = 0;
+          
           markers.forEach((marker) => {
-            if (typeof marker.latitude === 'number' && typeof marker.longitude === 'number') {
+            if (typeof marker.latitude === 'number' && typeof marker.longitude === 'number' && 
+                !isNaN(marker.latitude) && !isNaN(marker.longitude) &&
+                marker.latitude >= -90 && marker.latitude <= 90 &&
+                marker.longitude >= -180 && marker.longitude <= 180) {
               bounds.extend([marker.longitude, marker.latitude]);
+              validMarkersCount++;
             }
           });
-          if (showUserLocation && userLocation) {
+          
+          if (showUserLocation && userLocation && 
+              !isNaN(userLocation.lat) && !isNaN(userLocation.lng) &&
+              userLocation.lat >= -90 && userLocation.lat <= 90 &&
+              userLocation.lng >= -180 && userLocation.lng <= 180) {
             bounds.extend([userLocation.lng, userLocation.lat]);
+            validMarkersCount++;
           }
-      mapRef.current!.fitBounds(bounds, { padding: 40, maxZoom: 14, duration: 600 });
-    }
+          
+          // Ne faire le fitBounds que s'il y a au moins un marqueur valide
+          if (validMarkersCount > 0) {
+            try {
+              // Vérifier que bounds est valide avant d'appeler fitBounds
+              const boundsArray = bounds.toArray();
+              if (boundsArray && boundsArray.length === 2 && 
+                  boundsArray[0] && boundsArray[1] &&
+                  !isNaN(boundsArray[0][0]) && !isNaN(boundsArray[0][1]) &&
+                  !isNaN(boundsArray[1][0]) && !isNaN(boundsArray[1][1])) {
+                mapRef.current!.fitBounds(bounds, { padding: 40, maxZoom: 14, duration: 600 });
+              }
+            } catch (error) {
+              console.warn('Erreur lors du fitBounds:', error);
+            }
+          }
+        }
   }, [markers, isMapLoaded, autoFit, showUserLocation, userLocation, onMarkerClick]);
 
   // Gestion des popups supprimée
@@ -454,10 +483,17 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
 
     try {
       mapboxgl.accessToken = accessToken;
+      
+      // Valider le centre de la carte
+      const validCenter = {
+        lat: isNaN(center.lat) || center.lat < -90 || center.lat > 90 ? 48.8566 : center.lat,
+        lng: isNaN(center.lng) || center.lng < -180 || center.lng > 180 ? 2.3522 : center.lng
+      };
+      
       const map = new mapboxgl.Map({
         container: mapContainerRef.current,
         style: 'mapbox://styles/mapbox/streets-v12',
-        center: [center.lng, center.lat],
+        center: [validCenter.lng, validCenter.lat],
         zoom,
         attributionControl: false,
       });
