@@ -69,6 +69,11 @@ function createMarkerContent(marker: MapboxMarker): string {
     borderSize = '5px';
   } else if (marker.type === 'item') {
     color = marker.color || markerColors.item[marker.category as keyof typeof markerColors.item] || markerColors.item.other;
+    // Augmenter la taille pour les objets avec photos
+    if (marker.imageUrl) {
+      size = '48px';
+      borderSize = '5px';
+    }
   }
 
   // Icônes améliorées avec plus de détails
@@ -127,8 +132,103 @@ function createMarkerContent(marker: MapboxMarker): string {
     </svg>`
   };
 
-  const icon = marker.type === 'community' ? icons.community : 
-               icons[marker.category as keyof typeof icons] || icons.other;
+  // Utiliser l'image du produit si disponible, sinon l'icône de catégorie
+  let iconContent = '';
+  if (marker.type === 'item' && marker.imageUrl) {
+    // Utiliser l'image du produit avec popup au survol
+    iconContent = `
+      <div style="position: relative;">
+        <img 
+          src="${marker.imageUrl}" 
+          alt="${marker.title || 'Produit'}"
+          style="
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.8);
+            cursor: pointer;
+            transition: transform 0.2s ease;
+          "
+          onmouseover="
+            this.style.transform='scale(1.1)';
+            this.nextElementSibling.style.opacity='1';
+            this.nextElementSibling.style.visibility='visible';
+          "
+          onmouseout="
+            this.style.transform='scale(1)';
+            this.nextElementSibling.style.opacity='0';
+            this.nextElementSibling.style.visibility='hidden';
+          "
+          onerror="this.style.display='none'; this.parentElement.nextElementSibling.style.display='flex';"
+        />
+        <!-- Popup au survol -->
+        <div style="
+          position: absolute;
+          bottom: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 120px;
+          height: 120px;
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+          border: 3px solid white;
+          opacity: 0;
+          visibility: hidden;
+          transition: all 0.3s ease;
+          z-index: 1000;
+          margin-bottom: 8px;
+        ">
+          <img 
+            src="${marker.imageUrl}" 
+            alt="${marker.title || 'Produit'}"
+            style="
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+              border-radius: 8px;
+            "
+          />
+          <!-- Titre du produit -->
+          <div style="
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+            max-width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          ">
+            ${marker.title || 'Produit'}
+          </div>
+        </div>
+      </div>
+      <div style="
+        display: none;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.1em;
+      ">
+        ${icons[marker.category as keyof typeof icons] || icons.other}
+      </div>
+    `;
+  } else {
+    // Utiliser l'icône de catégorie ou communauté
+    const icon = marker.type === 'community' ? icons.community : 
+                 icons[marker.category as keyof typeof icons] || icons.other;
+    iconContent = icon;
+  }
 
   // Amélioration du design du marqueur
   return `
@@ -215,11 +315,12 @@ function createMarkerContent(marker: MapboxMarker): string {
           width: 100%;
           height: 100%;
           position: relative;
-          z-index: 3;
+          bottom: 10px;
+          z-index: 10;
           filter: drop-shadow(0 2px 8px rgba(0,0,0,0.25));
           font-size: 1.1em;
         ">
-          ${icon}
+          ${iconContent}
         </div>
       </div>
 
@@ -279,7 +380,7 @@ function createMarkerContent(marker: MapboxMarker): string {
           border: 1.5px solid #fff;
           box-shadow: 0 2px 8px rgba(0,0,0,0.18);
           animation: bounce 1.8s cubic-bezier(.4,0,.2,1) infinite;
-          z-index: 6;
+          z-index: 5;
           letter-spacing: 0.5px;
         ">
           ${Math.round(marker.distance * 1000)}m
