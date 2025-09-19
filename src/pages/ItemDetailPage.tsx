@@ -29,7 +29,6 @@ import { useAuthStore } from '../store/authStore';
 import { useProfile } from '../hooks/useProfiles';
 import { useCommunity } from '../hooks/useCommunities';
 import Button from '../components/ui/Button';
-import CompatibilityScore from '../components/CompatibilityScore';
 import Badge from '../components/ui/Badge';
 import Card from '../components/ui/Card';
 
@@ -489,19 +488,6 @@ const ItemDetailPage: React.FC = () => {
             </div>
           )}
 
-          {/* Score de compatibilité IA */}
-          {!isOwner && currentUserProfile && item.owner && (
-            <CompatibilityScore
-              requesterProfile={currentUserProfile}
-              ownerProfile={item.owner}
-              item={item}
-              requestHistory={allRequests?.filter(r => 
-                (r.requester_id === user?.id && r.item?.owner_id === item.owner_id) ||
-                (r.item?.owner_id === user?.id && r.requester_id === item.owner_id)
-              )}
-              className="mb-6"
-            />
-          )}
 
           {/* Actions */}
           {!isOwner && item.is_available && !hasPendingRequest && (

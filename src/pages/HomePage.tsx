@@ -21,7 +21,7 @@ const HomePage: React.FC = () => {
           maxItems={100}
           className="w-full h-full"
         />
-            </motion.div>
+      </motion.div>
     </div>
   );
 };

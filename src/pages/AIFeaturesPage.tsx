@@ -67,21 +67,6 @@ const AIFeaturesPage: React.FC = () => {
       ],
       demoUrl: '/requests',
     },
-    {
-      id: 'compatibility-score',
-      title: 'Score de Compatibilité',
-      description: 'Analyse de compatibilité entre utilisateurs pour les échanges',
-      icon: Users,
-      color: 'from-pink-500 to-purple-600',
-      benefits: [
-        'Score de compatibilité 0-100',
-        'Analyse multi-facteurs',
-        'Recommandations personnalisées',
-        'Prédiction de réussite',
-        'Optimisation des échanges'
-      ],
-      demoUrl: '/items',
-    },
   ];
 
   return (
@@ -268,14 +253,6 @@ const AIFeaturesPage: React.FC = () => {
                           <p>4. Résolution guidée des conflits</p>
                         </div>
                       )}
-                      {feature.id === 'compatibility-score' && (
-                        <div className="text-sm text-gray-600 space-y-1">
-                          <p>1. Analyse des profils utilisateurs</p>
-                          <p>2. Calcul multi-facteurs</p>
-                          <p>3. Score de 0 à 100 affiché</p>
-                          <p>4. Recommandations personnalisées</p>
-                        </div>
-                      )}
                     </div>
                   )}
                 </motion.div>
@@ -303,7 +280,7 @@ const AIFeaturesPage: React.FC = () => {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-center">
                 <div>
-                  <div className="text-2xl font-bold text-blue-600">4</div>
+                  <div className="text-2xl font-bold text-blue-600">3</div>
                   <div className="text-sm text-gray-600">Fonctionnalités IA</div>
                 </div>
                 <div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, Search, MessageCircle, User, LogOut, Menu, X, Users, 
-  HelpCircle, Star, Settings, Sparkles, Trophy, CheckCircle, ChevronDown, Shield
+  HelpCircle, Star, Settings, Sparkles, Trophy, CheckCircle, ChevronDown, Shield, Zap
 } from 'lucide-react';
 import { Link, useNavigate, useLocation, NavLink } from 'react-router-dom';
 import Button from './ui/Button';

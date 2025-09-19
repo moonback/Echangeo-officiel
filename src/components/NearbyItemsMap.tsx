@@ -245,6 +245,12 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
       .filter(community => 
         community.center_latitude && 
         community.center_longitude &&
+        typeof community.center_latitude === 'number' &&
+        typeof community.center_longitude === 'number' &&
+        !isNaN(community.center_latitude) &&
+        !isNaN(community.center_longitude) &&
+        community.center_latitude >= -90 && community.center_latitude <= 90 &&
+        community.center_longitude >= -180 && community.center_longitude <= 180 &&
         community.stats?.total_items && 
         community.stats.total_items > 0
       )
@@ -260,38 +266,46 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
 
   // Préparer les marqueurs d'objets
   const itemMarkers = useMemo(() => {
-    return filteredItems.map((item) => {
-      // Calculer la distance si on a la position utilisateur
-      let distance: number | undefined;
-      if (userLoc && item.latitude && item.longitude) {
-        const R = 6371; // Rayon de la Terre en km
-        const dLat = (item.latitude - userLoc.lat) * Math.PI / 180;
-        const dLon = (item.longitude - userLoc.lng) * Math.PI / 180;
-        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-          Math.cos(userLoc.lat * Math.PI / 180) * Math.cos(item.latitude * Math.PI / 180) *
-          Math.sin(dLon/2) * Math.sin(dLon/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        distance = R * c;
-      }
+    return filteredItems
+      .filter((item) => {
+        // Filtrer les objets avec des coordonnées valides
+        return typeof item.latitude === 'number' && typeof item.longitude === 'number' &&
+               !isNaN(item.latitude) && !isNaN(item.longitude) &&
+               item.latitude >= -90 && item.latitude <= 90 &&
+               item.longitude >= -180 && item.longitude <= 180;
+      })
+      .map((item) => {
+        // Calculer la distance si on a la position utilisateur
+        let distance: number | undefined;
+        if (userLoc && item.latitude && item.longitude) {
+          const R = 6371; // Rayon de la Terre en km
+          const dLat = (item.latitude - userLoc.lat) * Math.PI / 180;
+          const dLon = (item.longitude - userLoc.lng) * Math.PI / 180;
+          const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(userLoc.lat * Math.PI / 180) * Math.cos(item.latitude * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+          distance = R * c;
+        }
 
-      return {
-      id: item.id,
-      latitude: item.latitude as number,
-      longitude: item.longitude as number,
-      title: item.title,
-        description: item.description,
-      imageUrl: item.images && item.images.length > 0 ? item.images[0].url : undefined,
-      category: item.category,
-      type: 'item' as const,
-        owner: item.owner?.full_name || item.owner?.email || 'Propriétaire anonyme',
-        condition: item.condition,
-        price: item.estimated_value,
-        distance: distance,
-        createdAt: item.created_at,
-        offerType: item.offer_type,
-      data: item as Record<string, unknown>
-      };
-    });
+        return {
+          id: item.id,
+          latitude: item.latitude as number,
+          longitude: item.longitude as number,
+          title: item.title,
+          description: item.description,
+          imageUrl: item.images && item.images.length > 0 ? item.images[0].url : undefined,
+          category: item.category,
+          type: 'item' as const,
+          owner: item.owner?.full_name || item.owner?.email || 'Propriétaire anonyme',
+          condition: item.condition,
+          price: item.estimated_value,
+          distance: distance,
+          createdAt: item.created_at,
+          offerType: item.offer_type,
+          data: item as Record<string, unknown>
+        };
+      });
   }, [filteredItems, userLoc]);
 
 
@@ -352,7 +366,16 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
 
   // Coordonnées par défaut (Paris)
   const defaultCenter = { lat: 48.8566, lng: 2.3522 };
-  const mapCenter = userLoc || defaultCenter;
+  
+  // Valider userLoc avant de l'utiliser
+  const validUserLoc = userLoc && 
+    !isNaN(userLoc.lat) && !isNaN(userLoc.lng) &&
+    userLoc.lat >= -90 && userLoc.lat <= 90 &&
+    userLoc.lng >= -180 && userLoc.lng <= 180 
+    ? userLoc 
+    : null;
+    
+  const mapCenter = validUserLoc || defaultCenter;
 
   return (
     <motion.div
@@ -810,11 +833,10 @@ const NearbyItemsMap: React.FC<NearbyItemsMapProps> = ({
               zoom={zoom}
               height={className.includes('h-full') ? '100%' : height}
               autoFit={autoFit}
-              showUserLocation={!!userLoc}
-              userLocation={userLoc || undefined}
+              showUserLocation={!!validUserLoc}
+              userLocation={validUserLoc || undefined}
               markers={viewMode === 'communities' ? communityMarkers : itemMarkers}
               onMarkerClick={handleMarkerClick}
-              showPopup={true}
             />
             </motion.div>
           ) : (
