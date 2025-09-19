@@ -144,13 +144,13 @@ function createMarkerContent(marker: MapboxMarker): string {
     ">
       <!-- Effet de pulsation pour les communautés -->
       ${marker.type === 'community' ? `
-        <div style="
-          position: absolute;
+      <div style="
+        position: absolute;
           inset: -8px;
           border-radius: 50%;
           background: ${color}40;
           animation: communityPulse 3s ease-in-out infinite;
-        "></div>
+      "></div>
       ` : ''}
       
       <!-- Cercle de base avec dégradé -->
@@ -165,8 +165,8 @@ function createMarkerContent(marker: MapboxMarker): string {
         transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       ">
         <!-- Effet de lumière interne -->
-        <div style="
-          position: absolute;
+      <div style="
+        position: absolute;
           top: 2px;
           left: 2px;
           right: 2px;
@@ -174,11 +174,11 @@ function createMarkerContent(marker: MapboxMarker): string {
           background: linear-gradient(to bottom, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1));
           border-radius: 50% 50% 0 0;
           pointer-events: none;
-        "></div>
+      "></div>
         
         <!-- Reflet glassmorphism -->
-        <div style="
-          position: absolute;
+      <div style="
+        position: absolute;
           top: 15%;
           left: 15%;
           width: 25%;
@@ -187,10 +187,10 @@ function createMarkerContent(marker: MapboxMarker): string {
           border-radius: 50%;
           filter: blur(2px);
           pointer-events: none;
-        "></div>
-        
+      "></div>
+
         <!-- Icône avec effet -->
-        <div style="
+    <div style="
           color: white;
           display: flex;
           align-items: center;
@@ -207,20 +207,20 @@ function createMarkerContent(marker: MapboxMarker): string {
       
       <!-- Anneau d'activité pour les objets récents -->
       ${marker.createdAt && new Date().getTime() - new Date(marker.createdAt).getTime() < 24 * 60 * 60 * 1000 ? `
-        <div style="
+              <div style="
           position: absolute;
           inset: -6px;
           border: 2px solid #10B981;
-          border-radius: 50%;
+                border-radius: 50%;
           border-top-color: transparent;
           border-right-color: transparent;
           animation: newItemRotate 2s linear infinite;
         "></div>
-      ` : ''}
-      
+          ` : ''}
+          
       <!-- Badge pour le type d'offre -->
       ${marker.offerType ? `
-        <div style="
+              <div style="
           position: absolute;
           top: -6px;
           right: -6px;
@@ -228,28 +228,28 @@ function createMarkerContent(marker: MapboxMarker): string {
           height: 16px;
           background: ${marker.offerType === 'loan' ? 'linear-gradient(135deg, #3B82F6, #1E40AF)' : 'linear-gradient(135deg, #8B5CF6, #7C3AED)'};
           border: 2px solid white;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
           font-size: 8px;
           box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
         ">
           <span style="color: white; font-weight: bold;">
             ${marker.offerType === 'loan' ? '📤' : '🔄'}
-          </span>
-        </div>
-      ` : ''}
-      
+        </span>
+      </div>
+          ` : ''}
+          
       <!-- Indicateur de distance (si proche) -->
       ${marker.distance !== undefined && marker.distance < 0.5 ? `
-        <div style="
+              <div style="
           position: absolute;
           bottom: -8px;
           left: 50%;
           transform: translateX(-50%);
           background: linear-gradient(135deg, #10B981, #059669);
-          color: white;
+                color: white;
           font-size: 10px;
           font-weight: 700;
           padding: 2px 6px;
@@ -259,9 +259,9 @@ function createMarkerContent(marker: MapboxMarker): string {
           animation: bounce 2s ease-in-out infinite;
         ">
           ${Math.round(marker.distance * 1000)}m
-        </div>
-      ` : ''}
-    </div>
+      </div>
+          ` : ''}
+  </div>
   `;
 }
 
@@ -269,8 +269,8 @@ function createMarkerContent(marker: MapboxMarker): string {
 function createUserMarkerContent(): string {
   return `
     <div class="user-marker" style="
-      width: 24px;
-      height: 24px;
+              width: 24px;
+              height: 24px;
       position: relative;
       filter: drop-shadow(0 4px 12px rgba(37, 99, 235, 0.4));
       display: inline-block;
@@ -286,15 +286,15 @@ function createUserMarkerContent(): string {
       "></div>
       
       <!-- Anneau animé -->
-      <div style="
+        <div style="
         position: absolute;
         inset: -8px;
         border: 2px solid #3B82F6;
-        border-radius: 50%;
+          border-radius: 50%;
         border-top-color: transparent;
         animation: userRotate 3s linear infinite;
         opacity: 0.6;
-      "></div>
+        "></div>
       
       <!-- Marqueur principal -->
       <div style="
@@ -302,23 +302,23 @@ function createUserMarkerContent(): string {
         height: 100%;
         background: linear-gradient(145deg, #2563eb, #1d4ed8);
         border: 3px solid white;
-        border-radius: 50%;
-        position: relative;
+      border-radius: 50%;
+      position: relative;
         overflow: hidden;
-      ">
+    ">
         <!-- Effet de lumière -->
-        <div style="
-          position: absolute;
+      <div style="
+        position: absolute;
           top: 1px;
           left: 1px;
           right: 1px;
-          height: 50%;
+        height: 50%;
           background: linear-gradient(to bottom, rgba(255, 255, 255, 0.6), transparent);
-          border-radius: 50% 50% 0 0;
-        "></div>
-        
+        border-radius: 50% 50% 0 0;
+      "></div>
+      
         <!-- Point central -->
-        <div style="
+      <div style="
           position: absolute;
           top: 50%;
           left: 50%;
@@ -376,15 +376,15 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
     // Ajouter ou mettre à jour les marqueurs
     markers.forEach(marker => {
       if (typeof marker.latitude !== 'number' || typeof marker.longitude !== 'number') {
-        return;
-      }
+      return;
+    }
 
       let mapboxMarker = markersRef.current.get(marker.id);
       
       if (!mapboxMarker) {
         // Créer un nouveau marqueur
-        const el = document.createElement('div');
-        el.className = 'marker';
+             const el = document.createElement('div');
+             el.className = 'marker';
         el.style.cssText = `
           position: relative;
           width: auto;
@@ -393,8 +393,8 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
           pointer-events: auto;
           z-index: 1;
         `;
-        el.innerHTML = createMarkerContent(marker);
-        
+             el.innerHTML = createMarkerContent(marker);
+
         // Pas d'interaction au survol, seulement au clic
 
         el.addEventListener('click', (e) => {
@@ -402,9 +402,9 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
           
           // Animation de clic simple
           el.style.transform = 'scale(0.95) translateZ(0)';
-          setTimeout(() => {
+                  setTimeout(() => {
             el.style.transform = 'scale(1) translateZ(0)';
-          }, 150);
+                  }, 150);
 
           // Appeler seulement la fonction de callback
           onMarkerClick?.(marker.id);
@@ -424,17 +424,17 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
       }
     });
 
-    // Auto-fit si demandé
-    if (autoFit && markers.length > 0) {
-      const bounds = new mapboxgl.LngLatBounds();
-      markers.forEach((marker) => {
-        if (typeof marker.latitude === 'number' && typeof marker.longitude === 'number') {
-          bounds.extend([marker.longitude, marker.latitude]);
-        }
-      });
-      if (showUserLocation && userLocation) {
-        bounds.extend([userLocation.lng, userLocation.lat]);
-      }
+        // Auto-fit si demandé
+        if (autoFit && markers.length > 0) {
+          const bounds = new mapboxgl.LngLatBounds();
+          markers.forEach((marker) => {
+            if (typeof marker.latitude === 'number' && typeof marker.longitude === 'number') {
+              bounds.extend([marker.longitude, marker.latitude]);
+            }
+          });
+          if (showUserLocation && userLocation) {
+            bounds.extend([userLocation.lng, userLocation.lat]);
+          }
       mapRef.current!.fitBounds(bounds, { padding: 40, maxZoom: 14, duration: 600 });
     }
   }, [markers, isMapLoaded, autoFit, showUserLocation, userLocation, onMarkerClick]);
@@ -503,12 +503,12 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
         existingUserMarker.setLngLat([userLocation.lng, userLocation.lat]);
       } else {
         // Créer le marqueur utilisateur amélioré
-        const userEl = document.createElement('div');
+      const userEl = document.createElement('div');
         userEl.innerHTML = createUserMarkerContent();
 
-        const userMarker = new mapboxgl.Marker(userEl)
-          .setLngLat([userLocation.lng, userLocation.lat])
-          .addTo(mapRef.current);
+      const userMarker = new mapboxgl.Marker(userEl)
+        .setLngLat([userLocation.lng, userLocation.lat])
+        .addTo(mapRef.current);
 
         markersRef.current.set('user-location', userMarker);
       }
@@ -578,8 +578,8 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
             0%, 100% {
               opacity: 0.6;
               transform: scale(1);
-            }
-            50% {
+             }
+             50% {
               opacity: 0.3;
               transform: scale(1.2);
             }
