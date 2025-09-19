@@ -13,6 +13,7 @@ import {
 import { useCommunity, useJoinCommunity, useLeaveCommunity, useUserCommunities, useCommunityItems } from '../hooks/useCommunities';
 import { useAuthStore } from '../store/authStore';
 import CommunityEventCard from '../components/CommunityEventCard';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 import CommunityDiscussionCard from '../components/CommunityDiscussionCard';
 import ItemCard from '../components/ItemCard';
 import Card from '../components/ui/Card';
@@ -32,6 +33,7 @@ const CommunityDetailPage: React.FC = () => {
 
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
 
   const isMember = userCommunities?.some(uc => uc.id === community?.id) || false;
   const isJoining = joinCommunity.isPending;
@@ -100,6 +102,10 @@ const CommunityDetailPage: React.FC = () => {
   };
 
   const handleLeaveCommunity = async () => {
+    setShowLeaveConfirm(true);
+  };
+
+  const confirmLeaveCommunity = async () => {
     if (!user || !community) return;
     
     try {
@@ -107,6 +113,7 @@ const CommunityDetailPage: React.FC = () => {
         communityId: community.id,
         userId: user.id
       });
+      setShowLeaveConfirm(false);
     } catch (error) {
       console.error('Erreur lors de la sortie de la communauté:', error);
     }
@@ -524,6 +531,19 @@ const CommunityDetailPage: React.FC = () => {
           )}
         </motion.div>
       </motion.div>
+
+      {/* Dialog de confirmation pour quitter le quartier */}
+      <ConfirmDialog
+        isOpen={showLeaveConfirm}
+        onClose={() => setShowLeaveConfirm(false)}
+        onConfirm={confirmLeaveCommunity}
+        title="Quitter le quartier"
+        message={`Êtes-vous sûr de vouloir quitter le quartier "${community?.name}" ? Vous perdrez l'accès aux fonctionnalités réservées aux membres.`}
+        confirmText="Quitter le quartier"
+        cancelText="Annuler"
+        variant="danger"
+        isLoading={isLeaving}
+      />
     </div>
   );
 };

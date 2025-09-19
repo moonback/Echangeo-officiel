@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Users, Calendar, MessageCircle, TrendingUp, UserPlus } from 'lucide-react';
 import Card from './ui/Card';
 import Badge from './ui/Badge';
 import Button from './ui/Button';
+import ConfirmDialog from './ui/ConfirmDialog';
 import { useJoinCommunity, useLeaveCommunity, useUserCommunities } from '../hooks/useCommunities';
 import { useAuthStore } from '../store/authStore';
 import type { CommunityOverview } from '../types';
@@ -23,6 +24,7 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
   const { data: userCommunities } = useUserCommunities(user?.id);
   const joinCommunity = useJoinCommunity();
   const leaveCommunity = useLeaveCommunity();
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
 
   const isMember = userCommunities?.some(uc => uc.id === community.id) || false;
   const isJoining = joinCommunity.isPending;
@@ -48,7 +50,10 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
   const handleLeaveCommunity = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+    setShowLeaveConfirm(true);
+  };
+
+  const confirmLeaveCommunity = async () => {
     if (!user) return;
     
     try {
@@ -56,6 +61,7 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
         communityId: community.id,
         userId: user.id
       });
+      setShowLeaveConfirm(false);
     } catch (error) {
       console.error('Erreur lors de la sortie de la communauté:', error);
     }
@@ -197,6 +203,19 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
           </div>
         </div>
       </Card>
+
+      {/* Dialog de confirmation pour quitter le quartier */}
+      <ConfirmDialog
+        isOpen={showLeaveConfirm}
+        onClose={() => setShowLeaveConfirm(false)}
+        onConfirm={confirmLeaveCommunity}
+        title="Quitter le quartier"
+        message={`Êtes-vous sûr de vouloir quitter le quartier "${community.name}" ? Vous perdrez l'accès aux fonctionnalités réservées aux membres.`}
+        confirmText="Quitter le quartier"
+        cancelText="Annuler"
+        variant="danger"
+        isLoading={isLeaving}
+      />
     </motion.div>
   );
 };
