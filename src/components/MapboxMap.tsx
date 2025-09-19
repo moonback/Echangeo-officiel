@@ -168,46 +168,149 @@ function createMarkerContent(marker: MapboxMarker): string {
           bottom: 100%;
           left: 50%;
           transform: translateX(-50%);
-          width: 120px;
-          height: 120px;
+          width: 200px;
           background: white;
-          border-radius: 12px;
-          box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+          border-radius: 16px;
+          box-shadow: 0 12px 40px rgba(0,0,0,0.25);
           border: 3px solid white;
           opacity: 0;
           visibility: hidden;
           transition: all 0.3s ease;
           z-index: 1000;
-          margin-bottom: 8px;
+          margin-bottom: 12px;
+          overflow: hidden;
         ">
-          <img 
-            src="${marker.imageUrl}" 
-            alt="${marker.title || 'Produit'}"
-            style="
-              width: 100%;
-              height: 100%;
-              object-fit: cover;
-              border-radius: 8px;
-            "
-          />
-          <!-- Titre du produit -->
+          <!-- Image du produit -->
           <div style="
-            position: absolute;
-            bottom: -25px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 600;
-            white-space: nowrap;
-            max-width: 140px;
+            width: 100%;
+            height: 120px;
+            position: relative;
             overflow: hidden;
-            text-overflow: ellipsis;
           ">
-            ${marker.title || 'Produit'}
+            <img 
+              src="${marker.imageUrl}" 
+              alt="${marker.title || 'Produit'}"
+              style="
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+              "
+            />
+            <!-- Badge catégorie -->
+            <div style="
+              position: absolute;
+              top: 8px;
+              left: 8px;
+              background: rgba(0,0,0,0.7);
+              color: white;
+              padding: 4px 8px;
+              border-radius: 12px;
+              font-size: 10px;
+              font-weight: 600;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            ">
+              ${marker.category || 'Autre'}
+            </div>
+            <!-- Badge type d'offre -->
+            ${marker.offerType ? `
+              <div style="
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                background: ${marker.offerType === 'loan' ? 'linear-gradient(135deg, #3B82F6, #1E40AF)' : 'linear-gradient(135deg, #8B5CF6, #7C3AED)'};
+                color: white;
+                padding: 4px 8px;
+                border-radius: 12px;
+                font-size: 10px;
+                font-weight: 600;
+              ">
+                ${marker.offerType === 'loan' ? 'Prêt' : 'Échange'}
+              </div>
+            ` : ''}
+          </div>
+          
+          <!-- Contenu du popup -->
+          <div style="padding: 12px;">
+            <!-- Titre -->
+            <h3 style="
+              margin: 0 0 8px 0;
+              font-size: 14px;
+              font-weight: 700;
+              color: #1f2937;
+              line-height: 1.3;
+              display: -webkit-box;
+              -webkit-line-clamp: 2;
+              -webkit-box-orient: vertical;
+              overflow: hidden;
+            ">
+              ${marker.title || 'Produit'}
+            </h3>
+            
+            <!-- Description -->
+            ${marker.description ? `
+              <p style="
+                margin: 0 0 8px 0;
+                font-size: 11px;
+                color: #6b7280;
+                line-height: 1.4;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+              ">
+                ${marker.description}
+              </p>
+            ` : ''}
+            
+            <!-- Informations du produit -->
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;">
+              ${marker.condition ? `
+                <div style="
+                  background: #f3f4f6;
+                  color: #374151;
+                  padding: 2px 6px;
+                  border-radius: 8px;
+                  font-size: 10px;
+                  font-weight: 500;
+                ">
+                  ${marker.condition === 'excellent' ? 'Excellent' : 
+                    marker.condition === 'good' ? 'Bon' : 
+                    marker.condition === 'fair' ? 'Correct' : 
+                    marker.condition === 'poor' ? 'Usé' : marker.condition}
+                </div>
+              ` : ''}
+            </div>
+            
+            <!-- Propriétaire et distance -->
+            <div style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              font-size: 10px;
+              color: #6b7280;
+            ">
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <div style="
+                  width: 6px;
+                  height: 6px;
+                  background: #10b981;
+                  border-radius: 50%;
+                "></div>
+                ${marker.owner || 'Propriétaire'}
+              </div>
+              ${marker.distance !== undefined ? `
+                <div style="
+                  background: #10b981;
+                  color: white;
+                  padding: 2px 6px;
+                  border-radius: 8px;
+                  font-weight: 600;
+                ">
+                  ${marker.distance < 1 ? Math.round(marker.distance * 1000) + 'm' : marker.distance.toFixed(1) + 'km'}
+                </div>
+              ` : ''}
+            </div>
           </div>
         </div>
       </div>
