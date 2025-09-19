@@ -94,7 +94,7 @@ const Shell: React.FC<ShellProps> = ({ children }) => {
                 {/* Option Chat */}
                 <motion.button
                   onClick={() => {
-                    navigate('/neighbours');
+                    navigate('/messages');
                     setShowFABMenu(false);
                   }}
                   className="inline-flex items-center gap-3 px-4 py-3 bg-white/95 backdrop-blur-sm rounded-full shadow-lg border border-gray-200/50 text-gray-700 hover:bg-white transition-all hover:scale-105 active:scale-95"
