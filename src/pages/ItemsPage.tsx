@@ -120,12 +120,14 @@ const ItemsPage: React.FC = () => {
 
         {/* Filters */}
         {!isMobile ? (
-          <FiltersPanel
-            filters={filters}
-            activeFiltersCount={activeFiltersCount}
-            onFilterChange={handleFilterChange}
-            onResetFilters={resetFilters}
-          />
+          showFilters && (
+            <FiltersPanel
+              filters={filters}
+              activeFiltersCount={activeFiltersCount}
+              onFilterChange={handleFilterChange}
+              onResetFilters={resetFilters}
+            />
+          )
         ) : (
           <FiltersDrawer
             isOpen={showFilters}
