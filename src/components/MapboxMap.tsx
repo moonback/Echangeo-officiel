@@ -1,6 +1,14 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+
+// Configuration de performance Mapbox
+const MAPBOX_PERFORMANCE_CONFIG = {
+  maxMarkers: 100, // Limite de marqueurs pour éviter la surcharge
+  clusteringRadius: 50, // Rayon de clustering en pixels
+  markerUpdateThrottle: 300, // Délai de mise à jour des marqueurs (ms)
+  popupDebounce: 200, // Délai pour éviter les popups multiples
+};
 
 // Fonction pour créer le contenu HTML du popup compact flottant amélioré
 function createCompactFloatingPopup(marker: MapboxMarker): string {
@@ -969,11 +977,9 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
   zoom = 11,
   height = 360,
   markers = [],
-  onMarkerClick,
   autoFit = false,
   userLocation,
-  showUserLocation = false,
-  showPopup = true
+  showUserLocation = false
 }, ref) => {
   const mapContainerRef = React.useRef<HTMLDivElement | null>(null);
   const mapRef = React.useRef<mapboxgl.Map | null>(null);
@@ -981,12 +987,115 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
   const popupRef = React.useRef<mapboxgl.Popup | null>(null);
   const [hoveredCommunity, setHoveredCommunity] = React.useState<MapboxMarker | null>(null);
   const [isCommunityPopupOpen, setIsCommunityPopupOpen] = React.useState(false);
+  
+  // Cache pour éviter les recalculs
+  const markerCacheRef = React.useRef<Map<string, mapboxgl.Marker>>(new Map());
+  const lastMarkersRef = React.useRef<string>('');
+  const updateTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   // Fonction pour fermer le popup de communauté
   const closeCommunityPopup = React.useCallback(() => {
     setIsCommunityPopupOpen(false);
     setHoveredCommunity(null);
   }, []);
+
+  // Fonction optimisée pour créer un marqueur avec cache
+  const createOptimizedMarker = useCallback((marker: MapboxMarker): mapboxgl.Marker => {
+    const cacheKey = `${marker.id}-${marker.latitude}-${marker.longitude}`;
+    
+    // Vérifier le cache
+    if (markerCacheRef.current.has(cacheKey)) {
+      return markerCacheRef.current.get(cacheKey)!;
+    }
+
+    const el = document.createElement('div');
+    el.className = 'marker';
+    el.innerHTML = createMarkerContent(marker);
+
+    const mapboxMarker = new mapboxgl.Marker(el)
+      .setLngLat([marker.longitude, marker.latitude]);
+
+    // Cache le marqueur
+    markerCacheRef.current.set(cacheKey, mapboxMarker);
+    return mapboxMarker;
+  }, []);
+
+  // Fonction pour nettoyer les marqueurs avec throttling
+  const updateMarkersThrottled = useCallback((newMarkers: MapboxMarker[]) => {
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current);
+    }
+
+    updateTimeoutRef.current = setTimeout(() => {
+      if (!mapRef.current) return;
+
+      const markersString = JSON.stringify(newMarkers.map(m => `${m.id}-${m.latitude}-${m.longitude}`));
+      
+      // Éviter les mises à jour inutiles
+      if (markersString === lastMarkersRef.current) return;
+      lastMarkersRef.current = markersString;
+
+      // Nettoyer les anciens marqueurs
+      markersRef.current.forEach(marker => marker.remove());
+      markersRef.current = [];
+
+      // Limiter le nombre de marqueurs pour la performance
+      const limitedMarkers = newMarkers.slice(0, MAPBOX_PERFORMANCE_CONFIG.maxMarkers);
+
+      // Ajouter les nouveaux marqueurs
+      limitedMarkers.forEach((marker) => {
+        if (typeof marker.latitude === 'number' && typeof marker.longitude === 'number') {
+          const mapboxMarker = createOptimizedMarker(marker);
+          mapboxMarker.addTo(mapRef.current!);
+
+          // Ajouter les événements
+          const el = mapboxMarker.getElement();
+          el.addEventListener('click', () => {
+            if (popupRef.current) {
+              popupRef.current.remove();
+            }
+            
+            const popup = new mapboxgl.Popup({
+              closeButton: true,
+              closeOnClick: false,
+              closeOnMove: true,
+              offset: 15,
+              className: 'custom-popup'
+            })
+              .setLngLat([marker.longitude, marker.latitude])
+              .setHTML(createPopupContent(marker))
+              .addTo(mapRef.current!);
+            
+            popupRef.current = popup;
+          });
+
+          // Gestion des communautés
+          if (marker.type === 'community') {
+            el.addEventListener('mouseenter', () => {
+              if (!isCommunityPopupOpen) {
+                setHoveredCommunity(marker);
+              }
+            });
+
+            el.addEventListener('mouseleave', () => {
+              if (!isCommunityPopupOpen) {
+                setTimeout(() => {
+                  setHoveredCommunity(null);
+                }, 150);
+              }
+            });
+
+            el.addEventListener('click', () => {
+              setIsCommunityPopupOpen(true);
+              setHoveredCommunity(marker);
+            });
+          }
+
+          markersRef.current.push(mapboxMarker);
+        }
+      });
+    }, MAPBOX_PERFORMANCE_CONFIG.markerUpdateThrottle);
+  }, [createOptimizedMarker, isCommunityPopupOpen]);
 
   // Exposer la référence de la carte
   React.useImperativeHandle(ref, () => mapRef.current as mapboxgl.Map);
@@ -1006,6 +1115,7 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
     }
   }, [isCommunityPopupOpen, closeCommunityPopup]);
 
+  // Initialisation de la carte (une seule fois)
   React.useEffect(() => {
     if (!accessToken) {
       console.warn('Token Mapbox manquant. Ajoutez VITE_MAPBOX_TOKEN dans votre .env.local');
@@ -1021,71 +1131,18 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
         center: [center.lng, center.lat],
         zoom,
         attributionControl: false,
+        // Optimisations de performance
+        renderWorldCopies: false,
+        maxZoom: 18,
+        minZoom: 1,
       });
       mapRef.current = map;
 
       map.addControl(new mapboxgl.NavigationControl({ showCompass: false }));
 
       map.on('load', () => {
-         // Ajouter les marqueurs
-         markers.forEach((marker) => {
-           if (typeof marker.latitude === 'number' && typeof marker.longitude === 'number') {
-             const el = document.createElement('div');
-             el.className = 'marker';
-             el.innerHTML = createMarkerContent(marker);
-
-            const mapboxMarker = new mapboxgl.Marker(el)
-              .setLngLat([marker.longitude, marker.latitude])
-              .addTo(map);
-
-            // Ajouter l'événement de clic pour ouvrir le popup
-            el.addEventListener('click', () => {
-              // Fermer le popup existant
-              if (popupRef.current) {
-                popupRef.current.remove();
-              }
-              
-              // Créer le nouveau popup au clic
-              const popup = new mapboxgl.Popup({
-                closeButton: true,
-                closeOnClick: false,
-                closeOnMove: true,
-                offset: 15,
-                className: 'custom-popup'
-              })
-                .setLngLat([marker.longitude, marker.latitude])
-                .setHTML(createPopupContent(marker))
-                .addTo(map);
-              
-              popupRef.current = popup;
-            });
-
-            // Ajouter les événements de survol pour les communautés
-            if (marker.type === 'community') {
-              el.addEventListener('mouseenter', () => {
-                if (!isCommunityPopupOpen) {
-                  setHoveredCommunity(marker);
-                }
-              });
-
-              el.addEventListener('mouseleave', () => {
-                if (!isCommunityPopupOpen) {
-                  // Délai pour éviter la fermeture immédiate
-                  setTimeout(() => {
-                    setHoveredCommunity(null);
-                  }, 150);
-                }
-              });
-
-              el.addEventListener('click', () => {
-                setIsCommunityPopupOpen(true);
-                setHoveredCommunity(marker);
-              });
-            }
-
-            markersRef.current.push(mapboxMarker);
-          }
-        });
+        // Ajouter les marqueurs avec la nouvelle logique optimisée
+        updateMarkersThrottled(markers);
 
         // Ajouter le marqueur utilisateur
         if (showUserLocation && userLocation) {
@@ -1125,6 +1182,11 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
     }
 
     return () => {
+      // Nettoyer le timeout
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+      
       // Nettoyer le popup
       if (popupRef.current) {
         popupRef.current.remove();
@@ -1135,88 +1197,22 @@ const MapboxMap = React.forwardRef<mapboxgl.Map, MapboxMapProps>(({
       markersRef.current.forEach(marker => marker.remove());
       markersRef.current = [];
       
+      // Nettoyer le cache
+      markerCacheRef.current.clear();
+      
       // Nettoyer la carte
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
       }
     };
-  }, [accessToken, center.lat, center.lng, zoom, markers, onMarkerClick, autoFit, showUserLocation, userLocation, showPopup, isCommunityPopupOpen]);
+  }, [accessToken, center.lat, center.lng, zoom, autoFit, showUserLocation, userLocation, updateMarkersThrottled]);
 
-  // Mettre à jour les marqueurs quand ils changent
+  // Mettre à jour les marqueurs quand ils changent (optimisé)
   React.useEffect(() => {
     if (!mapRef.current) return;
-
-    // Supprimer le popup existant
-    if (popupRef.current) {
-      popupRef.current.remove();
-      popupRef.current = null;
-    }
-
-    // Supprimer les anciens marqueurs
-    markersRef.current.forEach(marker => marker.remove());
-    markersRef.current = [];
-
-     // Ajouter les nouveaux marqueurs
-     markers.forEach((marker) => {
-       if (typeof marker.latitude === 'number' && typeof marker.longitude === 'number') {
-         const el = document.createElement('div');
-         el.className = 'marker';
-         el.innerHTML = createMarkerContent(marker);
-
-        const mapboxMarker = new mapboxgl.Marker(el)
-          .setLngLat([marker.longitude, marker.latitude])
-          .addTo(mapRef.current!);
-
-         // Ajouter l'événement de clic pour ouvrir le popup
-         el.addEventListener('click', () => {
-           // Fermer le popup existant
-           if (popupRef.current) {
-             popupRef.current.remove();
-           }
-           
-           // Créer le nouveau popup au clic
-           const popup = new mapboxgl.Popup({
-             closeButton: true,
-             closeOnClick: false,
-             closeOnMove: true,
-             offset: 15,
-             className: 'custom-popup'
-           })
-             .setLngLat([marker.longitude, marker.latitude])
-             .setHTML(createPopupContent(marker))
-             .addTo(mapRef.current!);
-           
-           popupRef.current = popup;
-         });
-
-         // Ajouter les événements de survol pour les communautés
-         if (marker.type === 'community') {
-           el.addEventListener('mouseenter', () => {
-             if (!isCommunityPopupOpen) {
-               setHoveredCommunity(marker);
-             }
-           });
-
-           el.addEventListener('mouseleave', () => {
-             if (!isCommunityPopupOpen) {
-               // Délai pour éviter la fermeture immédiate
-               setTimeout(() => {
-                 setHoveredCommunity(null);
-               }, 150);
-             }
-           });
-
-           el.addEventListener('click', () => {
-             setIsCommunityPopupOpen(true);
-             setHoveredCommunity(marker);
-           });
-         }
-
-        markersRef.current.push(mapboxMarker);
-      }
-    });
-  }, [markers, onMarkerClick, showPopup, isCommunityPopupOpen]);
+    updateMarkersThrottled(markers);
+  }, [markers, updateMarkersThrottled]);
 
   // Mettre à jour le marqueur utilisateur
   React.useEffect(() => {
