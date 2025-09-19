@@ -1,36 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
-  Plus, Search, MapPin, Users, Star, TrendingUp, Clock, 
-  Heart, Gift, ArrowRight, Sparkles, Trophy, Zap, Shield, User
+  Plus, Search, MapPin, Users, Clock, 
+  Heart, Gift, ArrowRight, Sparkles, Trophy, Zap
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import { useAuthStore } from '../store/authStore';
 import { useItems } from '../hooks/useItems';
 import { useCommunities } from '../hooks/useCommunities';
-import { useAppStats, useUserStats } from '../hooks/useStats';
+import type { Item, CommunityOverview } from '../types';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, profile } = useAuthStore();
-  const [activeTab, setActiveTab] = useState<'recent' | 'nearby' | 'trending'>('recent');
+  const { profile } = useAuthStore();
   
   // Hooks pour récupérer les données
-  const { items: recentItems, loading: itemsLoading } = useItems({ 
-    limit: 8,
-    sortBy: 'created_at',
-    sortOrder: 'desc'
-  });
+  const { data: recentItems, isLoading: itemsLoading } = useItems();
   
-  const { communities: nearbyCommunities, loading: communitiesLoading } = useCommunities({ 
-    limit: 6 
-  });
-
-  // Statistiques réelles de l'application
-  const { data: appStats, isLoading: statsLoading } = useAppStats();
-  const { data: userStats } = useUserStats(user?.id);
+  const { data: nearbyCommunities, isLoading: communitiesLoading } = useCommunities();
 
   const quickActions = [
     {
@@ -63,40 +52,6 @@ const HomePage: React.FC = () => {
     }
   ];
 
-  // Formater les statistiques avec les vraies données
-  const formatNumber = (num: number) => {
-    if (num >= 1000) {
-      return (num / 1000).toFixed(1) + 'K';
-    }
-    return num.toString();
-  };
-
-  const stats = [
-    { 
-      icon: <Users className="w-5 h-5" />, 
-      label: "Utilisateurs actifs", 
-      value: statsLoading ? "..." : formatNumber(appStats?.activeUsersCount || 0), 
-      color: "text-blue-600" 
-    },
-    { 
-      icon: <Gift className="w-5 h-5" />, 
-      label: "Objets disponibles", 
-      value: statsLoading ? "..." : formatNumber(appStats?.totalItems || 0), 
-      color: "text-green-600" 
-    },
-    { 
-      icon: <Star className="w-5 h-5" />, 
-      label: "Échanges réussis", 
-      value: statsLoading ? "..." : formatNumber(appStats?.totalExchanges || 0), 
-      color: "text-purple-600" 
-    },
-    { 
-      icon: <TrendingUp className="w-5 h-5" />, 
-      label: "Communautés", 
-      value: statsLoading ? "..." : formatNumber(appStats?.totalCommunities || 0), 
-      color: "text-orange-600" 
-    }
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-brand-50/30">
@@ -141,28 +96,6 @@ const HomePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Stats rapides */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            {stats.map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 + index * 0.1 }}
-                className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 border border-gray-200/50"
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg bg-gray-100 ${stat.color}`}>
-                    {stat.icon}
-                  </div>
-                  <div>
-                    <div className="text-lg font-bold text-gray-900">{stat.value}</div>
-                    <div className="text-xs text-gray-600">{stat.label}</div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
         </motion.div>
 
         <div className="grid lg:grid-cols-3 gap-8">
@@ -222,9 +155,24 @@ const HomePage: React.FC = () => {
                     <div key={i} className="bg-gray-200 rounded-2xl h-48 animate-pulse" />
                   ))}
                 </div>
+              ) : !recentItems || recentItems.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-gray-400 mb-4">
+                    <Gift size={48} className="mx-auto" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun objet récent</h3>
+                  <p className="text-gray-600 mb-4">Soyez le premier à publier un objet dans votre quartier !</p>
+                  <Button 
+                    variant="primary" 
+                    onClick={() => navigate('/create')}
+                    leftIcon={<Plus size={16} />}
+                  >
+                    Publier un objet
+                  </Button>
+                </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {recentItems?.slice(0, 8).map((item, index) => (
+                  {recentItems?.slice(0, 8).map((item: Item, index: number) => (
       <motion.div
                       key={item.id}
                       initial={{ opacity: 0, y: 20 }}
@@ -233,16 +181,39 @@ const HomePage: React.FC = () => {
                       whileHover={{ y: -4 }}
                     >
                       <Card 
-                        className="p-0 overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-200 border-0 bg-white/80 backdrop-blur-sm"
+                        className="p-0 overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-200 border-0 bg-white/80 backdrop-blur-sm h-full"
                         onClick={() => navigate(`/items/${item.id}`)}
                       >
-                        {item.image_url && (
+                        {item.images && item.images.length > 0 ? (
                           <div className="aspect-square bg-gray-100 relative overflow-hidden">
                             <img 
-                              src={item.image_url} 
+                              src={item.images[0].url} 
                               alt={item.title}
                               className="w-full h-full object-cover"
                             />
+                            <div className="absolute top-2 left-2 right-2 flex justify-between items-start">
+                              {item.offer_type && (
+                                <span className={`text-xs px-2 py-1 rounded-full text-white font-medium ${
+                                  item.offer_type === 'donation' ? 'bg-green-500' : 
+                                  item.offer_type === 'trade' ? 'bg-purple-500' : 'bg-blue-500'
+                                }`}>
+                                  {item.offer_type === 'donation' ? 'Don' : 
+                                   item.offer_type === 'trade' ? 'Échange' : 'Prêt'}
+                                </span>
+                              )}
+                              {item.images && item.images.length > 1 && (
+                                <div className="bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+                                  +{item.images.length - 1}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center">
+                            <div className="text-center text-gray-400">
+                              <Gift size={32} className="mx-auto mb-2" />
+                              <p className="text-xs font-medium">Pas d'image</p>
+                            </div>
                             {item.offer_type && (
                               <div className="absolute top-2 left-2">
                                 <span className={`text-xs px-2 py-1 rounded-full text-white font-medium ${
@@ -257,23 +228,69 @@ const HomePage: React.FC = () => {
                           </div>
                         )}
                         <div className="p-3">
-                          <h3 className="font-medium text-gray-900 text-sm mb-1 line-clamp-2">
-                            {item.title}
-                          </h3>
-                          <p className="text-xs text-gray-600 mb-2 line-clamp-1">
-                            {item.description}
+                          <div className="mb-2">
+                            <h3 className="font-medium text-gray-900 text-sm line-clamp-2">
+                              {item.title}
+                            </h3>
+                          </div>
+                          
+                          <p className="text-xs text-gray-600 mb-2 line-clamp-2">
+                            {item.description || ''}
                           </p>
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-gray-500">
-                              {item.neighborhood || 'Quartier'}
+                          
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                              item.category === 'tools' ? 'bg-blue-100 text-blue-700' :
+                              item.category === 'electronics' ? 'bg-purple-100 text-purple-700' :
+                              item.category === 'books' ? 'bg-green-100 text-green-700' :
+                              item.category === 'sports' ? 'bg-orange-100 text-orange-700' :
+                              item.category === 'kitchen' ? 'bg-red-100 text-red-700' :
+                              item.category === 'fashion' ? 'bg-pink-100 text-pink-700' :
+                              'bg-gray-100 text-gray-700'
+                            }`}>
+                              {item.category === 'tools' ? '🔧 Outils' :
+                               item.category === 'electronics' ? '📱 Électronique' :
+                               item.category === 'books' ? '📚 Livres' :
+                               item.category === 'sports' ? '⚽ Sport' :
+                               item.category === 'kitchen' ? '🍳 Cuisine' :
+                               item.category === 'fashion' ? '👗 Mode' :
+                               item.category}
                             </span>
-                            <div className="flex items-center gap-1">
-                              <Clock size={12} className="text-gray-400" />
-                              <span className="text-xs text-gray-500">
-                                {new Date(item.created_at).toLocaleDateString('fr-FR')}
-                              </span>
+                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                              item.condition === 'excellent' ? 'bg-green-100 text-green-700' :
+                              item.condition === 'good' ? 'bg-blue-100 text-blue-700' :
+                              item.condition === 'fair' ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-red-100 text-red-700'
+                            }`}>
+                              {item.condition === 'excellent' ? '✨ Excellent' :
+                               item.condition === 'good' ? '👍 Bon état' :
+                               item.condition === 'fair' ? '⚠️ État moyen' :
+                               item.condition === 'poor' ? '🔧 À réparer' :
+                               item.condition}
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center justify-between text-xs">
+                            <div className="flex items-center gap-1 text-gray-500">
+                              <MapPin size={10} />
+                              <span>{(item as Item & { neighborhood?: string }).neighborhood || 'Quartier'}</span>
+                            </div>
+                            <div className="flex items-center gap-1 text-gray-500">
+                              <Clock size={10} />
+                              <span>{new Date(item.created_at).toLocaleDateString('fr-FR')}</span>
                             </div>
                           </div>
+                          
+                          {item.owner && (
+                            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100">
+                              <div className="w-6 h-6 rounded-full bg-gradient-to-r from-brand-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold">
+                                {(item.owner.full_name || item.owner.email)[0].toUpperCase()}
+                              </div>
+                              <span className="text-xs text-gray-600 truncate">
+                                {item.owner.full_name || 'Utilisateur'}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </Card>
       </motion.div>
@@ -307,7 +324,7 @@ const HomePage: React.FC = () => {
                   </div>
                 ) : (
                   <div className="divide-y divide-gray-100">
-                    {nearbyCommunities?.slice(0, 5).map((community) => (
+                    {nearbyCommunities?.slice(0, 5).map((community: CommunityOverview) => (
                       <div 
                         key={community.id}
                         className="p-4 hover:bg-gray-50/50 cursor-pointer transition-colors"
@@ -315,12 +332,12 @@ const HomePage: React.FC = () => {
                       >
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-brand-500 to-purple-500 flex items-center justify-center text-white font-bold">
-                            {community.name[0].toUpperCase()}
+                            {(community.name || 'C')[0].toUpperCase()}
                           </div>
                           <div className="flex-1 min-w-0">
                             <h4 className="font-medium text-gray-900 truncate">{community.name}</h4>
                             <p className="text-sm text-gray-600">
-                              {community.member_count} membres
+                              {community.stats?.total_members || 0} membres
                             </p>
                           </div>
                           <ArrowRight size={16} className="text-gray-400" />
@@ -340,52 +357,6 @@ const HomePage: React.FC = () => {
               </Card>
             </motion.aside>
 
-            {/* Statistiques personnelles */}
-            <motion.aside
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.7 }}
-            >
-              <Card className="p-4 border-0 bg-gradient-to-br from-brand-50 to-purple-50">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-brand-500 to-purple-500 flex items-center justify-center">
-                    <User className="w-4 h-4 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900">Mon Activité</h3>
-                </div>
-                {userStats ? (
-                  <div className="space-y-3 mb-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Objets publiés</span>
-                      <span className="font-semibold text-gray-900">{userStats.itemsPublished}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Échanges</span>
-                      <span className="font-semibold text-gray-900">{userStats.exchangesCompleted}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Favoris</span>
-                      <span className="font-semibold text-gray-900">{userStats.favoritesCount}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Communautés</span>
-                      <span className="font-semibold text-gray-900">{userStats.communitiesJoined}</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-sm text-gray-600 mb-4">Chargement...</div>
-                )}
-                <Button 
-                  variant="secondary" 
-                  size="sm" 
-                  className="w-full"
-                  onClick={() => navigate('/me')}
-                  leftIcon={<User size={14} />}
-                >
-                  Mon Profil
-                </Button>
-              </Card>
-            </motion.aside>
 
             {/* Fonctionnalités IA */}
             <motion.aside

@@ -25,7 +25,6 @@ import { useAuthStore } from './store/authStore';
 import LandingPage from './pages/LandingPage';
 import ProPage from './pages/ProPage';
 import MapPage from './pages/MapPage';
-import StatsTestPage from './pages/StatsTestPage';
 import AdminGuard from './components/admin/AdminGuard';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
@@ -118,7 +117,6 @@ function App() {
             <Route path="/help" element={<HelpPage />} />
             <Route path="/ai-features" element={<AIFeaturesPage />} />
             <Route path="/gamification" element={<GamificationPage />} />
-            <Route path="/stats-test" element={<StatsTestPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Shell>
