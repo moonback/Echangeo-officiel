@@ -18,7 +18,7 @@ export const ItemCardSkeleton: React.FC<SkeletonLoaderProps> = ({
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: index * 0.1, duration: 0.3 }}
-          className={`bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/60 overflow-hidden h-full flex flex-col hover:shadow-xl transition-all duration-300 ${className}`}
+          className={`bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden h-full flex flex-col hover:shadow-3xl transition-all duration-500 ${className}`}
         >
           <div className="aspect-[4/3] shimmer-enhanced bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
             {/* Effet de brillance animé */}

@@ -93,7 +93,7 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
       whileHover={{ y: -2 }}
       className="group"
     >
-      <Card className={`hover:shadow-xl transition-all duration-300 cursor-pointer group-hover:scale-[1.02] border-2 hover:border-brand-200 ${
+      <Card className={`bg-white/80 backdrop-blur-xl border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 cursor-pointer group-hover:scale-[1.02] rounded-3xl ${
         viewMode === 'list' ? 'p-4' : 'p-6'
       }`}>
         <div 

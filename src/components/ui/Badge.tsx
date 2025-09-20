@@ -35,7 +35,7 @@ export const Badge: React.FC<BadgeProps> = ({
   return (
     <span
       className={[
-        'inline-flex items-center rounded-full font-semibold backdrop-blur-sm transition-all duration-200 hover:scale-105',
+        'inline-flex items-center rounded-full font-semibold backdrop-blur-xl transition-all duration-500 hover:scale-105',
         variantClasses[variant],
         sizeClasses[size],
         pulse ? 'animate-pulse' : '',

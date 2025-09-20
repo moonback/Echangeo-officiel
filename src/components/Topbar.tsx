@@ -329,7 +329,7 @@ const Topbar: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-gray-200/50">
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-white/20 shadow-2xl">
         <div className="max-w-12xl mx-auto px-4 h-16">
           {/* Desktop Header */}
           <div className="hidden md:flex items-center justify-between h-full gap-4">
