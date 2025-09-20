@@ -183,18 +183,20 @@ const CommunityDetailPage: React.FC = () => {
               Retour aux quartiers
             </Button>
             
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
                 size="sm"
-                leftIcon={<Share2 className="w-4 h-4" />}
+                leftIcon={<Share2 className="w-3 h-3" />}
+                className="px-2 py-1 text-xs h-7"
               >
                 Partager
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
-                leftIcon={<Heart className="w-4 h-4" />}
+                leftIcon={<Heart className="w-3 h-3" />}
+                className="px-2 py-1 text-xs h-7"
               >
                 Favoris
               </Button>
@@ -208,7 +210,7 @@ const CommunityDetailPage: React.FC = () => {
             <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-brand-200/10 to-brand-300/10 rounded-full blur-3xl"></div>
             <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-brand-200/10 to-brand-300/10 rounded-full blur-2xl"></div>
             
-            <div className="relative p-8 md:p-12">
+            <div className="relative">
               <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-6">
@@ -272,8 +274,9 @@ const CommunityDetailPage: React.FC = () => {
                       onClick={handleLeaveCommunity}
                       disabled={isLeaving}
                       variant="danger"
-                      size="lg"
-                      leftIcon={isLeaving ? <Clock className="w-4 h-4 animate-spin" /> : undefined}
+                      size="md"
+                      leftIcon={isLeaving ? <Clock className="w-3 h-3 animate-spin" /> : undefined}
+                      className="px-4 py-2 text-sm"
                     >
                       {isLeaving ? 'Sortie...' : 'Quitter le quartier'}
                     </Button>
@@ -281,8 +284,9 @@ const CommunityDetailPage: React.FC = () => {
                     <Button
                       onClick={handleJoinCommunity}
                       disabled={isJoining || !user}
-                      size="lg"
-                      leftIcon={isJoining ? <Clock className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
+                      size="md"
+                      leftIcon={isJoining ? <Clock className="w-3 h-3 animate-spin" /> : <UserPlus className="w-3 h-3" />}
+                      className="px-4 py-2 text-sm"
                     >
                       {isJoining ? 'Rejoindre...' : 'Rejoindre le quartier'}
                     </Button>
@@ -313,8 +317,9 @@ const CommunityDetailPage: React.FC = () => {
             </div>
             <Link to={`/items?community=${community.id}`}>
               <Button
-                size="md"
-                rightIcon={<ChevronRight className="w-4 h-4" />}
+                size="sm"
+                rightIcon={<ChevronRight className="w-3 h-3" />}
+                className="px-3 py-1 text-xs"
               >
                 Voir tout
               </Button>
@@ -349,18 +354,20 @@ const CommunityDetailPage: React.FC = () => {
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">Aucun objet disponible</h3>
                 <p className="text-gray-600 text-lg">Soyez le premier à proposer un objet dans ce quartier !</p>
               </div>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button
                   onClick={() => navigate('/create-item')}
-                  size="lg"
-                  leftIcon={<Plus className="w-5 h-5" />}
+                  size="md"
+                  leftIcon={<Plus className="w-4 h-4" />}
+                  className="px-4 py-2 text-sm"
                 >
                   Proposer un objet
                 </Button>
                 <Button
                   onClick={() => navigate('/items')}
                   variant="secondary"
-                  size="lg"
+                  size="md"
+                  className="px-4 py-2 text-sm"
                 >
                   Voir tous les objets
                 </Button>
@@ -391,7 +398,8 @@ const CommunityDetailPage: React.FC = () => {
                 <Link to={`/communities/${community.id}/events`}>
                   <Button
                     size="sm"
-                    rightIcon={<ChevronRight className="w-4 h-4" />}
+                    rightIcon={<ChevronRight className="w-3 h-3" />}
+                    className="px-2 py-1 text-xs h-7"
                   >
                     Voir tout
                   </Button>
@@ -423,7 +431,8 @@ const CommunityDetailPage: React.FC = () => {
                   </div>
                   <Button
                     onClick={() => navigate('/create-event')}
-                    size="md"
+                    size="sm"
+                    className="px-3 py-1 text-sm"
                   >
                     Organiser un événement
                   </Button>
@@ -454,7 +463,8 @@ const CommunityDetailPage: React.FC = () => {
               <Link to={`/communities/${community.id}/members`}>
                 <Button
                   size="sm"
-                  rightIcon={<ChevronRight className="w-4 h-4" />}
+                  rightIcon={<ChevronRight className="w-3 h-3" />}
+                  className="px-2 py-1 text-xs h-7"
                 >
                   Voir tout
                 </Button>
@@ -513,8 +523,9 @@ const CommunityDetailPage: React.FC = () => {
                 <Button
                   onClick={handleJoinCommunity}
                   disabled={isJoining || !user}
-                  size="md"
-                  leftIcon={isJoining ? <Clock className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
+                  size="sm"
+                  leftIcon={isJoining ? <Clock className="w-3 h-3 animate-spin" /> : <UserPlus className="w-3 h-3" />}
+                  className="px-3 py-1 text-sm"
                 >
                   {isJoining ? 'Rejoindre...' : 'Rejoindre le quartier'}
                 </Button>
