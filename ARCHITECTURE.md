@@ -1,444 +1,347 @@
-# Architecture Échangeo 🏗️
+# Architecture Technique - Échangeo
 
 ## Vue d'ensemble
 
-Échangeo est une application web moderne construite avec une architecture **JAMstack** (JavaScript, APIs, Markup) utilisant React comme frontend et Supabase comme backend-as-a-service.
+Échangeo suit une architecture moderne de Single Page Application (SPA) avec un backend-as-a-service. L'application est conçue pour être scalable, maintenable et performante.
 
 ## Diagramme d'Architecture
 
 ```mermaid
 graph TB
-    subgraph "Frontend (React)"
-        A[App.tsx] --> B[Shell Component]
-        B --> C[Pages]
-        B --> D[Components]
-        B --> E[Hooks]
-        F[Store Zustand] --> A
-        G[TanStack Query] --> A
-    end
-    
-    subgraph "Services"
-        H[Supabase Client]
-        I[AI Service]
-        J[Mapbox Service]
-        K[Nominatim Service]
+    subgraph "Frontend (React SPA)"
+        A[Pages] --> B[Components]
+        B --> C[Hooks]
+        C --> D[Services]
+        E[Store Zustand] --> B
+        F[TanStack Query] --> C
     end
     
     subgraph "Backend (Supabase)"
-        L[PostgreSQL Database]
-        M[Authentication]
-        N[Storage]
-        O[Realtime]
-        P[Edge Functions]
+        G[Auth] --> H[PostgreSQL]
+        I[Storage] --> H
+        J[Real-time] --> H
+        K[Edge Functions] --> H
     end
     
     subgraph "Services Externes"
-        Q[Google Gemini AI]
-        R[Mapbox API]
-        S[Nominatim API]
+        L[Google Gemini AI]
+        M[Mapbox]
+        N[Nominatim Geocoding]
     end
     
-    A --> H
-    H --> L
-    H --> M
-    H --> N
-    H --> O
-    I --> Q
-    J --> R
-    K --> S
+    D --> G
+    D --> I
+    D --> J
+    D --> L
+    D --> M
+    D --> N
+    
+    subgraph "Déploiement"
+        O[Vercel/Netlify]
+        P[Supabase Cloud]
+    end
+    
+    A --> O
+    G --> P
+    H --> P
+    I --> P
 ```
 
 ## Architecture Frontend
 
-### Structure des Composants
+### Structure Modulaire
+
+L'architecture frontend suit le pattern de composants React avec une séparation claire des responsabilités :
 
 ```
 src/
-├── App.tsx                 # Point d'entrée principal
-├── components/
-│   ├── Shell.tsx          # Layout principal avec navigation
-│   ├── admin/             # Composants d'administration
-│   ├── ui/                # Composants UI réutilisables
-│   └── modals/            # Modales et overlays
-├── pages/                 # Pages de l'application
-├── hooks/                 # Hooks React personnalisés
-├── services/              # Services externes
-├── store/                 # État global (Zustand)
-├── types/                 # Types TypeScript
-└── utils/                 # Utilitaires
+├── components/          # Composants réutilisables
+│   ├── ui/             # Composants UI de base (Button, Input, etc.)
+│   ├── admin/          # Composants spécifiques à l'administration
+│   └── ...             # Composants métier
+├── pages/              # Pages de l'application
+├── hooks/              # Hooks personnalisés pour la logique métier
+├── services/           # Services externes et API
+├── store/              # Gestion d'état global
+├── types/              # Définitions TypeScript
+└── utils/              # Fonctions utilitaires
 ```
 
 ### Gestion d'État
 
-L'application utilise une approche hybride pour la gestion d'état :
+#### Zustand (État Global)
+- **Authentification** : Utilisateur connecté, profil, permissions
+- **UI State** : Modales, notifications, thèmes
+- **Cache Local** : Préférences utilisateur, données temporaires
 
-- **Zustand** : État global client (authentification, préférences utilisateur)
-- **TanStack Query** : Cache et synchronisation des données serveur
-- **React Hook Form** : État local des formulaires
-- **useState/useReducer** : État local des composants
-
-### Patterns Architecturaux
-
-#### 1. Container/Presenter Pattern
 ```typescript
-// Container (logique métier)
-const ItemsContainer = () => {
-  const { data: items, isLoading } = useItems();
-  const { mutate: createItem } = useCreateItem();
-  
-  return <ItemsPresenter 
-    items={items} 
-    isLoading={isLoading}
-    onCreateItem={createItem}
-  />;
-};
-
-// Presenter (présentation)
-const ItemsPresenter = ({ items, isLoading, onCreateItem }) => {
-  return (
-    <div>
-      {isLoading ? <Loading /> : <ItemsList items={items} />}
-    </div>
-  );
-};
-```
-
-#### 2. Custom Hooks Pattern
-```typescript
-// Hook métier réutilisable
-const useItems = () => {
-  return useQuery({
-    queryKey: ['items'],
-    queryFn: () => supabase.from('items').select('*'),
-  });
-};
-```
-
-#### 3. Service Layer Pattern
-```typescript
-// Service abstrait
-class ItemService {
-  static async create(item: CreateItemData) {
-    return supabase.from('items').insert(item);
-  }
-  
-  static async getById(id: string) {
-    return supabase.from('items').select('*').eq('id', id).single();
-  }
+interface AuthState {
+  user: User | null;
+  profile: Profile | null;
+  loading: boolean;
+  signUp: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
 }
 ```
+
+#### TanStack Query (État Serveur)
+- **Cache intelligent** des données serveur
+- **Synchronisation automatique** en arrière-plan
+- **Gestion optimiste** des mutations
+- **Retry automatique** en cas d'erreur
+
+```typescript
+// Exemple d'utilisation
+const { data: items, isLoading, error } = useQuery({
+  queryKey: ['items', filters],
+  queryFn: () => fetchItems(filters),
+  staleTime: 5 * 60 * 1000, // 5 minutes
+});
+```
+
+### Routing et Navigation
+
+L'application utilise React Router v6 avec une structure hiérarchique :
+
+```typescript
+// Routes principales
+<Routes>
+  <Route path="/" element={<LandingPage />} />
+  <Route path="/login" element={<LoginPage />} />
+  <Route path="/how-it-works" element={<HowItWorksPage />} />
+  
+  {/* Routes protégées */}
+  <Route path="/app" element={<AuthGuard><AppLayout /></AuthGuard>}>
+    <Route index element={<HomePage />} />
+    <Route path="items" element={<ItemsPage />} />
+    <Route path="items/:id" element={<ItemDetailPage />} />
+    <Route path="profile" element={<MyProfilePage />} />
+    <Route path="admin/*" element={<AdminGuard><AdminLayout /></AdminGuard>} />
+  </Route>
+</Routes>
+```
+
+### Composants et Design System
+
+#### Composants UI de Base
+- **Button** : Boutons avec variants (primary, secondary, danger)
+- **Input** : Champs de saisie avec validation
+- **Card** : Conteneurs de contenu
+- **Badge** : Étiquettes et statuts
+- **Modal** : Fenêtres modales réutilisables
+
+#### Composants Métier
+- **ItemCard** : Affichage des objets avec actions
+- **FiltersPanel** : Panneau de filtres avancés
+- **MessageComposer** : Composition de messages
+- **CommunityCard** : Cartes de communauté
 
 ## Architecture Backend
 
-### Supabase comme Backend-as-a-Service
-
-Supabase fournit :
-- **PostgreSQL** : Base de données relationnelle
-- **Authentication** : Gestion des utilisateurs et sessions
-- **Storage** : Stockage de fichiers (images)
-- **Realtime** : Synchronisation temps réel
-- **Edge Functions** : Serverless functions (futur)
-
-### Base de Données
-
-#### Tables Principales
-
-```sql
--- Profils utilisateurs
-profiles (
-  id uuid PRIMARY KEY,
-  email text UNIQUE,
-  full_name text,
-  avatar_url text,
-  bio text,
-  phone text,
-  address text,
-  latitude double precision,
-  longitude double precision,
-  created_at timestamptz,
-  updated_at timestamptz
-)
-
--- Objets à échanger
-items (
-  id uuid PRIMARY KEY,
-  owner_id uuid REFERENCES profiles(id),
-  title text NOT NULL,
-  description text,
-  category text CHECK (category IN ('tools', 'electronics', ...)),
-  condition text CHECK (condition IN ('excellent', 'good', 'fair', 'poor')),
-  offer_type text CHECK (offer_type IN ('loan', 'trade', 'donation')),
-  brand text,
-  model text,
-  estimated_value numeric,
-  tags text[],
-  available_from timestamptz,
-  available_to timestamptz,
-  location_hint text,
-  latitude double precision,
-  longitude double precision,
-  community_id uuid REFERENCES communities(id),
-  is_available boolean DEFAULT true,
-  created_at timestamptz,
-  updated_at timestamptz
-)
-
--- Demandes d'échange
-requests (
-  id uuid PRIMARY KEY,
-  requester_id uuid REFERENCES profiles(id),
-  item_id uuid REFERENCES items(id),
-  message text,
-  status text CHECK (status IN ('pending', 'approved', 'rejected', 'completed')),
-  requested_from timestamptz,
-  requested_to timestamptz,
-  created_at timestamptz,
-  updated_at timestamptz
-)
-
--- Communautés de quartier
-communities (
-  id uuid PRIMARY KEY,
-  name text NOT NULL,
-  description text,
-  city text NOT NULL,
-  postal_code text,
-  country text DEFAULT 'France',
-  center_latitude double precision,
-  center_longitude double precision,
-  radius_km numeric DEFAULT 5,
-  is_active boolean DEFAULT true,
-  created_by uuid REFERENCES profiles(id),
-  created_at timestamptz,
-  updated_at timestamptz
-)
-```
-
-#### Relations et Index
-
-```sql
--- Index pour les performances
-CREATE INDEX idx_items_location ON items USING GIST (point(longitude, latitude));
-CREATE INDEX idx_items_category ON items(category);
-CREATE INDEX idx_items_available ON items(is_available) WHERE is_available = true;
-CREATE INDEX idx_requests_status ON requests(status);
-CREATE INDEX idx_communities_location ON communities USING GIST (point(center_longitude, center_latitude));
-
--- Triggers pour les timestamps
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = now();
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
-CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON profiles
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-```
-
-### Sécurité
-
-#### Row Level Security (RLS)
-
-```sql
--- Exemple de politique RLS pour les items
-CREATE POLICY "Users can view available items" ON items
-    FOR SELECT USING (is_available = true);
-
-CREATE POLICY "Users can insert their own items" ON items
-    FOR INSERT WITH CHECK (auth.uid() = owner_id);
-
-CREATE POLICY "Users can update their own items" ON items
-    FOR UPDATE USING (auth.uid() = owner_id);
-```
+### Supabase Backend-as-a-Service
 
 #### Authentification
+- **JWT Tokens** pour la sécurité
+- **Row Level Security (RLS)** pour l'accès aux données
+- **Policies** granulaires par table
+- **Gestion des sessions** automatique
 
-- **Supabase Auth** : Gestion des sessions JWT
-- **Email/Password** : Méthode d'authentification principale
-- **RLS Policies** : Contrôle d'accès au niveau des lignes
-- **API Keys** : Sécurisation des services externes
+```sql
+-- Exemple de politique RLS
+CREATE POLICY "Users can view their own profile" ON profiles
+FOR SELECT USING (auth.uid() = id);
+```
 
-## Services Externes
+#### Base de Données PostgreSQL
+- **Tables relationnelles** avec contraintes
+- **Index optimisés** pour les performances
+- **Triggers** pour la cohérence des données
+- **Vues** pour les requêtes complexes
 
-### Intelligence Artificielle (Google Gemini)
+#### Stockage de Fichiers
+- **Buckets organisés** par type (avatars, items, etc.)
+- **Upload direct** depuis le client
+- **Optimisation d'images** automatique
+- **CDN global** pour la performance
+
+#### Real-time
+- **Subscriptions** en temps réel
+- **Notifications push** pour les interactions
+- **Synchronisation** multi-appareils
+
+### Services Externes
+
+#### Intelligence Artificielle (Google Gemini)
+- **Analyse d'images** pour la catégorisation automatique
+- **Suggestions de descriptions** d'objets
+- **Amélioration de messages** pour la communication
+- **Détection de quartiers** à partir d'adresses
+
+#### Géolocalisation
+- **Mapbox** pour les cartes interactives
+- **Nominatim** pour le reverse geocoding
+- **Calcul de distances** Haversine
+- **Clustering** des objets sur la carte
+
+## Patterns Architecturaux
+
+### Custom Hooks Pattern
+Encapsulation de la logique métier dans des hooks réutilisables :
 
 ```typescript
-// Service d'analyse d'images
-class AIService {
-  static async analyzeImage(imageUrl: string): Promise<AIAnalysisResult> {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            { text: "Analyze this image and provide item details..." },
-            { inline_data: { mime_type: "image/jpeg", data: imageData } }
-          ]
-        }]
-      })
-    });
-    
-    return response.json();
-  }
+// Hook pour la gestion des objets
+export function useItems(filters?: ItemFilters) {
+  return useQuery({
+    queryKey: ['items', filters],
+    queryFn: () => fetchItems(filters),
+    enabled: !!filters,
+  });
+}
+
+// Hook pour les mutations
+export function useCreateItem() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: createItem,
+    onSuccess: () => {
+      queryClient.invalidateQueries(['items']);
+    },
+  });
 }
 ```
 
-### Géolocalisation (Mapbox + Nominatim)
+### Service Layer Pattern
+Abstraction des appels API dans des services dédiés :
 
 ```typescript
-// Service de géolocalisation
-class LocationService {
-  static async geocodeAddress(address: string): Promise<Coordinates> {
-    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
-    const data = await response.json();
-    return { latitude: data[0].lat, longitude: data[0].lon };
+// Service pour les objets
+export class ItemService {
+  static async fetchItems(filters: ItemFilters): Promise<Item[]> {
+    const { data, error } = await supabase
+      .from('items')
+      .select('*')
+      .eq('is_available', true);
+    
+    if (error) throw error;
+    return data;
   }
   
-  static async reverseGeocode(lat: number, lng: number): Promise<string> {
-    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
-    const data = await response.json();
-    return data.display_name;
+  static async createItem(item: CreateItemData): Promise<Item> {
+    const { data, error } = await supabase
+      .from('items')
+      .insert(item)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
   }
 }
 ```
 
-## Flux de Données
+### Component Composition Pattern
+Composition de composants pour éviter la duplication :
 
-### 1. Authentification
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant F as Frontend
-    participant S as Supabase Auth
-    participant D as Database
-    
-    U->>F: Login
-    F->>S: authenticate()
-    S->>D: Verify credentials
-    D->>S: User data
-    S->>F: JWT Token
-    F->>U: Authenticated
+```typescript
+// Composant de base pour les cartes
+const Card = ({ children, className, ...props }) => (
+  <div className={`card ${className}`} {...props}>
+    {children}
+  </div>
+);
+
+// Composition pour des cartes spécialisées
+const ItemCard = ({ item, ...props }) => (
+  <Card className="item-card" {...props}>
+    <ItemImage item={item} />
+    <ItemContent item={item} />
+    <ItemActions item={item} />
+  </Card>
+);
 ```
-
-### 2. Création d'un Objet
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant F as Frontend
-    participant AI as Gemini AI
-    participant S as Supabase
-    participant D as Database
-    
-    U->>F: Upload image + details
-    F->>AI: analyzeImage()
-    AI->>F: Analysis result
-    F->>S: createItem()
-    S->>D: INSERT item
-    D->>S: Success
-    S->>F: Item created
-    F->>U: Success message
-```
-
-### 3. Recherche Géolocalisée
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant F as Frontend
-    participant L as Location Service
-    participant S as Supabase
-    participant D as Database
-    
-    U->>F: Search nearby items
-    F->>L: getCurrentLocation()
-    L->>F: Coordinates
-    F->>S: searchNearbyItems()
-    S->>D: SELECT with ST_DWithin
-    D->>S: Items data
-    S->>F: Results
-    F->>U: Display items
-```
-
-## Performance et Optimisation
-
-### Frontend
-- **Code Splitting** : Chargement paresseux des pages
-- **Image Optimization** : Compression et formats modernes
-- **Caching** : TanStack Query pour le cache des données
-- **Bundle Analysis** : Optimisation de la taille des bundles
-
-### Backend
-- **Database Indexing** : Index sur les colonnes fréquemment requêtées
-- **Connection Pooling** : Gestion optimisée des connexions Supabase
-- **CDN** : Distribution des assets statiques
-- **Caching** : Cache des requêtes fréquentes
-
-### Monitoring
-- **Error Tracking** : Surveillance des erreurs frontend
-- **Performance Metrics** : Métriques de performance
-- **Database Monitoring** : Surveillance des requêtes lentes
-- **User Analytics** : Analyse du comportement utilisateur
 
 ## Sécurité
 
-### Frontend
-- **Input Validation** : Validation côté client avec Zod
-- **XSS Protection** : Échappement des données utilisateur
-- **CSRF Protection** : Tokens CSRF pour les formulaires
-- **Content Security Policy** : Politique de sécurité du contenu
+### Authentification et Autorisation
+- **JWT Tokens** avec expiration
+- **Refresh tokens** pour la continuité de session
+- **Row Level Security** au niveau base de données
+- **Validation côté client et serveur**
 
-### Backend
-- **RLS Policies** : Contrôle d'accès au niveau des lignes
-- **API Rate Limiting** : Limitation du taux de requêtes
-- **Input Sanitization** : Nettoyage des entrées utilisateur
-- **Audit Logging** : Journalisation des actions sensibles
+### Protection des Données
+- **Chiffrement** des données sensibles
+- **Sanitisation** des entrées utilisateur
+- **Rate limiting** pour prévenir les abus
+- **CORS** configuré pour les domaines autorisés
+
+### Politiques de Sécurité
+```sql
+-- Exemple de politique pour les objets
+CREATE POLICY "Users can view available items" ON items
+FOR SELECT USING (
+  is_available = true AND
+  (owner_id = auth.uid() OR 
+   EXISTS (
+     SELECT 1 FROM community_members cm 
+     WHERE cm.community_id = items.community_id 
+     AND cm.user_id = auth.uid()
+   ))
+);
+```
+
+## Performance
+
+### Optimisations Frontend
+- **Lazy loading** des composants et images
+- **Virtualization** pour les longues listes
+- **Memoization** des calculs coûteux
+- **Code splitting** par routes
+
+### Optimisations Backend
+- **Index de base de données** optimisés
+- **Pagination** pour les grandes requêtes
+- **Cache Redis** pour les données fréquentes
+- **CDN** pour les assets statiques
+
+### Monitoring
+- **Métriques de performance** avec Web Vitals
+- **Logging structuré** pour le debugging
+- **Alertes** pour les erreurs critiques
+- **Analytics** pour l'usage utilisateur
 
 ## Déploiement
 
 ### Environnements
-- **Development** : `localhost:5173` avec Vite dev server
-- **Staging** : Environnement de test avec données de test
-- **Production** : Déploiement sur Vercel/Netlify
+- **Développement** : Local avec Supabase local
+- **Staging** : Prévisualisation des fonctionnalités
+- **Production** : Environnement stable pour les utilisateurs
 
-### CI/CD Pipeline
-```yaml
-# Exemple de workflow GitHub Actions
-name: Deploy
-on:
-  push:
-    branches: [main]
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '18'
-      - run: npm ci
-      - run: npm run build
-      - run: npm run test
-      - uses: vercel/action@v1
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-```
+### CI/CD
+- **Tests automatiques** à chaque commit
+- **Build automatique** sur les branches
+- **Déploiement automatique** sur merge
+- **Rollback** en cas de problème
+
+### Infrastructure
+- **Frontend** : Vercel/Netlify (CDN global)
+- **Backend** : Supabase Cloud (PostgreSQL + Auth + Storage)
+- **Monitoring** : Sentry pour les erreurs
+- **Analytics** : Google Analytics + Supabase Analytics
 
 ## Évolutivité
 
-### Horizontal Scaling
-- **Stateless Frontend** : Pas de session côté serveur
-- **CDN Distribution** : Distribution géographique des assets
-- **Database Scaling** : Supabase gère automatiquement la montée en charge
-- **Microservices** : Préparation pour la migration vers des microservices
+### Scalabilité Horizontale
+- **Microservices** prêts pour la séparation
+- **Cache distribué** avec Redis
+- **Load balancing** automatique
+- **Auto-scaling** basé sur la charge
 
-### Vertical Scaling
-- **Optimization** : Optimisation continue des performances
-- **Caching** : Mise en cache à plusieurs niveaux
-- **Database Optimization** : Optimisation des requêtes et index
-- **Resource Monitoring** : Surveillance des ressources
+### Maintenance
+- **Documentation** technique complète
+- **Tests** de régression automatisés
+- **Monitoring** proactif
+- **Backup** automatique des données
 
----
-
-Cette architecture permet à Échangeo d'être **scalable**, **maintenable** et **performante** tout en gardant une complexité technique maîtrisée grâce à l'utilisation de Supabase comme backend-as-a-service.
+Cette architecture permet à Échangeo d'évoluer de manière flexible tout en maintenant des performances optimales et une expérience utilisateur de qualité.

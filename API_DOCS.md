@@ -1,685 +1,408 @@
-# Documentation API Échangeo 📚
+# Documentation API - Échangeo
 
 ## Vue d'ensemble
 
-Échangeo utilise **Supabase** comme backend-as-a-service, fournissant une API REST automatique basée sur le schéma de base de données PostgreSQL. Cette documentation couvre les endpoints principaux et les patterns d'utilisation.
-
-## Configuration
-
-### Client Supabase
-```typescript
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from '../types/database';
-
-const supabase = createClient<Database>(
-  process.env.VITE_SUPABASE_URL!,
-  process.env.VITE_SUPABASE_ANON_KEY!
-);
-```
+Échangeo utilise Supabase comme backend-as-a-service, fournissant une API REST complète avec authentification, base de données PostgreSQL, stockage de fichiers et fonctionnalités temps réel.
 
 ## Authentification
 
-### Inscription
-```typescript
-const { data, error } = await supabase.auth.signUp({
-  email: 'user@example.com',
-  password: 'password123',
-  options: {
-    data: {
-      full_name: 'John Doe',
-      phone: '+33123456789'
+### Endpoints d'Authentification
+
+#### Inscription
+```http
+POST /auth/v1/signup
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "securePassword123",
+  "options": {
+    "data": {
+      "full_name": "Jean Dupont"
     }
   }
-});
-```
-
-### Connexion
-```typescript
-const { data, error } = await supabase.auth.signInWithPassword({
-  email: 'user@example.com',
-  password: 'password123'
-});
-```
-
-### Déconnexion
-```typescript
-const { error } = await supabase.auth.signOut();
-```
-
-### Récupération du profil utilisateur
-```typescript
-const { data: { user } } = await supabase.auth.getUser();
-```
-
-## Gestion des Profils
-
-### Créer un profil
-```typescript
-const { data, error } = await supabase
-  .from('profiles')
-  .insert({
-    id: user.id,
-    email: user.email,
-    full_name: 'John Doe',
-    bio: 'Passionné de bricolage',
-    phone: '+33123456789',
-    address: '123 Rue de la Paix, Paris',
-    latitude: 48.8566,
-    longitude: 2.3522
-  });
-```
-
-### Récupérer un profil
-```typescript
-const { data, error } = await supabase
-  .from('profiles')
-  .select('*')
-  .eq('id', userId)
-  .single();
-```
-
-### Mettre à jour un profil
-```typescript
-const { data, error } = await supabase
-  .from('profiles')
-  .update({
-    full_name: 'John Smith',
-    bio: 'Nouvelle bio',
-    phone: '+33987654321'
-  })
-  .eq('id', userId);
-```
-
-### Rechercher des profils par localisation
-```typescript
-const { data, error } = await supabase
-  .from('profiles')
-  .select('*')
-  .not('latitude', 'is', null)
-  .not('longitude', 'is', null);
-```
-
-## Gestion des Objets
-
-### Créer un objet
-```typescript
-const { data, error } = await supabase
-  .from('items')
-  .insert({
-    owner_id: userId,
-    title: 'Perceuse Bosch',
-    description: 'Perceuse en excellent état',
-    category: 'tools',
-    condition: 'excellent',
-    offer_type: 'loan',
-    brand: 'Bosch',
-    model: 'GSB 13 RE',
-    estimated_value: 80,
-    tags: ['bricolage', 'perceuse', 'outils'],
-    available_from: '2024-01-01T00:00:00Z',
-    available_to: '2024-12-31T23:59:59Z',
-    location_hint: 'Dans mon garage',
-    latitude: 48.8566,
-    longitude: 2.3522,
-    community_id: communityId,
-    is_available: true
-  });
-```
-
-### Récupérer tous les objets disponibles
-```typescript
-const { data, error } = await supabase
-  .from('items')
-  .select(`
-    *,
-    owner:profiles(*),
-    images:item_images(*),
-    average_rating,
-    ratings_count
-  `)
-  .eq('is_available', true)
-  .order('created_at', { ascending: false });
-```
-
-### Récupérer un objet par ID
-```typescript
-const { data, error } = await supabase
-  .from('items')
-  .select(`
-    *,
-    owner:profiles(*),
-    images:item_images(*),
-    average_rating,
-    ratings_count
-  `)
-  .eq('id', itemId)
-  .single();
-```
-
-### Rechercher des objets par catégorie
-```typescript
-const { data, error } = await supabase
-  .from('items')
-  .select('*')
-  .eq('category', 'tools')
-  .eq('is_available', true);
-```
-
-### Recherche géolocalisée (dans un rayon)
-```typescript
-const { data, error } = await supabase
-  .rpc('search_nearby_items', {
-    user_lat: 48.8566,
-    user_lng: 2.3522,
-    radius_km: 5
-  });
-```
-
-### Recherche par texte (titre et description)
-```typescript
-const { data, error } = await supabase
-  .from('items')
-  .select('*')
-  .or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`)
-  .eq('is_available', true);
-```
-
-### Mettre à jour un objet
-```typescript
-const { data, error } = await supabase
-  .from('items')
-  .update({
-    title: 'Nouveau titre',
-    description: 'Nouvelle description',
-    is_available: false
-  })
-  .eq('id', itemId)
-  .eq('owner_id', userId); // Sécurité : seul le propriétaire peut modifier
-```
-
-### Supprimer un objet
-```typescript
-const { data, error } = await supabase
-  .from('items')
-  .delete()
-  .eq('id', itemId)
-  .eq('owner_id', userId);
-```
-
-## Gestion des Images
-
-### Upload d'image vers Supabase Storage
-```typescript
-const uploadImage = async (file: File, itemId: string) => {
-  const fileExt = file.name.split('.').pop();
-  const fileName = `${itemId}/${Date.now()}.${fileExt}`;
-  
-  const { data, error } = await supabase.storage
-    .from('items')
-    .upload(fileName, file);
-    
-  if (error) throw error;
-  
-  // Obtenir l'URL publique
-  const { data: { publicUrl } } = supabase.storage
-    .from('items')
-    .getPublicUrl(fileName);
-    
-  return publicUrl;
-};
-```
-
-### Enregistrer une image en base
-```typescript
-const { data, error } = await supabase
-  .from('item_images')
-  .insert({
-    item_id: itemId,
-    url: imageUrl,
-    is_primary: isPrimary
-  });
-```
-
-### Récupérer les images d'un objet
-```typescript
-const { data, error } = await supabase
-  .from('item_images')
-  .select('*')
-  .eq('item_id', itemId)
-  .order('is_primary', { ascending: false });
-```
-
-## Gestion des Demandes
-
-### Créer une demande
-```typescript
-const { data, error } = await supabase
-  .from('requests')
-  .insert({
-    requester_id: userId,
-    item_id: itemId,
-    message: 'Bonjour, je souhaiterais emprunter cet objet',
-    status: 'pending',
-    requested_from: '2024-01-15T00:00:00Z',
-    requested_to: '2024-01-20T23:59:59Z'
-  });
-```
-
-### Récupérer les demandes reçues
-```typescript
-const { data, error } = await supabase
-  .from('requests')
-  .select(`
-    *,
-    requester:profiles(*),
-    item:items(*)
-  `)
-  .eq('item.owner_id', userId)
-  .order('created_at', { ascending: false });
-```
-
-### Récupérer les demandes envoyées
-```typescript
-const { data, error } = await supabase
-  .from('requests')
-  .select(`
-    *,
-    item:items(*)
-  `)
-  .eq('requester_id', userId)
-  .order('created_at', { ascending: false });
-```
-
-### Mettre à jour le statut d'une demande
-```typescript
-const { data, error } = await supabase
-  .from('requests')
-  .update({ status: 'approved' })
-  .eq('id', requestId)
-  .eq('item.owner_id', userId); // Sécurité : seul le propriétaire peut approuver
-```
-
-## Système de Messagerie
-
-### Envoyer un message
-```typescript
-const { data, error } = await supabase
-  .from('messages')
-  .insert({
-    sender_id: userId,
-    receiver_id: receiverId,
-    content: 'Bonjour, merci pour votre réponse !',
-    request_id: requestId // Optionnel : lier à une demande
-  });
-```
-
-### Récupérer les conversations
-```typescript
-const { data, error } = await supabase
-  .from('messages')
-  .select(`
-    *,
-    sender:profiles(*),
-    receiver:profiles(*)
-  `)
-  .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
-  .order('created_at', { ascending: false });
-```
-
-### Récupérer les messages d'une conversation
-```typescript
-const { data, error } = await supabase
-  .from('messages')
-  .select(`
-    *,
-    sender:profiles(*),
-    receiver:profiles(*)
-  `)
-  .or(`and(sender_id.eq.${userId},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${userId})`)
-  .order('created_at', { ascending: true });
-```
-
-## Système de Favoris
-
-### Ajouter aux favoris
-```typescript
-const { data, error } = await supabase
-  .from('favorites')
-  .insert({
-    user_id: userId,
-    item_id: itemId
-  });
-```
-
-### Retirer des favoris
-```typescript
-const { data, error } = await supabase
-  .from('favorites')
-  .delete()
-  .eq('user_id', userId)
-  .eq('item_id', itemId);
-```
-
-### Récupérer les favoris
-```typescript
-const { data, error } = await supabase
-  .from('favorites')
-  .select(`
-    *,
-    item:items(
-      *,
-      owner:profiles(*),
-      images:item_images(*)
-    )
-  `)
-  .eq('user_id', userId);
-```
-
-## Système de Notation
-
-### Noter un objet
-```typescript
-const { data, error } = await supabase
-  .from('item_ratings')
-  .insert({
-    item_id: itemId,
-    rater_id: userId,
-    score: 5,
-    comment: 'Excellent objet, très satisfait !'
-  });
-```
-
-### Noter un utilisateur
-```typescript
-const { data, error } = await supabase
-  .from('user_ratings')
-  .insert({
-    request_id: requestId,
-    rater_id: userId,
-    rated_user_id: ratedUserId,
-    communication_score: 5,
-    punctuality_score: 4,
-    care_score: 5,
-    comment: 'Très bon échange, personne de confiance'
-  });
-```
-
-### Récupérer les statistiques de réputation
-```typescript
-const { data, error } = await supabase
-  .from('profile_reputation_stats')
-  .select('*')
-  .eq('profile_id', userId)
-  .single();
-```
-
-## Gestion des Communautés
-
-### Créer une communauté
-```typescript
-const { data, error } = await supabase
-  .from('communities')
-  .insert({
-    name: 'Quartier Belleville',
-    description: 'Communauté des habitants de Belleville',
-    city: 'Paris',
-    postal_code: '75019',
-    country: 'France',
-    center_latitude: 48.8722,
-    center_longitude: 2.3767,
-    radius_km: 2,
-    created_by: userId
-  });
-```
-
-### Récupérer les communautés proches
-```typescript
-const { data, error } = await supabase
-  .rpc('search_nearby_communities', {
-    user_lat: 48.8566,
-    user_lng: 2.3522,
-    radius_km: 10
-  });
-```
-
-### Rejoindre une communauté
-```typescript
-const { data, error } = await supabase
-  .from('community_members')
-  .insert({
-    community_id: communityId,
-    user_id: userId,
-    role: 'member'
-  });
-```
-
-### Récupérer les membres d'une communauté
-```typescript
-const { data, error } = await supabase
-  .from('community_members')
-  .select(`
-    *,
-    user:profiles(*)
-  `)
-  .eq('community_id', communityId)
-  .eq('is_active', true);
-```
-
-## Système de Gamification
-
-### Récupérer les points et badges
-```typescript
-const { data, error } = await supabase
-  .from('user_gamification')
-  .select(`
-    *,
-    badges:user_badges(
-      *,
-      badge:badges(*)
-    )
-  `)
-  .eq('user_id', userId)
-  .single();
-```
-
-### Ajouter des points
-```typescript
-const { data, error } = await supabase
-  .from('user_gamification')
-  .update({
-    total_points: totalPoints + newPoints,
-    level: newLevel
-  })
-  .eq('user_id', userId);
-```
-
-## Administration
-
-### Récupérer les statistiques globales
-```typescript
-const { data, error } = await supabase
-  .from('admin_stats')
-  .select('*')
-  .single();
-```
-
-### Bannir un utilisateur
-```typescript
-const { data, error } = await supabase
-  .from('user_bans')
-  .insert({
-    user_id: userId,
-    banned_by: adminId,
-    reason: 'Comportement inapproprié',
-    expires_at: '2024-12-31T23:59:59Z'
-  });
-```
-
-### Suspendre un objet
-```typescript
-const { data, error } = await supabase
-  .from('items')
-  .update({
-    is_available: false,
-    suspended_by_admin: true,
-    suspension_reason: 'Contenu inapproprié'
-  })
-  .eq('id', itemId);
-```
-
-## Fonctions RPC Personnalisées
-
-### Recherche géolocalisée d'objets
-```sql
-CREATE OR REPLACE FUNCTION search_nearby_items(
-  user_lat double precision,
-  user_lng double precision,
-  radius_km double precision DEFAULT 5
-)
-RETURNS TABLE (
-  id uuid,
-  title text,
-  description text,
-  category text,
-  condition text,
-  offer_type text,
-  latitude double precision,
-  longitude double precision,
-  distance_km double precision
-) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT 
-    i.id,
-    i.title,
-    i.description,
-    i.category,
-    i.condition,
-    i.offer_type,
-    i.latitude,
-    i.longitude,
-    ST_Distance(
-      ST_Point(i.longitude, i.latitude)::geography,
-      ST_Point(user_lng, user_lat)::geography
-    ) / 1000 as distance_km
-  FROM items i
-  WHERE i.is_available = true
-    AND i.latitude IS NOT NULL
-    AND i.longitude IS NOT NULL
-    AND ST_DWithin(
-      ST_Point(i.longitude, i.latitude)::geography,
-      ST_Point(user_lng, user_lat)::geography,
-      radius_km * 1000
-    )
-  ORDER BY distance_km;
-END;
-$$ LANGUAGE plpgsql;
-```
-
-### Recherche géolocalisée de communautés
-```sql
-CREATE OR REPLACE FUNCTION search_nearby_communities(
-  user_lat double precision,
-  user_lng double precision,
-  radius_km double precision DEFAULT 10
-)
-RETURNS TABLE (
-  id uuid,
-  name text,
-  description text,
-  city text,
-  postal_code text,
-  distance_km double precision,
-  member_count bigint
-) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT 
-    c.id,
-    c.name,
-    c.description,
-    c.city,
-    c.postal_code,
-    ST_Distance(
-      ST_Point(c.center_longitude, c.center_latitude)::geography,
-      ST_Point(user_lng, user_lat)::geography
-    ) / 1000 as distance_km,
-    COUNT(cm.id) as member_count
-  FROM communities c
-  LEFT JOIN community_members cm ON c.id = cm.community_id AND cm.is_active = true
-  WHERE c.is_active = true
-    AND c.center_latitude IS NOT NULL
-    AND c.center_longitude IS NOT NULL
-    AND ST_DWithin(
-      ST_Point(c.center_longitude, c.center_latitude)::geography,
-      ST_Point(user_lng, user_lat)::geography,
-      radius_km * 1000
-    )
-  GROUP BY c.id, c.name, c.description, c.city, c.postal_code, c.center_latitude, c.center_longitude
-  ORDER BY distance_km;
-END;
-$$ LANGUAGE plpgsql;
-```
-
-## Gestion des Erreurs
-
-### Pattern de gestion d'erreur
-```typescript
-const handleSupabaseError = (error: any) => {
-  if (error.code === 'PGRST116') {
-    return 'Aucun résultat trouvé';
-  } else if (error.code === '23505') {
-    return 'Cette ressource existe déjà';
-  } else if (error.code === '23503') {
-    return 'Référence invalide';
-  } else {
-    return error.message || 'Une erreur est survenue';
-  }
-};
-
-// Utilisation
-const { data, error } = await supabase.from('items').select('*');
-if (error) {
-  throw new Error(handleSupabaseError(error));
 }
 ```
 
-## Rate Limiting et Performance
+#### Connexion
+```http
+POST /auth/v1/token?grant_type=password
+Content-Type: application/json
 
-### Pagination
-```typescript
-const { data, error } = await supabase
-  .from('items')
-  .select('*')
-  .range(0, 19) // Première page (20 éléments)
-  .order('created_at', { ascending: false });
-
-// Page suivante
-const { data, error } = await supabase
-  .from('items')
-  .select('*')
-  .range(20, 39) // Deuxième page
-  .order('created_at', { ascending: false });
+{
+  "email": "user@example.com",
+  "password": "securePassword123"
+}
 ```
 
-### Optimisation des requêtes
-```typescript
-// ✅ Bon : Sélection spécifique
-const { data } = await supabase
-  .from('items')
-  .select('id, title, category, latitude, longitude')
-  .eq('is_available', true);
-
-// ❌ Éviter : Sélection de tout
-const { data } = await supabase
-  .from('items')
-  .select('*');
+#### Déconnexion
+```http
+POST /auth/v1/logout
+Authorization: Bearer <access_token>
 ```
 
-## Webhooks et Realtime
+#### Rafraîchissement du token
+```http
+POST /auth/v1/token?grant_type=refresh_token
+Content-Type: application/json
 
-### Écouter les changements en temps réel
-```typescript
+{
+  "refresh_token": "<refresh_token>"
+}
+```
+
+## API des Profils Utilisateurs
+
+### Récupérer un profil
+```http
+GET /rest/v1/profiles?id=eq.{user_id}
+Authorization: Bearer <access_token>
+```
+
+**Réponse :**
+```json
+{
+  "id": "uuid",
+  "email": "user@example.com",
+  "full_name": "Jean Dupont",
+  "avatar_url": "https://...",
+  "bio": "Description utilisateur",
+  "phone": "+33123456789",
+  "address": "123 Rue de la Paix, Paris",
+  "latitude": 48.8566,
+  "longitude": 2.3522,
+  "created_at": "2024-01-01T00:00:00Z",
+  "updated_at": "2024-01-01T00:00:00Z"
+}
+```
+
+### Mettre à jour un profil
+```http
+PATCH /rest/v1/profiles?id=eq.{user_id}
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "full_name": "Jean Dupont Modifié",
+  "bio": "Nouvelle description",
+  "phone": "+33987654321"
+}
+```
+
+### Upload d'avatar
+```http
+POST /storage/v1/object/avatars/{filename}
+Authorization: Bearer <access_token>
+Content-Type: image/jpeg
+
+[Binary image data]
+```
+
+## API des Objets
+
+### Récupérer tous les objets
+```http
+GET /rest/v1/items?select=*&is_available=eq.true
+Authorization: Bearer <access_token>
+```
+
+**Paramètres de requête :**
+- `category` : Filtrer par catégorie
+- `offer_type` : Filtrer par type d'offre (loan, trade, donation)
+- `is_available` : Objets disponibles uniquement
+- `order` : Trier par (created_at.desc, estimated_value.asc, etc.)
+- `limit` : Limiter le nombre de résultats
+- `offset` : Pagination
+
+### Récupérer un objet spécifique
+```http
+GET /rest/v1/items?id=eq.{item_id}&select=*,owner:profiles(*)
+Authorization: Bearer <access_token>
+```
+
+**Réponse :**
+```json
+{
+  "id": "uuid",
+  "owner_id": "uuid",
+  "title": "Perceuse Bosch",
+  "description": "Perceuse en bon état, idéale pour le bricolage",
+  "category": "tools",
+  "condition": "good",
+  "offer_type": "loan",
+  "brand": "Bosch",
+  "model": "GSR 120-LI",
+  "estimated_value": 80,
+  "tags": ["bricolage", "outils", "perceuse"],
+  "available_from": "2024-01-01",
+  "available_to": "2024-12-31",
+  "location_hint": "Appartement 3B",
+  "latitude": 48.8566,
+  "longitude": 2.3522,
+  "is_available": true,
+  "created_at": "2024-01-01T00:00:00Z",
+  "updated_at": "2024-01-01T00:00:00Z",
+  "owner": {
+    "id": "uuid",
+    "full_name": "Marie Martin",
+    "avatar_url": "https://..."
+  }
+}
+```
+
+### Créer un objet
+```http
+POST /rest/v1/items
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "title": "Perceuse Bosch",
+  "description": "Perceuse en bon état",
+  "category": "tools",
+  "condition": "good",
+  "offer_type": "loan",
+  "brand": "Bosch",
+  "estimated_value": 80,
+  "tags": ["bricolage", "outils"],
+  "available_from": "2024-01-01",
+  "available_to": "2024-12-31",
+  "latitude": 48.8566,
+  "longitude": 2.3522
+}
+```
+
+### Mettre à jour un objet
+```http
+PATCH /rest/v1/items?id=eq.{item_id}
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "title": "Nouveau titre",
+  "is_available": false
+}
+```
+
+### Supprimer un objet
+```http
+DELETE /rest/v1/items?id=eq.{item_id}
+Authorization: Bearer <access_token>
+```
+
+## API des Images d'Objets
+
+### Upload d'image d'objet
+```http
+POST /storage/v1/object/items/{item_id}/{filename}
+Authorization: Bearer <access_token>
+Content-Type: image/jpeg
+
+[Binary image data]
+```
+
+### Récupérer les images d'un objet
+```http
+GET /rest/v1/item_images?item_id=eq.{item_id}
+Authorization: Bearer <access_token>
+```
+
+### Définir une image principale
+```http
+PATCH /rest/v1/item_images?id=eq.{image_id}
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "is_primary": true
+}
+```
+
+## API des Demandes
+
+### Créer une demande
+```http
+POST /rest/v1/requests
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "item_id": "uuid",
+  "message": "Bonjour, je souhaiterais emprunter cette perceuse pour la semaine prochaine.",
+  "requested_from": "2024-01-15",
+  "requested_to": "2024-01-20"
+}
+```
+
+### Récupérer les demandes d'un utilisateur
+```http
+GET /rest/v1/requests?requester_id=eq.{user_id}&select=*,item:items(*)
+Authorization: Bearer <access_token>
+```
+
+### Mettre à jour le statut d'une demande
+```http
+PATCH /rest/v1/requests?id=eq.{request_id}
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "status": "approved"
+}
+```
+
+**Statuts possibles :**
+- `pending` : En attente
+- `approved` : Approuvée
+- `rejected` : Rejetée
+- `completed` : Terminée
+
+## API des Messages
+
+### Envoyer un message
+```http
+POST /rest/v1/messages
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "receiver_id": "uuid",
+  "content": "Bonjour, merci pour votre proposition !",
+  "request_id": "uuid"
+}
+```
+
+### Récupérer les messages d'une conversation
+```http
+GET /rest/v1/messages?or=(and(sender_id.eq.{user1_id},receiver_id.eq.{user2_id}),and(sender_id.eq.{user2_id},receiver_id.eq.{user1_id}))&order=created_at.asc
+Authorization: Bearer <access_token>
+```
+
+## API des Communautés
+
+### Récupérer les communautés à proximité
+```http
+GET /rest/v1/communities?select=*&is_active=eq.true
+Authorization: Bearer <access_token>
+```
+
+### Rejoindre une communauté
+```http
+POST /rest/v1/community_members
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "community_id": "uuid"
+}
+```
+
+### Créer une communauté
+```http
+POST /rest/v1/communities
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "name": "Quartier Montmartre",
+  "description": "Communauté du quartier Montmartre",
+  "city": "Paris",
+  "postal_code": "75018",
+  "country": "France",
+  "center_latitude": 48.8867,
+  "center_longitude": 2.3431,
+  "radius_km": 2
+}
+```
+
+## API des Favoris
+
+### Ajouter un objet aux favoris
+```http
+POST /rest/v1/favorites
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "item_id": "uuid"
+}
+```
+
+### Récupérer les favoris d'un utilisateur
+```http
+GET /rest/v1/favorites?user_id=eq.{user_id}&select=*,item:items(*)
+Authorization: Bearer <access_token>
+```
+
+### Supprimer un favori
+```http
+DELETE /rest/v1/favorites?item_id=eq.{item_id}&user_id=eq.{user_id}
+Authorization: Bearer <access_token>
+```
+
+## API des Évaluations
+
+### Noter un objet
+```http
+POST /rest/v1/item_ratings
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "item_id": "uuid",
+  "score": 5,
+  "comment": "Très bon état, propriétaire très sympa !"
+}
+```
+
+### Noter un utilisateur
+```http
+POST /rest/v1/user_ratings
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "request_id": "uuid",
+  "rated_user_id": "uuid",
+  "communication_score": 5,
+  "punctuality_score": 4,
+  "care_score": 5,
+  "comment": "Utilisateur très fiable"
+}
+```
+
+## API d'Administration
+
+### Statistiques générales
+```http
+GET /rest/v1/user_ban_stats
+Authorization: Bearer <admin_token>
+```
+
+### Gestion des utilisateurs
+```http
+GET /rest/v1/profiles?select=*,user_details(*)
+Authorization: Bearer <admin_token>
+```
+
+### Bannir un utilisateur
+```http
+POST /rest/v1/user_bans
+Authorization: Bearer <admin_token>
+Content-Type: application/json
+
+{
+  "user_id": "uuid",
+  "reason": "Violation des conditions d'utilisation",
+  "ban_type": "temporary",
+  "expires_at": "2024-02-01T00:00:00Z"
+}
+```
+
+## Fonctionnalités Temps Réel
+
+### S'abonner aux changements d'objets
+```javascript
 const subscription = supabase
   .channel('items_changes')
   .on('postgres_changes', {
@@ -688,14 +411,128 @@ const subscription = supabase
     table: 'items'
   }, (payload) => {
     console.log('Changement détecté:', payload);
-    // Mettre à jour l'interface utilisateur
   })
   .subscribe();
-
-// Nettoyer l'abonnement
-subscription.unsubscribe();
 ```
 
----
+### S'abonner aux nouveaux messages
+```javascript
+const subscription = supabase
+  .channel('messages')
+  .on('postgres_changes', {
+    event: 'INSERT',
+    schema: 'public',
+    table: 'messages',
+    filter: `receiver_id=eq.${userId}`
+  }, (payload) => {
+    console.log('Nouveau message:', payload.new);
+  })
+  .subscribe();
+```
 
-Cette documentation couvre les principaux patterns d'utilisation de l'API Supabase dans Échangeo. Pour plus de détails sur les fonctionnalités avancées, consultez la [documentation officielle Supabase](https://supabase.com/docs).
+## Codes d'Erreur
+
+| Code | Description |
+|------|-------------|
+| 400 | Requête malformée |
+| 401 | Non authentifié |
+| 403 | Accès interdit |
+| 404 | Ressource non trouvée |
+| 409 | Conflit (ex: email déjà utilisé) |
+| 422 | Données de validation invalides |
+| 429 | Trop de requêtes (rate limiting) |
+| 500 | Erreur serveur |
+
+## Rate Limiting
+
+- **Authentification** : 5 tentatives par minute
+- **API REST** : 1000 requêtes par heure par utilisateur
+- **Upload de fichiers** : 10 uploads par minute par utilisateur
+
+## Pagination
+
+Utilisez les paramètres `limit` et `offset` pour la pagination :
+
+```http
+GET /rest/v1/items?limit=20&offset=40
+```
+
+Pour une pagination basée sur les curseurs, utilisez les filtres de date :
+
+```http
+GET /rest/v1/items?created_at=lt.2024-01-01T00:00:00Z&limit=20
+```
+
+## Filtres et Recherche
+
+### Filtres simples
+```http
+GET /rest/v1/items?category=eq.tools&offer_type=eq.loan
+```
+
+### Filtres complexes
+```http
+GET /rest/v1/items?and=(category.eq.tools,estimated_value.gte.50,estimated_value.lte.200)
+```
+
+### Recherche textuelle
+```http
+GET /rest/v1/items?title=ilike.*perceuse*
+```
+
+### Tri
+```http
+GET /rest/v1/items?order=created_at.desc,estimated_value.asc
+```
+
+## Exemples d'Intégration
+
+### JavaScript/TypeScript
+```typescript
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  'https://your-project.supabase.co',
+  'your-anon-key'
+);
+
+// Récupérer des objets
+const { data: items, error } = await supabase
+  .from('items')
+  .select('*, owner:profiles(*)')
+  .eq('is_available', true)
+  .order('created_at', { ascending: false });
+
+// Créer un objet
+const { data: item, error } = await supabase
+  .from('items')
+  .insert({
+    title: 'Mon objet',
+    category: 'tools',
+    offer_type: 'loan'
+  })
+  .select()
+  .single();
+```
+
+### Python
+```python
+from supabase import create_client, Client
+
+supabase: Client = create_client(
+    "https://your-project.supabase.co",
+    "your-anon-key"
+)
+
+# Récupérer des objets
+items = supabase.table('items').select('*').eq('is_available', True).execute()
+
+# Créer un objet
+item = supabase.table('items').insert({
+    'title': 'Mon objet',
+    'category': 'tools',
+    'offer_type': 'loan'
+}).execute()
+```
+
+Cette API fournit toutes les fonctionnalités nécessaires pour construire une application complète de partage d'objets entre voisins, avec une sécurité robuste et des performances optimisées.

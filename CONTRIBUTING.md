@@ -1,533 +1,514 @@
-# Guide de Contribution Échangeo 🤝
+# Guide de Contribution - Échangeo
 
-## Bienvenue !
+Merci de votre intérêt pour contribuer à Échangeo ! Ce guide vous aidera à comprendre comment contribuer efficacement au projet.
 
-Merci de votre intérêt pour contribuer à **Échangeo** ! Ce guide vous aidera à comprendre comment participer efficacement au développement de la plateforme.
+## 🤝 Comment Contribuer
 
-## 📋 Table des Matières
+### Types de Contributions
 
-- [Code de Conduite](#code-de-conduite)
-- [Comment Contribuer](#comment-contribuer)
-- [Environnement de Développement](#environnement-de-développement)
-- [Standards de Code](#standards-de-code)
-- [Processus de Contribution](#processus-de-contribution)
-- [Types de Contributions](#types-de-contributions)
-- [Reporting de Bugs](#reporting-de-bugs)
-- [Suggestions de Fonctionnalités](#suggestions-de-fonctionnalités)
-- [Documentation](#documentation)
-- [Tests](#tests)
-- [Déploiement](#déploiement)
+Nous accueillons plusieurs types de contributions :
 
-## Code de Conduite
+- **🐛 Corrections de bugs** - Signaler et corriger des problèmes
+- **✨ Nouvelles fonctionnalités** - Ajouter de nouvelles capacités
+- **📚 Documentation** - Améliorer la documentation
+- **🎨 Design** - Améliorer l'interface utilisateur
+- **🧪 Tests** - Ajouter ou améliorer les tests
+- **🔧 Infrastructure** - Améliorer l'outillage et le déploiement
 
-### Nos Engagements
+### Processus de Contribution
 
-Nous nous engageons à créer un environnement accueillant et inclusif pour tous les contributeurs, indépendamment de leur âge, taille, handicap, ethnicité, identité et expression de genre, niveau d'expérience, nationalité, apparence physique, race, religion, identité et orientation sexuelle.
-
-### Comportements Attendus
-
-- **Respect** : Utiliser un langage accueillant et inclusif
-- **Empathie** : Être respectueux des différents points de vue et expériences
-- **Collaboration** : Accepter gracieusement les critiques constructives
-- **Focus** : Se concentrer sur ce qui est le mieux pour la communauté
-- **Bienveillance** : Montrer de l'empathie envers les autres membres de la communauté
-
-### Comportements Inacceptables
-
-- L'utilisation de langage ou d'images sexualisés
-- Le trolling, les commentaires insultants ou désobligeants
-- Le harcèlement public ou privé
-- La publication d'informations privées sans permission
-- Toute conduite inappropriée dans un contexte professionnel
-
-## Comment Contribuer
-
-### 1. Fork et Clone
-
+#### 1. Fork et Clone
 ```bash
-# Fork le repository sur GitHub
-# Puis clonez votre fork
-git clone https://github.com/VOTRE_USERNAME/echangeo.git
+# Forker le repository sur GitHub
+# Puis cloner votre fork
+git clone https://github.com/votre-username/echangeo.git
 cd echangeo
+
+# Ajouter le repository original comme upstream
+git remote add upstream https://github.com/original-owner/echangeo.git
 ```
 
-### 2. Configuration de l'Environnement
+#### 2. Créer une Branche
+```bash
+# Créer une nouvelle branche pour votre contribution
+git checkout -b feature/nom-de-votre-fonctionnalite
+# ou
+git checkout -b fix/nom-du-bug
+```
 
+#### 3. Installation et Configuration
 ```bash
 # Installer les dépendances
 npm install
 
 # Configurer les variables d'environnement
 cp .env.example .env.local
-# Éditez .env.local avec vos clés API
+# Éditer .env.local avec vos clés API
 ```
 
-### 3. Créer une Branche
+#### 4. Développement
+- Faire vos modifications
+- Tester vos changements
+- Vérifier que les tests passent
+- Linter le code
 
+#### 5. Commit et Push
 ```bash
-# Créer une nouvelle branche pour votre fonctionnalité
-git checkout -b feature/nom-de-votre-fonctionnalite
+# Ajouter vos modifications
+git add .
 
-# Ou pour un bug fix
-git checkout -b fix/description-du-bug
+# Commit avec un message descriptif
+git commit -m "feat: ajouter la fonctionnalité de recherche avancée"
+
+# Pousser vers votre fork
+git push origin feature/nom-de-votre-fonctionnalite
 ```
 
-### 4. Développement
+#### 6. Pull Request
+- Créer une Pull Request sur GitHub
+- Remplir le template de PR
+- Attendre la revue et les retours
 
-```bash
-# Lancer le serveur de développement
-npm run dev
+## 📝 Standards de Code
 
-# Lancer les tests
-npm run test
+### TypeScript/JavaScript
 
-# Vérifier le code
-npm run lint
-```
-
-## Environnement de Développement
-
-### Prérequis
-
-- **Node.js** 18+ 
-- **npm** ou **yarn**
-- **Git**
-- **Compte Supabase** (gratuit)
-- **Clé API Google Gemini** (optionnel)
-- **Clé API Mapbox** (optionnel)
-
-### Configuration Supabase
-
-1. Créez un projet sur [supabase.com](https://supabase.com)
-2. Récupérez l'URL et la clé anonyme
-3. Configurez les variables d'environnement :
-
-```env
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-VITE_GEMINI_API_KEY=your_gemini_api_key
-VITE_MAPBOX_ACCESS_TOKEN=your_mapbox_token
-```
-
-### Structure du Projet
-
-```
-src/
-├── components/          # Composants réutilisables
-│   ├── admin/          # Composants d'administration
-│   ├── ui/             # Composants UI de base
-│   └── modals/         # Modales
-├── hooks/              # Hooks React personnalisés
-├── pages/              # Pages de l'application
-├── services/           # Services externes
-├── store/              # État global (Zustand)
-├── types/              # Types TypeScript
-├── utils/              # Utilitaires
-└── test/               # Configuration des tests
-```
-
-## Standards de Code
-
-### TypeScript
-
-- **Strict Mode** : Utilisez TypeScript en mode strict
-- **Types Explicites** : Définissez des types pour toutes les fonctions et variables
-- **Interfaces** : Utilisez des interfaces pour définir la structure des objets
-- **Enums** : Utilisez des enums pour les valeurs constantes
-
+#### Convention de Nommage
 ```typescript
-// ✅ Bon
-interface User {
+// Variables et fonctions : camelCase
+const userName = 'john';
+const getUserProfile = () => {};
+
+// Composants React : PascalCase
+const UserProfile = () => {};
+
+// Types et interfaces : PascalCase
+interface UserProfile {
   id: string;
   name: string;
-  email: string;
 }
 
-const getUser = async (id: string): Promise<User | null> => {
-  // Implementation
-};
-
-// ❌ Éviter
-const getUser = async (id) => {
-  // Implementation
-};
+// Constantes : UPPER_SNAKE_CASE
+const API_BASE_URL = 'https://api.example.com';
 ```
 
-### React
-
-- **Composants Fonctionnels** : Utilisez des composants fonctionnels avec hooks
-- **Hooks Personnalisés** : Créez des hooks pour la logique réutilisable
-- **Props Typées** : Définissez des interfaces pour les props
-- **Évitez les Side Effects** : Utilisez useEffect correctement
-
+#### Structure des Fichiers
 ```typescript
-// ✅ Bon
-interface ButtonProps {
-  children: React.ReactNode;
-  onClick: () => void;
-  variant?: 'primary' | 'secondary';
+// 1. Imports externes
+import React from 'react';
+import { motion } from 'framer-motion';
+
+// 2. Imports internes
+import Button from '../components/ui/Button';
+import { useAuth } from '../hooks/useAuth';
+
+// 3. Types et interfaces
+interface ComponentProps {
+  title: string;
+  onClose: () => void;
 }
 
-const Button: React.FC<ButtonProps> = ({ children, onClick, variant = 'primary' }) => {
+// 4. Composant principal
+const MyComponent: React.FC<ComponentProps> = ({ title, onClose }) => {
+  // 5. Hooks
+  const { user } = useAuth();
+  
+  // 6. Handlers
+  const handleClick = () => {
+    onClose();
+  };
+  
+  // 7. Render
   return (
-    <button 
-      className={`btn btn-${variant}`}
-      onClick={onClick}
-    >
-      {children}
-    </button>
+    <div>
+      <h1>{title}</h1>
+      <Button onClick={handleClick}>Fermer</Button>
+    </div>
   );
 };
 
-// ❌ Éviter
-const Button = ({ children, onClick }) => {
-  return <button onClick={onClick}>{children}</button>;
+// 8. Export
+export default MyComponent;
+```
+
+#### Documentation des Composants
+```typescript
+/**
+ * Composant pour afficher un objet avec ses actions
+ * 
+ * @param item - L'objet à afficher
+ * @param onRequest - Callback appelé lors d'une demande
+ * @param showActions - Afficher les actions ou non
+ */
+interface ItemCardProps {
+  item: Item;
+  onRequest?: (item: Item) => void;
+  showActions?: boolean;
+}
+
+const ItemCard: React.FC<ItemCardProps> = ({ 
+  item, 
+  onRequest, 
+  showActions = true 
+}) => {
+  // Implementation...
 };
 ```
 
-### Styling
+### CSS/Styling
 
-- **Tailwind CSS** : Utilisez les classes Tailwind pour le styling
-- **Composants Responsive** : Assurez-vous que les composants sont responsives
-- **Accessibilité** : Utilisez les bonnes pratiques d'accessibilité
-
+#### Tailwind CSS
 ```typescript
-// ✅ Bon
-<div className="flex flex-col md:flex-row gap-4 p-6 bg-white rounded-lg shadow-md">
-  <h2 className="text-xl font-semibold text-gray-900">Titre</h2>
-  <p className="text-gray-600">Description</p>
+// Utiliser les classes Tailwind de manière cohérente
+<div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-md">
+  <h2 className="text-lg font-semibold text-gray-900">Titre</h2>
+  <Button variant="primary" size="sm">Action</Button>
 </div>
 
-// ❌ Éviter
-<div style={{ display: 'flex', padding: '24px', backgroundColor: 'white' }}>
-  <h2>Titre</h2>
-  <p>Description</p>
+// Créer des classes utilitaires si nécessaire
+<div className="card-hover">
+  <img className="image-responsive" src="..." alt="..." />
 </div>
 ```
 
-### Gestion d'État
+#### Variables CSS Personnalisées
+```css
+/* Dans index.css ou un fichier de thème */
+:root {
+  --brand-primary: #3b82f6;
+  --brand-secondary: #1e40af;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --error-color: #ef4444;
+}
+```
 
-- **TanStack Query** : Pour les données serveur
-- **Zustand** : Pour l'état global client
-- **React Hook Form** : Pour les formulaires
-- **useState/useReducer** : Pour l'état local
+## 🧪 Tests
 
+### Structure des Tests
+```
+src/
+├── components/
+│   ├── Button.tsx
+│   └── __tests__/
+│       └── Button.test.tsx
+├── hooks/
+│   ├── useAuth.ts
+│   └── __tests__/
+│       └── useAuth.test.ts
+└── utils/
+    ├── helpers.ts
+    └── __tests__/
+        └── helpers.test.ts
+```
+
+### Écrire des Tests
 ```typescript
-// ✅ Bon - TanStack Query
-const { data: items, isLoading, error } = useQuery({
-  queryKey: ['items'],
-  queryFn: () => supabase.from('items').select('*'),
-});
-
-// ✅ Bon - Zustand
-const useAuthStore = create((set) => ({
-  user: null,
-  setUser: (user) => set({ user }),
-  logout: () => set({ user: null }),
-}));
-```
-
-## Processus de Contribution
-
-### 1. Issues
-
-- **Cherchez** d'abord si l'issue existe déjà
-- **Créez** une issue claire et détaillée
-- **Assignez** des labels appropriés
-- **Définissez** les critères d'acceptation
-
-### 2. Pull Requests
-
-- **Fork** le repository
-- **Créez** une branche pour votre fonctionnalité
-- **Commitez** vos changements avec des messages clairs
-- **Poussez** vers votre fork
-- **Créez** une Pull Request
-
-### 3. Review Process
-
-- **Automatique** : Les tests et le linting sont exécutés automatiquement
-- **Manuel** : Au moins un reviewer doit approuver
-- **Feedback** : Les commentaires sont constructifs et respectueux
-- **Itération** : Les changements sont discutés et améliorés
-
-### 4. Merge
-
-- **Squash** : Les commits sont fusionnés en un seul commit
-- **Clean History** : L'historique Git reste propre
-- **Documentation** : Les changements sont documentés
-
-## Types de Contributions
-
-### 🐛 Bug Fixes
-
-- **Reproduire** le bug avec des étapes claires
-- **Identifier** la cause racine
-- **Implémenter** la correction
-- **Tester** la solution
-- **Documenter** le changement
-
-### ✨ Nouvelles Fonctionnalités
-
-- **Discuter** l'idée dans une issue
-- **Concevoir** l'architecture
-- **Implémenter** la fonctionnalité
-- **Tester** exhaustivement
-- **Documenter** l'utilisation
-
-### 📚 Documentation
-
-- **README** : Mise à jour des instructions
-- **API Docs** : Documentation des endpoints
-- **Guides** : Tutoriels et guides utilisateur
-- **Code Comments** : Commentaires dans le code
-
-### 🎨 Améliorations UI/UX
-
-- **Design** : Respecter le design system
-- **Accessibilité** : Suivre les standards WCAG
-- **Responsive** : Tester sur différents appareils
-- **Performance** : Optimiser les animations
-
-### 🧪 Tests
-
-- **Tests Unitaires** : Tester les fonctions individuelles
-- **Tests d'Intégration** : Tester les interactions
-- **Tests E2E** : Tester les flux utilisateur
-- **Couverture** : Maintenir une bonne couverture
-
-## Reporting de Bugs
-
-### Template d'Issue
-
-```markdown
-## 🐛 Description du Bug
-
-Une description claire et concise du problème.
-
-## 🔄 Étapes pour Reproduire
-
-1. Allez sur '...'
-2. Cliquez sur '...'
-3. Faites défiler vers '...'
-4. Voir l'erreur
-
-## ✅ Comportement Attendu
-
-Une description claire de ce qui devrait se passer.
-
-## 📱 Environnement
-
-- OS: [ex: iOS, Windows, Linux]
-- Navigateur: [ex: Chrome, Safari, Firefox]
-- Version: [ex: 22]
-- Version de l'app: [ex: 1.0.0]
-
-## 📸 Captures d'Écran
-
-Si applicable, ajoutez des captures d'écran.
-
-## 📝 Informations Supplémentaires
-
-Toute autre information pertinente.
-```
-
-### Critères de Qualité
-
-- **Reproductible** : Le bug peut être reproduit
-- **Spécifique** : Description précise du problème
-- **Contextuel** : Informations sur l'environnement
-- **Priorisé** : Niveau de priorité défini
-
-## Suggestions de Fonctionnalités
-
-### Template de Feature Request
-
-```markdown
-## ✨ Description de la Fonctionnalité
-
-Une description claire et concise de la fonctionnalité souhaitée.
-
-## 🎯 Problème à Résoudre
-
-Quel problème cette fonctionnalité résoudrait-elle ?
-
-## 💡 Solution Proposée
-
-Décrivez votre solution idéale.
-
-## 🔄 Alternatives Considérées
-
-Décrivez les alternatives que vous avez considérées.
-
-## 📱 Contexte Supplémentaire
-
-Toute autre information pertinente.
-```
-
-### Processus d'Évaluation
-
-1. **Validation** : L'idée est-elle alignée avec la vision ?
-2. **Faisabilité** : Est-ce techniquement réalisable ?
-3. **Priorité** : Quelle est la priorité par rapport aux autres features ?
-4. **Ressources** : Quelles ressources sont nécessaires ?
-
-## Documentation
-
-### Standards de Documentation
-
-- **Clarté** : Langage simple et compréhensible
-- **Complétude** : Toutes les informations nécessaires
-- **Actualité** : Documentation à jour
-- **Exemples** : Code d'exemple quand nécessaire
-
-### Types de Documentation
-
-- **README** : Instructions d'installation et d'utilisation
-- **API Docs** : Documentation des endpoints
-- **Guides** : Tutoriels pas à pas
-- **Architecture** : Documentation technique
-- **Changelog** : Historique des changements
-
-### Outils de Documentation
-
-- **Markdown** : Format principal
-- **JSDoc** : Documentation du code JavaScript/TypeScript
-- **Storybook** : Documentation des composants
-- **Mermaid** : Diagrammes et schémas
-
-## Tests
-
-### Stratégie de Tests
-
-- **Tests Unitaires** : Fonctions individuelles
-- **Tests d'Intégration** : Interactions entre composants
-- **Tests E2E** : Flux utilisateur complets
-- **Tests de Performance** : Temps de réponse et charge
-
-### Outils de Test
-
-- **Vitest** : Framework de test principal
-- **Testing Library** : Utilitaires de test React
-- **Playwright** : Tests E2E
-- **MSW** : Mocking des APIs
-
-### Exemple de Test
-
-```typescript
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
-import Button from './Button';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import Button from '../Button';
 
 describe('Button', () => {
-  it('renders with correct text', () => {
-    render(<Button onClick={() => {}}>Click me</Button>);
-    expect(screen.getByText('Click me')).toBeInTheDocument();
+  it('affiche le texte du bouton', () => {
+    render(<Button>Cliquer ici</Button>);
+    expect(screen.getByRole('button', { name: 'Cliquer ici' })).toBeInTheDocument();
   });
 
-  it('calls onClick when clicked', () => {
+  it('appelle onClick quand cliqué', () => {
     const handleClick = vi.fn();
-    render(<Button onClick={handleClick}>Click me</Button>);
+    render(<Button onClick={handleClick}>Cliquer</Button>);
     
-    screen.getByText('Click me').click();
+    fireEvent.click(screen.getByRole('button'));
     expect(handleClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('est désactivé quand disabled=true', () => {
+    render(<Button disabled>Désactivé</Button>);
+    expect(screen.getByRole('button')).toBeDisabled();
   });
 });
 ```
 
-## Déploiement
+### Tests d'Intégration
+```typescript
+import { render, screen, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter } from 'react-router-dom';
+import ItemsPage from '../ItemsPage';
 
-### Environnements
+const createTestQueryClient = () => new QueryClient({
+  defaultOptions: {
+    queries: { retry: false },
+    mutations: { retry: false },
+  },
+});
 
-- **Development** : Environnement local
-- **Staging** : Environnement de test
-- **Production** : Environnement de production
+const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+  <QueryClientProvider client={createTestQueryClient()}>
+    <BrowserRouter>
+      {children}
+    </BrowserRouter>
+  </QueryClientProvider>
+);
 
-### Processus de Déploiement
+describe('ItemsPage', () => {
+  it('affiche la liste des objets', async () => {
+    render(
+      <TestWrapper>
+        <ItemsPage />
+      </TestWrapper>
+    );
 
-1. **Tests** : Tous les tests passent
-2. **Review** : Code review approuvé
-3. **Merge** : Fusion dans la branche principale
-4. **Build** : Construction de l'application
-5. **Deploy** : Déploiement automatique
-
-### CI/CD Pipeline
-
-```yaml
-# Exemple GitHub Actions
-name: CI/CD
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '18'
-      - run: npm ci
-      - run: npm run test
-      - run: npm run lint
-
-  deploy:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - uses: actions/checkout@v2
-      - run: npm ci
-      - run: npm run build
-      - uses: vercel/action@v1
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+    await waitFor(() => {
+      expect(screen.getByText('Mes Objets')).toBeInTheDocument();
+    });
+  });
+});
 ```
 
-## 🎯 Checklist de Contribution
+## 📋 Convention de Commits
 
-### Avant de Commencer
-- [ ] J'ai lu et compris le code de conduite
-- [ ] J'ai vérifié qu'il n'y a pas d'issue similaire
-- [ ] J'ai configuré mon environnement de développement
-- [ ] J'ai lu la documentation pertinente
+Nous utilisons [Conventional Commits](https://www.conventionalcommits.org/) :
 
-### Pendant le Développement
-- [ ] Mon code suit les standards définis
-- [ ] J'ai écrit des tests pour mes changements
-- [ ] J'ai mis à jour la documentation si nécessaire
-- [ ] J'ai testé mes changements localement
+### Format
+```
+<type>(<scope>): <description>
 
-### Avant la Soumission
-- [ ] Tous les tests passent
-- [ ] Le code est linté sans erreurs
-- [ ] J'ai créé une Pull Request claire
-- [ ] J'ai ajouté des captures d'écran si nécessaire
+[optional body]
 
-## 🆘 Besoin d'Aide ?
+[optional footer(s)]
+```
 
-### Ressources
+### Types
+- **feat** : Nouvelle fonctionnalité
+- **fix** : Correction de bug
+- **docs** : Documentation
+- **style** : Formatage, points-virgules, etc.
+- **refactor** : Refactoring de code
+- **test** : Ajout ou modification de tests
+- **chore** : Tâches de maintenance
 
-- **Documentation** : Consultez les docs dans `/docs`
-- **Issues** : Recherchez dans les issues existantes
-- **Discussions** : Utilisez GitHub Discussions
-- **Discord** : Rejoignez notre serveur Discord (si disponible)
+### Exemples
+```bash
+# Nouvelle fonctionnalité
+git commit -m "feat(auth): ajouter la connexion avec Google"
 
-### Contact
+# Correction de bug
+git commit -m "fix(ui): corriger l'alignement du bouton sur mobile"
 
-- **Email** : dev@echangeo.fr
-- **GitHub** : @echangeo-team
-- **Twitter** : @echangeo_app
+# Documentation
+git commit -m "docs(api): mettre à jour la documentation des endpoints"
+
+# Refactoring
+git commit -m "refactor(components): extraire la logique de validation"
+
+# Test
+git commit -m "test(auth): ajouter les tests pour la connexion"
+
+# Maintenance
+git commit -m "chore(deps): mettre à jour les dépendances"
+```
+
+## 🔍 Processus de Revue
+
+### Critères de Revue
+
+#### Code Quality
+- [ ] Le code suit les conventions du projet
+- [ ] Les tests passent tous
+- [ ] Le code est documenté si nécessaire
+- [ ] Pas de code mort ou commenté
+
+#### Fonctionnalité
+- [ ] La fonctionnalité répond au besoin
+- [ ] Les cas limites sont gérés
+- [ ] L'interface utilisateur est intuitive
+- [ ] Les performances sont acceptables
+
+#### Sécurité
+- [ ] Pas de données sensibles exposées
+- [ ] Validation des entrées utilisateur
+- [ ] Gestion appropriée des erreurs
+- [ ] Respect des bonnes pratiques de sécurité
+
+### Commentaires de Revue
+
+#### Constructifs
+```typescript
+// ✅ Bon commentaire
+// Cette fonction pourrait bénéficier d'une validation d'entrée
+// pour éviter les erreurs avec des valeurs null
+
+// ❌ Mauvais commentaire
+// Ce code est mauvais
+```
+
+#### Suggestions d'Amélioration
+```typescript
+// Suggestion : Utiliser un enum pour les statuts
+// Au lieu de chaînes de caractères, cela éviterait les erreurs de typo
+enum RequestStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected'
+}
+```
+
+## 🐛 Signaler un Bug
+
+### Template de Bug Report
+```markdown
+**Description du bug**
+Une description claire et concise du problème.
+
+**Étapes pour reproduire**
+1. Aller sur '...'
+2. Cliquer sur '...'
+3. Faire défiler jusqu'à '...'
+4. Voir l'erreur
+
+**Comportement attendu**
+Ce qui devrait se passer.
+
+**Comportement actuel**
+Ce qui se passe réellement.
+
+**Captures d'écran**
+Si applicable, ajouter des captures d'écran.
+
+**Environnement**
+- OS: [ex. Windows 10]
+- Navigateur: [ex. Chrome 91]
+- Version: [ex. 1.0.0]
+
+**Informations supplémentaires**
+Toute autre information utile.
+```
+
+## 💡 Proposer une Fonctionnalité
+
+### Template de Feature Request
+```markdown
+**Description de la fonctionnalité**
+Une description claire et concise de la fonctionnalité souhaitée.
+
+**Problème résolu**
+Quel problème cette fonctionnalité résoudrait-elle ?
+
+**Solution proposée**
+Comment envisagez-vous cette fonctionnalité ?
+
+**Alternatives considérées**
+D'autres solutions que vous avez envisagées.
+
+**Contexte supplémentaire**
+Toute autre information utile.
+```
+
+## 🛠️ Outils de Développement
+
+### Scripts Disponibles
+```bash
+# Développement
+npm run dev              # Serveur de développement
+npm run build            # Build de production
+npm run preview          # Prévisualiser le build
+
+# Tests
+npm run test             # Lancer les tests
+npm run test:ui          # Interface graphique des tests
+npm run test:coverage    # Couverture de tests
+
+# Qualité
+npm run lint             # Vérification ESLint
+npm run lint:fix         # Corriger automatiquement
+npm run type-check       # Vérification TypeScript
+
+# Base de données
+npm run db:reset         # Reset de la base de données
+npm run db:migrate       # Appliquer les migrations
+```
+
+### Configuration IDE
+
+#### VS Code
+Recommandé : extensions suivantes
+- ES7+ React/Redux/React-Native snippets
+- TypeScript Importer
+- Tailwind CSS IntelliSense
+- ESLint
+- Prettier
+
+#### Configuration .vscode/settings.json
+```json
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "typescript.preferences.importModuleSpecifier": "relative"
+}
+```
+
+## 📚 Ressources
+
+### Documentation
+- [React](https://reactjs.org/docs)
+- [TypeScript](https://www.typescriptlang.org/docs)
+- [Tailwind CSS](https://tailwindcss.com/docs)
+- [Supabase](https://supabase.com/docs)
+- [TanStack Query](https://tanstack.com/query/latest)
+
+### Outils
+- [Conventional Commits](https://www.conventionalcommits.org/)
+- [Testing Library](https://testing-library.com/)
+- [Vitest](https://vitest.dev/)
+
+## 🤝 Code de Conduite
+
+### Nos Valeurs
+- **Respect** : Traitez tout le monde avec respect
+- **Inclusion** : Accueillez les contributions de tous
+- **Collaboration** : Travaillez ensemble de manière constructive
+- **Apprentissage** : Encouragez l'apprentissage mutuel
+
+### Comportement Inacceptable
+- Langage ou images sexuellement explicites
+- Trolling, commentaires insultants ou désobligeants
+- Harcèlement public ou privé
+- Publication d'informations privées
+
+### Application
+Les violations du code de conduite peuvent entraîner :
+- Un avertissement
+- Un bannissement temporaire
+- Un bannissement permanent
+
+## 📞 Support
+
+### Questions Techniques
+- **GitHub Discussions** : Pour les questions générales
+- **Issues GitHub** : Pour les bugs et fonctionnalités
+- **Email** : dev@echangeo.fr pour les questions privées
+
+### Mentorat
+Nous offrons du mentorat pour les nouveaux contributeurs :
+- Pair programming
+- Revues de code détaillées
+- Sessions de questions/réponses
+- Documentation d'apprentissage
 
 ## 🙏 Remerciements
 
-Merci à tous les contributeurs qui rendent Échangeo possible ! Votre participation est précieuse et contribue à créer une plateforme meilleure pour tous.
+Merci de contribuer à Échangeo ! Chaque contribution, même petite, fait la différence et nous aide à créer une meilleure plateforme de partage entre voisins.
+
+### Reconnaissance des Contributeurs
+- Mention dans le README
+- Badge de contributeur sur le profil
+- Accès aux fonctionnalités beta
+- Invitation aux événements communautaires
 
 ---
 
-**Échangeo** - Ensemble, construisons l'avenir de l'économie circulaire ! 🌱✨
-
-*Ce guide évolue avec le projet. N'hésitez pas à suggérer des améliorations !*
+**Ensemble, créons l'avenir du partage entre voisins ! 🌱**

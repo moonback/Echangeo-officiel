@@ -34,10 +34,10 @@ const LoginPage: React.FC = () => {
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isLocating, setIsLocating] = useState(false);
   const { signIn } = useAuthStore();
-  
+
   // Hook pour récupérer les communautés disponibles
   const { data: communities, isLoading: communitiesLoading } = useCommunities();
-  
+
   // Hook pour récupérer les communautés proches si la géolocalisation est disponible
   const { data: nearbyCommunities, isLoading: nearbyCommunitiesLoading } = useNearbyCommunities(
     userLocation?.lat || 0,
@@ -110,7 +110,7 @@ const LoginPage: React.FC = () => {
     try {
       if (isSignup) {
         const signupData = data as SignupForm;
-        
+
         // Créer le compte utilisateur et récupérer l'utilisateur créé
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email: signupData.email,
@@ -147,14 +147,14 @@ const LoginPage: React.FC = () => {
                 is_active: true,
                 joined_at: new Date().toISOString()
               });
-            
+
             if (joinError) {
               console.error('Erreur lors de l\'ajout à la communauté:', joinError);
               throw new Error('Erreur lors de l\'ajout au quartier sélectionné');
             }
           }
         }
-        
+
         setInfoMessage("Compte créé et quartier sélectionné ! Vérifiez votre e-mail et cliquez sur le lien d'activation pour activer votre compte.");
         setIsSignup(false);
       } else {
@@ -163,96 +163,104 @@ const LoginPage: React.FC = () => {
       }
     } catch (error) {
       console.error('Erreur lors de l\'inscription:', error);
-      setError('email', { 
-        message: error instanceof Error ? error.message : 'Une erreur est survenue' 
+      setError('email', {
+        message: error instanceof Error ? error.message : 'Une erreur est survenue'
       });
     }
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-brand-50/30 via-white to-purple-50/20 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-brand-50/40 via-white to-purple-100/40 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background Decorations */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-20 left-20 w-96 h-96 bg-gradient-to-br from-brand-200/10 to-purple-200/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-20 right-20 w-80 h-80 bg-gradient-to-tl from-blue-200/10 to-brand-200/10 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-purple-200/10 to-brand-200/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-10 left-10 w-[500px] h-[500px] bg-gradient-to-br from-brand-300/20 to-purple-300/20 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-10 right-10 w-[400px] h-[400px] bg-gradient-to-tl from-blue-300/20 to-brand-300/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-gradient-to-r from-purple-300/20 to-brand-300/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-0 right-1/2 translate-x-1/2 w-[120vw] h-32 bg-gradient-to-r from-brand-100/40 via-white/60 to-purple-100/40 blur-2xl opacity-60" />
       </div>
 
       <motion.div
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="relative bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 w-full max-w-md border border-white/20"
+        className="relative z-10 bg-white/90 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl p-10 w-full max-w-lg border border-white/30"
         style={{
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.6)'
+          boxShadow: '0 30px 60px -12px rgba(80, 60, 180, 0.18), 0 1.5px 0 rgba(255,255,255,0.7) inset'
         }}
       >
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-10">
           <motion.div
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ delay: 0.2, duration: 0.6, type: "spring", stiffness: 200 }}
-            className="relative inline-flex items-center justify-center w-20 h-20 mb-6"
+            className="relative inline-flex items-center justify-center w-24 h-24 mb-6"
           >
             {/* Glow Effect */}
-            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-brand-400 to-brand-600 opacity-20 blur-lg animate-pulse" />
-            <div className="relative w-30 h-30 bg-white rounded-2xl shadow-lg shadow-brand-500/25 flex items-center justify-center p-2">
-              <img 
-                src="/logo.png" 
-                alt="Échangeo Logo" 
-                className="w-full h-full object-contain"
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-brand-400 to-brand-600 opacity-30 blur-2xl animate-pulse" />
+            {/* <div className="re lative w-24 h-24 bg-white rounded-3xl shadow-lg shadow-brand-500/20 flex items-center justify-center p-2 border-2 border-brand-100/40"> */}
+              <img
+                src="/logo.png"
+                alt="Échangeo Logo"
+                className="w-[200px]  object-contain"
               />
-            </div>
+            {/* </div> */}
           </motion.div>
-          
-          
-          
-          <motion.p 
+
+          <motion.h1
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+            className="text-3xl font-extrabold text-brand-700 mb-2 tracking-tight"
+          >
+            {isSignup ? "Inscription" : "Connexion"}
+          </motion.h1>
+          <motion.p
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.5 }}
-            className="text-gray-600 leading-relaxed"
+            className="text-gray-600 leading-relaxed text-base"
           >
-            {isSignup 
-              ? 'Créez votre compte et choisissez votre quartier pour commencer à échanger' 
+            {isSignup
+              ? 'Créez votre compte et choisissez votre quartier pour commencer à échanger'
               : 'Reconnectez-vous à votre espace communautaire'}
           </motion.p>
         </div>
 
-        <motion.form 
-          onSubmit={handleSubmit(onSubmit)} 
-          className="space-y-6"
+        <motion.form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-7"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6, duration: 0.5 }}
         >
           {infoMessage && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="rounded-2xl bg-emerald-50/80 backdrop-blur-sm border border-emerald-200/50 text-emerald-800 px-4 py-3 text-sm"
+              className="rounded-2xl bg-emerald-50/90 backdrop-blur border border-emerald-200/60 text-emerald-900 px-4 py-3 text-sm shadow"
             >
               {infoMessage}
             </motion.div>
           )}
-          
+
           {isSignup && (
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.7, duration: 0.4 }}
             >
-              <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="fullName" className="block text-sm font-semibold text-brand-700 mb-2">
                 Nom complet
               </label>
               <input
                 {...register('fullName' as keyof (LoginForm | SignupForm))}
                 type="text"
                 id="fullName"
-                className="w-full px-4 py-3 border border-gray-300/60 rounded-2xl bg-white/60 backdrop-blur-sm focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 focus:-translate-y-0.5 focus:shadow-lg transition-all duration-200"
+                className="w-full px-4 py-3 border border-brand-200/60 rounded-xl bg-white/80 backdrop-blur focus:ring-2 focus:ring-brand-400/40 focus:border-brand-400 focus:-translate-y-0.5 focus:shadow-lg transition-all duration-200 text-brand-900 placeholder:text-brand-300"
                 placeholder="Votre nom complet"
+                autoComplete="name"
               />
               {(errors as Record<string, { message?: string }>).fullName && (
                 <p className="text-red-500 text-xs mt-2">{(errors as Record<string, { message?: string }>).fullName.message}</p>
@@ -265,15 +273,16 @@ const LoginPage: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.8, duration: 0.4 }}
           >
-            <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label htmlFor="email" className="block text-sm font-semibold text-brand-700 mb-2">
               Email
             </label>
             <input
               {...register('email')}
               type="email"
               id="email"
-              className="w-full px-4 py-3 border border-gray-300/60 rounded-2xl bg-white/60 backdrop-blur-sm focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 focus:-translate-y-0.5 focus:shadow-lg transition-all duration-200"
+              className="w-full px-4 py-3 border border-brand-200/60 rounded-xl bg-white/80 backdrop-blur focus:ring-2 focus:ring-brand-400/40 focus:border-brand-400 focus:-translate-y-0.5 focus:shadow-lg transition-all duration-200 text-brand-900 placeholder:text-brand-300"
               placeholder="votre@email.com"
+              autoComplete="email"
             />
             {errors.email && (
               <p className="text-red-500 text-xs mt-2">{errors.email.message}</p>
@@ -285,7 +294,7 @@ const LoginPage: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.9, duration: 0.4 }}
           >
-            <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label htmlFor="password" className="block text-sm font-semibold text-brand-700 mb-2">
               Mot de passe
             </label>
             <div className="relative">
@@ -293,13 +302,15 @@ const LoginPage: React.FC = () => {
                 {...register('password')}
                 type={showPassword ? 'text' : 'password'}
                 id="password"
-                className="w-full px-4 py-3 pr-12 border border-gray-300/60 rounded-2xl bg-white/60 backdrop-blur-sm focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 focus:-translate-y-0.5 focus:shadow-lg transition-all duration-200"
+                className="w-full px-4 py-3 pr-12 border border-brand-200/60 rounded-xl bg-white/80 backdrop-blur focus:ring-2 focus:ring-brand-400/40 focus:border-brand-400 focus:-translate-y-0.5 focus:shadow-lg transition-all duration-200 text-brand-900 placeholder:text-brand-300"
                 placeholder="••••••••"
+                autoComplete={isSignup ? "new-password" : "current-password"}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-brand-600 transition-colors duration-200"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-brand-400 hover:text-brand-600 transition-colors duration-200"
+                tabIndex={-1}
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
@@ -315,15 +326,16 @@ const LoginPage: React.FC = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.0, duration: 0.4 }}
             >
-              <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="confirmPassword" className="block text-sm font-semibold text-brand-700 mb-2">
                 Confirmer le mot de passe
               </label>
               <input
                 {...register('confirmPassword' as keyof (LoginForm | SignupForm))}
                 type="password"
                 id="confirmPassword"
-                className="w-full px-4 py-3 border border-gray-300/60 rounded-2xl bg-white/60 backdrop-blur-sm focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 focus:-translate-y-0.5 focus:shadow-lg transition-all duration-200"
+                className="w-full px-4 py-3 border border-brand-200/60 rounded-xl bg-white/80 backdrop-blur focus:ring-2 focus:ring-brand-400/40 focus:border-brand-400 focus:-translate-y-0.5 focus:shadow-lg transition-all duration-200 text-brand-900 placeholder:text-brand-300"
                 placeholder="••••••••"
+                autoComplete="new-password"
               />
               {(errors as Record<string, { message?: string }>).confirmPassword && (
                 <p className="text-red-500 text-xs mt-2">{(errors as Record<string, { message?: string }>).confirmPassword.message}</p>
@@ -337,11 +349,11 @@ const LoginPage: React.FC = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.1, duration: 0.4 }}
             >
-              <label htmlFor="selectedCommunityId" className="block text-sm font-semibold text-gray-700 mb-2">
-                <MapPin className="w-4 h-4 inline mr-2" />
+              <label htmlFor="selectedCommunityId" className="block text-sm font-semibold text-brand-700 mb-2 flex items-center gap-1">
+                <MapPin className="w-4 h-4 inline mr-1 text-brand-400" />
                 Choisir votre quartier
               </label>
-              
+
               {/* Bouton pour activer la géolocalisation */}
               {!userLocation && !locationError && (
                 <motion.div
@@ -353,7 +365,7 @@ const LoginPage: React.FC = () => {
                     type="button"
                     onClick={getCurrentLocation}
                     disabled={isLocating}
-                    className="w-full px-4 py-2 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl text-blue-700 hover:from-blue-100 hover:to-blue-200 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full px-4 py-2 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl text-blue-700 hover:from-blue-100 hover:to-blue-200 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 font-medium shadow"
                   >
                     {isLocating ? (
                       <>
@@ -375,7 +387,7 @@ const LoginPage: React.FC = () => {
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="mb-3 rounded-xl bg-amber-50/80 backdrop-blur-sm border border-amber-200/50 text-amber-800 px-3 py-2 text-sm flex items-center gap-2"
+                  className="mb-3 rounded-xl bg-amber-50/90 backdrop-blur border border-amber-200/60 text-amber-900 px-3 py-2 text-sm flex items-center gap-2 shadow"
                 >
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   <span>{locationError}</span>
@@ -391,9 +403,9 @@ const LoginPage: React.FC = () => {
 
               {/* Sélecteur de quartiers */}
               {communitiesLoading || nearbyCommunitiesLoading ? (
-                <div className="w-full px-4 py-3 border border-gray-300/60 rounded-2xl bg-white/60 backdrop-blur-sm flex items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-brand-500/30 border-t-brand-500 rounded-full animate-spin mr-2" />
-                  <span className="text-gray-600">
+                <div className="w-full px-4 py-3 border border-brand-200/60 rounded-xl bg-white/80 backdrop-blur flex items-center justify-center">
+                  <div className="w-5 h-5 border-2 border-brand-400/30 border-t-brand-400 rounded-full animate-spin mr-2" />
+                  <span className="text-brand-400">
                     {userLocation ? 'Chargement des quartiers proches...' : 'Chargement des quartiers...'}
                   </span>
                 </div>
@@ -401,10 +413,10 @@ const LoginPage: React.FC = () => {
                 <select
                   {...register('selectedCommunityId' as keyof (LoginForm | SignupForm))}
                   id="selectedCommunityId"
-                  className="w-full px-4 py-3 border border-gray-300/60 rounded-2xl bg-white/60 backdrop-blur-sm focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 focus:-translate-y-0.5 focus:shadow-lg transition-all duration-200"
+                  className="w-full px-4 py-3 border border-brand-200/60 rounded-xl bg-white/80 backdrop-blur focus:ring-2 focus:ring-brand-400/40 focus:border-brand-400 focus:-translate-y-0.5 focus:shadow-lg transition-all duration-200 text-brand-900"
                 >
                   <option value="">Sélectionnez votre quartier</option>
-                  
+
                   {/* Quartiers proches (si géolocalisation disponible) */}
                   {userLocation && nearbyCommunities && nearbyCommunities.length > 0 && (
                     <optgroup label="📍 Quartiers proches de vous">
@@ -419,14 +431,14 @@ const LoginPage: React.FC = () => {
                       })}
                     </optgroup>
                   )}
-                  
+
                   {/* Tous les autres quartiers */}
                   <optgroup label={userLocation ? "🌍 Autres quartiers" : "🌍 Tous les quartiers"}>
                     {communities?.map((community) => {
                       // Ne pas afficher les quartiers déjà dans la liste des proches
                       const isNearby = userLocation && nearbyCommunities?.some(nc => nc.community_id === community.id);
                       if (isNearby) return null;
-                      
+
                       return (
                         <option key={community.id} value={community.id}>
                           {community.name} • {community.city}
@@ -436,14 +448,14 @@ const LoginPage: React.FC = () => {
                   </optgroup>
                 </select>
               )}
-              
+
               {(errors as Record<string, { message?: string }>).selectedCommunityId && (
                 <p className="text-red-500 text-xs mt-2">{(errors as Record<string, { message?: string }>).selectedCommunityId.message}</p>
               )}
-              
-              <p className="text-xs text-gray-500 mt-2">
+
+              <p className="text-xs text-brand-400 mt-2 flex items-center gap-1">
                 <Users className="w-3 h-3 inline mr-1" />
-                {userLocation 
+                {userLocation
                   ? 'Les quartiers les plus proches sont affichés en premier. Vous pourrez rejoindre d\'autres quartiers plus tard.'
                   : 'Vous pourrez rejoindre d\'autres quartiers plus tard depuis votre profil'
                 }
@@ -455,11 +467,11 @@ const LoginPage: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.2, duration: 0.5 }}
-            whileHover={{ scale: 1.02, y: -2 }}
+            whileHover={{ scale: 1.03, y: -2, boxShadow: "0 8px 32px 0 rgba(80,60,180,0.18)" }}
             whileTap={{ scale: 0.98 }}
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-brand-600 to-brand-700 text-white font-semibold py-3 px-6 rounded-2xl shadow-lg shadow-brand-500/25 hover:from-brand-700 hover:to-brand-800 hover:shadow-xl hover:shadow-brand-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full bg-gradient-to-r from-brand-600 to-brand-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-brand-500/25 hover:from-brand-700 hover:to-brand-800 hover:shadow-xl hover:shadow-brand-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-lg"
           >
             {loading ? (
               <>
@@ -472,20 +484,20 @@ const LoginPage: React.FC = () => {
           </motion.button>
         </motion.form>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.3, duration: 0.5 }}
-          className="mt-8 text-center"
+          className="mt-10 text-center"
         >
           <button
             type="button"
             onClick={() => setIsSignup(!isSignup)}
-            className="text-brand-600 hover:text-brand-700 font-semibold transition-colors duration-200 relative group"
+            className="text-brand-600 hover:text-brand-700 font-semibold transition-colors duration-200 relative group px-4 py-2 rounded-lg"
           >
             <span className="relative z-10">
-              {isSignup 
-                ? 'Déjà un compte ? Se connecter' 
+              {isSignup
+                ? 'Déjà un compte ? Se connecter'
                 : 'Pas encore de compte ? S\'inscrire'}
             </span>
             <div className="absolute inset-0 bg-brand-50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 -z-10 scale-110" />
