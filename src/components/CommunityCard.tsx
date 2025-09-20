@@ -94,7 +94,7 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
       whileHover={{ y: -2 }}
       className="group"
     >
-      <Card className={`hover:shadow-lg transition-all duration-300 cursor-pointer group-hover:scale-[1.02] ${
+      <Card className={`hover:shadow-xl transition-all duration-300 cursor-pointer group-hover:scale-[1.02] border-2 hover:border-brand-200 ${
         viewMode === 'list' ? 'p-4' : 'p-6'
       }`}>
         <div 
@@ -203,87 +203,84 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
           ) : (
             /* Grid View */
             <>
-              {/* Header */}
-              <div className="flex items-start justify-between mb-4">
+              {/* Header avec badge d'activité */}
+              <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-brand-600 transition-colors">
+                  <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-brand-600 transition-colors line-clamp-1">
                     {community.name}
                   </h3>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                    <MapPin className="w-4 h-4" />
-                    <span>{community.city}</span>
+                  <div className="flex items-center gap-1 text-xs text-gray-600">
+                    <MapPin className="w-3 h-3" />
+                    <span className="line-clamp-1">{community.city}</span>
                     {community.postal_code && (
                       <span className="text-gray-400">• {community.postal_code}</span>
-                    )}
-                    {showDistance && distance && (
-                      <span className="text-brand-600 font-medium">
-                        • {distance.toFixed(1)} km
-                      </span>
                     )}
                   </div>
                 </div>
                 
                 <span 
-                  className={`px-3 py-1 rounded-full text-xs font-medium ${getActivityColor(community.activity_level)}`}
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${getActivityColor(community.activity_level)}`}
                 >
                   {getActivityLabel(community.activity_level)}
                 </span>
               </div>
 
-              {/* Description */}
+              {/* Description compacte */}
               {community.description && (
-                <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                <p className="text-gray-600 text-xs mb-3 line-clamp-2 leading-relaxed">
                   {community.description}
                 </p>
               )}
 
-              {/* Stats */}
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-2xl">
-                  <div className="w-8 h-8 bg-blue-100 rounded-xl flex items-center justify-center">
-                    <Users className="w-4 h-4 text-blue-600" />
+              {/* Stats compactes en 2x2 */}
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                <div className="flex items-center gap-2 p-2 bg-blue-50 rounded-lg">
+                  <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Users className="w-3 h-3 text-blue-600" />
                   </div>
                   <div>
-                    <div className="font-bold text-gray-900">{community.stats?.total_members || 0}</div>
+                    <div className="font-bold text-gray-900 text-sm">{community.stats?.total_members || 0}</div>
                     <div className="text-xs text-gray-600">membres</div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-green-50 rounded-2xl">
-                  <div className="w-8 h-8 bg-green-100 rounded-xl flex items-center justify-center">
-                    <TrendingUp className="w-4 h-4 text-green-600" />
+                <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
+                  <div className="w-6 h-6 bg-green-100 rounded-lg flex items-center justify-center">
+                    <TrendingUp className="w-3 h-3 text-green-600" />
                   </div>
                   <div>
-                    <div className="font-bold text-gray-900">{community.stats?.total_exchanges || 0}</div>
+                    <div className="font-bold text-gray-900 text-sm">{community.stats?.total_exchanges || 0}</div>
                     <div className="text-xs text-gray-600">échanges</div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-2xl">
-                  <div className="w-8 h-8 bg-purple-100 rounded-xl flex items-center justify-center">
-                    <Calendar className="w-4 h-4 text-purple-600" />
+                <div className="flex items-center gap-2 p-2 bg-purple-50 rounded-lg">
+                  <div className="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <Calendar className="w-3 h-3 text-purple-600" />
                   </div>
                   <div>
-                    <div className="font-bold text-gray-900">{community.stats?.total_events || 0}</div>
+                    <div className="font-bold text-gray-900 text-sm">{community.stats?.total_events || 0}</div>
                     <div className="text-xs text-gray-600">événements</div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-2xl">
-                  <div className="w-8 h-8 bg-orange-100 rounded-xl flex items-center justify-center">
-                    <MessageCircle className="w-4 h-4 text-orange-600" />
+                <div className="flex items-center gap-2 p-2 bg-orange-50 rounded-lg">
+                  <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <MessageCircle className="w-3 h-3 text-orange-600" />
                   </div>
                   <div>
-                    <div className="font-bold text-gray-900">{community.stats?.total_items || 0}</div>
+                    <div className="font-bold text-gray-900 text-sm">{community.stats?.total_items || 0}</div>
                     <div className="text-xs text-gray-600">objets</div>
                   </div>
                 </div>
               </div>
 
-              {/* Footer */}
-              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+              {/* Footer compact */}
+              <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                 <div className="text-xs text-gray-500">
-                  Dernière activité: {
-                    community.stats?.last_activity && typeof community.stats.last_activity === 'string'
-                      ? new Date(community.stats.last_activity).toLocaleDateString('fr-FR')
-                      : 'Jamais'
+                  {community.stats?.last_activity && typeof community.stats.last_activity === 'string'
+                    ? new Date(community.stats.last_activity).toLocaleDateString('fr-FR', { 
+                        day: 'numeric', 
+                        month: 'short' 
+                      })
+                    : 'Jamais'
                   }
                 </div>
                 <div className="flex items-center gap-2">
@@ -293,29 +290,27 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
                       disabled={isLeaving}
                       variant="danger"
                       size="sm"
+                      className="text-xs px-2 py-1"
                     >
-                      {isLeaving ? 'Sortie...' : 'Quitter'}
+                      {isLeaving ? '...' : 'Quitter'}
                     </Button>
                   ) : (
                     <Button
                       onClick={handleJoinCommunity}
                       disabled={isJoining || !user}
                       size="sm"
-                      className="bg-brand-600 hover:bg-brand-700"
+                      className="bg-brand-600 hover:bg-brand-700 text-xs px-2 py-1"
                     >
                       {isJoining ? (
-                        'Rejoindre...'
+                        '...'
                       ) : (
                         <>
-                          <UserPlus className="w-4 h-4 mr-1" />
+                          <UserPlus className="w-3 h-3 mr-1" />
                           Rejoindre
                         </>
                       )}
                     </Button>
                   )}
-                  <span className="text-sm font-medium text-brand-600 hover:text-brand-700">
-                    Voir →
-                  </span>
                 </div>
               </div>
             </>

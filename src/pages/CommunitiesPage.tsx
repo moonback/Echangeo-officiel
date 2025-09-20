@@ -2,8 +2,8 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { 
-  Search, Plus, Users, TrendingUp, MapPin, 
-  Filter, Grid, List, RefreshCw
+  Search, Plus, Users, TrendingUp, 
+  Filter, Grid, List, RefreshCw, MapPin, Star
 } from 'lucide-react';
 import { useCommunities } from '../hooks/useCommunities';
 import CommunityCard from '../components/CommunityCard';
@@ -226,12 +226,6 @@ const CommunitiesPage: React.FC = () => {
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <Link to="/map">
-                  <Button variant="secondary" size="sm" className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    Voir sur la carte
-                  </Button>
-                </Link>
                 <Link to="/communities/create">
                   <Button className="flex items-center gap-2">
                     <Plus className="w-4 h-4" />
@@ -243,115 +237,105 @@ const CommunitiesPage: React.FC = () => {
           </motion.div>
 
 
-          {/* Compact Header */}
+          {/* Barre de recherche simplifiée */}
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}
             className="mb-6"
           >
-            <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-200">
-              {/* Search Toggle */}
-              <button
-                onClick={() => setSearchQuery(searchQuery ? '' : ' ')}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                title="Rechercher"
-              >
-                <Search className="w-4 h-4 text-gray-600" />
-              </button>
-
-              {/* Sort */}
-              <div className="flex items-center gap-2">
-                <TrendingUp className="text-brand-600" size={14} />
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as 'members' | 'activity' | 'name' | 'distance')}
-                  className="bg-transparent border-0 text-sm font-medium text-gray-700 focus:ring-0"
-                >
-                  <option value="members">Membres</option>
-                  <option value="activity">Activité</option>
-                  <option value="name">Nom</option>
-                  <option value="distance">Distance</option>
-                </select>
-              </div>
-
-              {/* View Mode */}
-              <div className="flex bg-gray-100 rounded-lg p-0.5">
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-1.5 rounded-md transition-colors ${
-                    viewMode === 'grid' 
-                      ? 'bg-white text-brand-600 shadow-sm' 
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  <Grid size={14} />
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-1.5 rounded-md transition-colors ${
-                    viewMode === 'list' 
-                      ? 'bg-white text-brand-600 shadow-sm' 
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  <List size={14} />
-                </button>
-              </div>
-
-              {/* Filters */}
-              <button
-                onClick={() => setShowFiltersModal(true)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
-              >
-                <Filter size={14} />
-                <span className="text-sm font-medium">Filtres</span>
-                {activeFiltersCount > 0 && (
-                  <span className="bg-brand-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                    {activeFiltersCount}
-                  </span>
-                )}
-              </button>
-
-              {/* Results Count */}
-              <div className="ml-auto bg-brand-50 px-2 py-1 rounded-md border border-brand-200">
-                <span className="text-sm font-medium text-brand-700">
-                  {filteredCommunities.length} quartier{filteredCommunities.length > 1 ? 's' : ''}
-                </span>
-              </div>
-
-              {/* Refresh */}
-              <button
-                onClick={() => window.location.reload()}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                title="Actualiser"
-              >
-                <RefreshCw className="w-4 h-4 text-gray-600" />
-              </button>
-            </div>
-
-            {/* Search Bar */}
-            <AnimatePresence>
-              {searchQuery && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="mt-3"
-                >
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <div className="flex flex-col lg:flex-row gap-4">
+                {/* Barre de recherche principale */}
+                <div className="flex-1">
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                     <input
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Rechercher un quartier..."
-                      className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all duration-200 text-sm"
+                      placeholder="Rechercher un quartier par nom, ville ou description..."
+                      className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all duration-200"
                     />
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                </div>
+
+                {/* Contrôles simplifiés */}
+                <div className="flex items-center gap-3">
+                  {/* Tri */}
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="text-brand-600" size={16} />
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value as 'members' | 'activity' | 'name' | 'distance')}
+                      className="px-3 py-2 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-700 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+                    >
+                      <option value="members">Plus de membres</option>
+                      <option value="activity">Plus actif</option>
+                      <option value="name">A-Z</option>
+                    </select>
+                  </div>
+
+                  {/* Mode d'affichage */}
+                  <div className="flex bg-gray-100 rounded-lg p-0.5">
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      className={`p-2 rounded-md transition-colors ${
+                        viewMode === 'grid' 
+                          ? 'bg-white text-brand-600 shadow-sm' 
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                      title="Vue grille"
+                    >
+                      <Grid size={16} />
+                    </button>
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className={`p-2 rounded-md transition-colors ${
+                        viewMode === 'list' 
+                          ? 'bg-white text-brand-600 shadow-sm' 
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                      title="Vue liste"
+                    >
+                      <List size={16} />
+                    </button>
+                  </div>
+
+                  {/* Filtres avancés */}
+                  <button
+                    onClick={() => setShowFiltersModal(true)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
+                  >
+                    <Filter size={16} />
+                    <span className="text-sm font-medium">Filtres</span>
+                    {activeFiltersCount > 0 && (
+                      <span className="bg-brand-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {activeFiltersCount}
+                      </span>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Compteur de résultats */}
+              <div className="mt-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Users className="text-brand-600" size={16} />
+                  <span className="text-sm font-medium text-gray-700">
+                    {filteredCommunities.length} quartier{filteredCommunities.length > 1 ? 's' : ''} trouvé{filteredCommunities.length > 1 ? 's' : ''}
+                  </span>
+                </div>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                  title="Actualiser"
+                >
+                  <RefreshCw size={14} />
+                  Actualiser
+                </button>
+              </div>
+            </div>
+
           </motion.div>
 
         {/* Communities Grid/List */}
@@ -363,7 +347,7 @@ const CommunitiesPage: React.FC = () => {
           {filteredCommunities.length > 0 ? (
             <div className={`${
               viewMode === 'grid' 
-                ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' 
+                ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' 
                 : 'space-y-4'
             }`}>
               <AnimatePresence mode="wait">
@@ -419,7 +403,7 @@ const CommunitiesPage: React.FC = () => {
           )}
         </motion.div>
 
-          {/* Quick Actions */}
+          {/* Actions rapides */}
           {filteredCommunities.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -427,25 +411,29 @@ const CommunitiesPage: React.FC = () => {
               transition={{ delay: 0.6, duration: 0.5 }}
               className="mt-12"
             >
-              <Card className="p-6">
+              <Card className="p-6 bg-gradient-to-br from-brand-50 to-blue-50 border-brand-200">
                 <div className="text-center">
+                  <div className="w-16 h-16 bg-brand-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Star className="w-8 h-8 text-brand-600" />
+                  </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">
                     Vous ne trouvez pas votre quartier ?
                   </h3>
-                  <p className="text-gray-600 mb-6">
-                    Créez votre propre communauté de quartier et invitez vos voisins à rejoindre l'économie collaborative
+                  <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+                    Créez votre propre communauté de quartier et invitez vos voisins à rejoindre l'économie collaborative. 
+                    C'est gratuit et cela ne prend que quelques minutes !
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <Link to="/communities/create">
-                      <Button className="flex items-center gap-2">
+                      <Button className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700">
                         <Plus size={16} />
-                        Créer un quartier
+                        Créer mon quartier
                       </Button>
                     </Link>
-                    <Link to="/map">
+                    <Link to="/help">
                       <Button variant="secondary" className="flex items-center gap-2">
-                        <MapPin size={16} />
-                        Voir sur la carte
+                        <Users size={16} />
+                        Comment ça marche ?
                       </Button>
                     </Link>
                   </div>
