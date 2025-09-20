@@ -9,6 +9,7 @@ import Button from './ui/Button';
 import { useAuthStore } from '../store/authStore';
 import { supabase } from '../services/supabase';
 import NotificationSystem from './NotificationSystem';
+import EventNotifications from './EventNotifications';
 import { useNotifications } from '../hooks/useNotifications';
 import { useAdminAuth } from '../hooks/useAdmin';
 
@@ -367,6 +368,7 @@ const Topbar: React.FC = () => {
             <div className="flex items-center gap-2">
               <Button variant="primary" size="sm" onClick={() => navigate('/create')} leftIcon={<Plus size={16} />}>Publier</Button>
               <Link to="/messages" title="Messages" className="p-2.5 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"><MessageCircle size={18} /></Link>
+              <EventNotifications />
               <NotificationSystem notifications={notifications} onMarkAsRead={markAsRead} onDismiss={dismiss} />
               {user ? (
                 <UserMenu />

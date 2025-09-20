@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { Toaster } from 'react-hot-toast';
 import Shell from './components/Shell';
 import ScrollToTop from './components/ScrollToTop';
 // import AuthGuard from './components/AuthGuard';
@@ -15,6 +16,8 @@ import MessagesPage from './pages/MessagesPage';
 import CommunitiesPage from './pages/CommunitiesPage';
 import CommunityDetailPage from './pages/CommunityDetailPage';
 import CreateCommunityPage from './pages/CreateCommunityPage';
+import CommunityEventsPage from './pages/CommunityEventsPage';
+import EventDetailPage from './pages/EventDetailPage';
 import ProfilePage from './pages/ProfilePage';
 import MyProfilePage from './pages/MyProfilePage';
 import SettingsPage from './pages/SettingsPage';
@@ -63,6 +66,30 @@ function App() {
   return (
     <>
       <ScrollToTop />
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#10B981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 5000,
+            iconTheme: {
+              primary: '#EF4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
       <Routes>
         {/* Admin Routes - Outside Shell to use their own layout */}
       <Route path="/admin" element={
@@ -111,6 +138,8 @@ function App() {
             <Route path="/communities" element={<CommunitiesPage />} />
             <Route path="/communities/create" element={<CreateCommunityPage />} />
             <Route path="/communities/:id" element={<CommunityDetailPage />} />
+            <Route path="/communities/:id/events" element={<CommunityEventsPage />} />
+            <Route path="/communities/:communityId/events/:eventId" element={<EventDetailPage />} />
             <Route path="/profile/:id" element={<ProfilePage />} />
             <Route path="/me" element={<MyProfilePage />} />
             <Route path="/settings" element={<SettingsPage />} />

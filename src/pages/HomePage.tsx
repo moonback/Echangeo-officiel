@@ -12,6 +12,8 @@ import ItemCard from '../components/ItemCard';
 import { useAuthStore } from '../store/authStore';
 import { useItems } from '../hooks/useItems';
 import { useCommunities, useUserSignupCommunity, useNearbyCommunities } from '../hooks/useCommunities';
+import { useUpcomingUserEvents } from '../hooks/useEvents';
+import UpcomingEventsWidget from '../components/UpcomingEventsWidget';
 import type { Item } from '../types';
 
 const HomePage: React.FC = () => {
@@ -38,6 +40,9 @@ const HomePage: React.FC = () => {
   const communitiesLoading = userLocation ? nearbyCommunitiesLoading : allCommunitiesLoading;
   
   const { data: signupCommunity } = useUserSignupCommunity(profile?.id);
+  
+  // Récupérer les événements à venir de l'utilisateur
+  const { data: upcomingEvents } = useUpcomingUserEvents(profile?.id);
 
   // Récupérer la position de l'utilisateur
   useEffect(() => {
@@ -765,6 +770,19 @@ const HomePage: React.FC = () => {
               </motion.div>
             </motion.aside>
 
+            {/* Événements à venir */}
+            {upcomingEvents && upcomingEvents.length > 0 && (
+              <motion.aside
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 1.7, duration: 0.6 }}
+              >
+                <UpcomingEventsWidget 
+                  events={upcomingEvents}
+                  maxEvents={3}
+                />
+              </motion.aside>
+            )}
 
             {/* Fonctionnalités IA redesignées */}
             <motion.aside
