@@ -3,8 +3,10 @@ import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, MapPin, Users } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import { useCommunities } from '../hooks/useCommunities';
+import { supabase } from '../services/supabase';
 
 const loginSchema = z.object({
   email: z.string().email('Email invalide'),
@@ -14,6 +16,7 @@ const loginSchema = z.object({
 const signupSchema = loginSchema.extend({
   fullName: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
   confirmPassword: z.string(),
+  selectedCommunityId: z.string().min(1, 'Veuillez sélectionner un quartier'),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Les mots de passe ne correspondent pas",
   path: ["confirmPassword"],
@@ -28,6 +31,9 @@ const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const { signIn, signUp } = useAuthStore();
+  
+  // Hook pour récupérer les communautés disponibles
+  const { data: communities, isLoading: communitiesLoading } = useCommunities();
 
   const {
     register,
@@ -43,8 +49,31 @@ const LoginPage: React.FC = () => {
     try {
       if (isSignup) {
         const signupData = data as SignupForm;
+        
+        // Créer le compte utilisateur
         await signUp(signupData.email, signupData.password, signupData.fullName);
-        setInfoMessage("Compte créé. Vérifiez votre e-mail et cliquez sur le lien d'activation pour activer votre compte.");
+        
+        // Attendre que l'utilisateur soit créé et récupérer son ID
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user && signupData.selectedCommunityId) {
+          // Ajouter l'utilisateur à la communauté sélectionnée
+          const { error: joinError } = await supabase
+            .from('community_members')
+            .insert({
+              community_id: signupData.selectedCommunityId,
+              user_id: user.id,
+              role: 'member',
+              is_active: true,
+              joined_at: new Date().toISOString()
+            });
+          
+          if (joinError) {
+            console.error('Erreur lors de l\'ajout à la communauté:', joinError);
+          }
+        }
+        
+        setInfoMessage("Compte créé et quartier sélectionné ! Vérifiez votre e-mail et cliquez sur le lien d'activation pour activer votre compte.");
         setIsSignup(false);
       } else {
         const loginData = data as LoginForm;
@@ -104,7 +133,7 @@ const LoginPage: React.FC = () => {
             className="text-gray-600 leading-relaxed"
           >
             {isSignup 
-              ? 'Créez votre compte pour rejoindre la communauté d\'échange' 
+              ? 'Créez votre compte et choisissez votre quartier pour commencer à échanger' 
               : 'Reconnectez-vous à votre espace communautaire'}
           </motion.p>
         </div>
@@ -219,10 +248,49 @@ const LoginPage: React.FC = () => {
             </motion.div>
           )}
 
+          {isSignup && (
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 1.1, duration: 0.4 }}
+            >
+              <label htmlFor="selectedCommunityId" className="block text-sm font-semibold text-gray-700 mb-2">
+                <MapPin className="w-4 h-4 inline mr-2" />
+                Choisir votre quartier
+              </label>
+              {communitiesLoading ? (
+                <div className="w-full px-4 py-3 border border-gray-300/60 rounded-2xl bg-white/60 backdrop-blur-sm flex items-center justify-center">
+                  <div className="w-5 h-5 border-2 border-brand-500/30 border-t-brand-500 rounded-full animate-spin mr-2" />
+                  <span className="text-gray-600">Chargement des quartiers...</span>
+                </div>
+              ) : (
+                <select
+                  {...register('selectedCommunityId' as keyof (LoginForm | SignupForm))}
+                  id="selectedCommunityId"
+                  className="w-full px-4 py-3 border border-gray-300/60 rounded-2xl bg-white/60 backdrop-blur-sm focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 focus:-translate-y-0.5 focus:shadow-lg transition-all duration-200"
+                >
+                  <option value="">Sélectionnez votre quartier</option>
+                  {communities?.map((community) => (
+                    <option key={community.id} value={community.id}>
+                      {community.name} • {community.city}
+                    </option>
+                  ))}
+                </select>
+              )}
+              {(errors as Record<string, { message?: string }>).selectedCommunityId && (
+                <p className="text-red-500 text-xs mt-2">{(errors as Record<string, { message?: string }>).selectedCommunityId.message}</p>
+              )}
+              <p className="text-xs text-gray-500 mt-2">
+                <Users className="w-3 h-3 inline mr-1" />
+                Vous pourrez rejoindre d'autres quartiers plus tard depuis votre profil
+              </p>
+            </motion.div>
+          )}
+
           <motion.button
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.1, duration: 0.5 }}
+            transition={{ delay: 1.2, duration: 0.5 }}
             whileHover={{ scale: 1.02, y: -2 }}
             whileTap={{ scale: 0.98 }}
             type="submit"
@@ -243,7 +311,7 @@ const LoginPage: React.FC = () => {
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.2, duration: 0.5 }}
+          transition={{ delay: 1.3, duration: 0.5 }}
           className="mt-8 text-center"
         >
           <button
