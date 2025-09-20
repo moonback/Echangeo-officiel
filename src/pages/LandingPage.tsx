@@ -94,10 +94,11 @@ const LandingPage: React.FC = () => {
           <Link to="/" className="group">
             <img src="/logo.png" alt="Échangeo Logo" className="w-[180px] object-contain" />
           </Link>
-          <div className="flex items-center gap-4">
-            <Link to="/login"><Button variant="ghost" size="sm">Créer un compte</Button></Link>
-            <Link to="/login"><Button size="sm">Se connecter</Button></Link>
-          </div>
+        <div className="flex items-center gap-4">
+          <Link to="/how-it-works" className="text-sm font-semibold text-gray-700 hover:text-brand-600 transition-colors duration-200">Comment ça marche</Link>
+          <Link to="/login"><Button variant="ghost" size="sm">Créer un compte</Button></Link>
+          <Link to="/login"><Button size="sm">Se connecter</Button></Link>
+        </div>
         </div>
         
         {/* Mobile Layout */}
@@ -105,13 +106,16 @@ const LandingPage: React.FC = () => {
           <Link to="/" className="group">
             <img src="/logo.png" alt="Échangeo Logo" className="w-[180px] object-contain" />
           </Link>
-          <div className="flex items-center gap-2 mt-4">
-            <Link to="/login">
-              <Button variant="ghost" size="sm">Créer un compte</Button>
-            </Link>
-            <Link to="/login">
-              <Button size="sm">Se connecter</Button>
-            </Link>
+          <div className="flex flex-col items-center gap-3 mt-4">
+            <Link to="/how-it-works" className="text-sm font-semibold text-gray-700 hover:text-brand-600 transition-colors duration-200">Comment ça marche</Link>
+            <div className="flex items-center gap-2">
+              <Link to="/login">
+                <Button variant="ghost" size="sm">Créer un compte</Button>
+              </Link>
+              <Link to="/login">
+                <Button size="sm">Se connecter</Button>
+              </Link>
+            </div>
           </div>
         </div>
       </header>
@@ -557,6 +561,7 @@ const LandingPage: React.FC = () => {
             <div>
               <h3 className="text-lg font-semibold mb-4">Liens rapides</h3>
               <ul className="space-y-3">
+                <li><Link to="/how-it-works" className="text-gray-400 hover:text-white transition-colors">Comment ça marche</Link></li>
                 <li><Link to="/items" className="text-gray-400 hover:text-white transition-colors">Objets</Link></li>
                 <li><Link to="/communities" className="text-gray-400 hover:text-white transition-colors">Quartiers</Link></li>
                 <li><Link to="/messages" className="text-gray-400 hover:text-white transition-colors">Messages</Link></li>
