@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
-  ArrowRight, Search, Users, Shield, Sparkles, Heart, Star, 
-  Zap, Mail, Phone, MapPin, CheckCircle, Clock, Gift, 
-  MessageCircle, UserCheck, Award, TrendingUp, Globe,
-  Smartphone, CreditCard, Lock, Eye, Filter, Calendar,
-  Share2, Download, Upload, Bell, Settings, HelpCircle
+  Search, Shield, Sparkles, Star, 
+  Zap, Phone, MapPin, CheckCircle, 
+  MessageCircle, UserCheck, Award, TrendingUp, 
+  Lock, Eye, 
+  Upload, HelpCircle
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
@@ -324,7 +324,7 @@ const HowItWorksPage: React.FC = () => {
         {/* Desktop Layout */}
         <div className="hidden md:flex items-center justify-between">
           <Link to="/" className="group">
-            <img src="/logo.png" alt="Échangeo Logo" className="w-20 h-20 object-contain" />
+            <img src="/logo.png" alt="Échangeo Logo" className="w-[180px]  object-contain" />
           </Link>
           <div className="flex items-center gap-4">
             <Link to="/how-it-works" className="text-sm font-semibold text-brand-600">Comment ça marche</Link>
