@@ -229,11 +229,11 @@ const ItemCard: React.FC<ItemCardProps> = memo(({
         className="h-full block"
         aria-label={`Voir les détails de ${item.title}`}
       >
-        <Card className="relative overflow-hidden p-0 group h-full flex flex-col bg-white/80 backdrop-blur-xl border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 card-hover rounded-3xl">
+        <Card className="relative overflow-hidden p-0 group h-full flex flex-col bg-white/90 backdrop-blur-xl border border-white/30 shadow-lg hover:shadow-xl transition-all duration-300 card-hover rounded-2xl sm:shadow-2xl sm:hover:shadow-3xl sm:duration-500 sm:rounded-3xl">
           
           {/* Image Container compact */}
           <motion.div 
-            className="relative bg-gradient-to-br from-brand-50 to-purple-50 overflow-hidden rounded-t-3xl" 
+            className="relative bg-gradient-to-br from-brand-50 to-purple-50 overflow-hidden rounded-t-2xl sm:rounded-t-3xl" 
             style={{ aspectRatio: '16 / 10' }}
             variants={ANIMATION_VARIANTS.image}
             whileHover="hover"
@@ -367,13 +367,13 @@ const ItemCard: React.FC<ItemCardProps> = memo(({
           </motion.div>
 
           {/* Content compact */}
-          <div className="p-3 flex-1 flex flex-col">
+          <div className="p-3 sm:p-4 flex-1 flex flex-col">
             {/* Titre avec icône de navigation */}
             <div className="flex items-start justify-between mb-2">
-              <h3 className="font-bold text-gray-900 line-clamp-2 text-sm group-hover:text-brand-600 transition-colors duration-300 flex-1 pr-2">
+              <h3 className="font-bold text-gray-900 line-clamp-2 text-xs sm:text-sm group-hover:text-brand-600 transition-colors duration-300 flex-1 pr-2">
                 {item.title}
               </h3>
-              <ArrowUpRight className="w-4 h-4 text-gray-400 group-hover:text-brand-500 transition-colors duration-300 flex-shrink-0" />
+              <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 group-hover:text-brand-500 transition-colors duration-300 flex-shrink-0" />
             </div>
             
             {/* Description compacte */}

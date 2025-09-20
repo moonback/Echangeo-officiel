@@ -147,7 +147,7 @@ const ItemsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="p-4 max-w-12xl mx-auto">
+      <div className="p-3 sm:p-4 max-w-12xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -162,14 +162,14 @@ const ItemsPage: React.FC = () => {
           >
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Parcourir les objets</h1>
-                <p className="text-gray-600 text-lg">Découvrez les objets disponibles dans votre quartier</p>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2">Parcourir les objets</h1>
+                <p className="text-gray-600 text-base sm:text-lg">Découvrez les objets disponibles dans votre quartier</p>
               </div>
-              <div className="flex items-center gap-3">
-                <Button variant="secondary" size="sm" onClick={refetch} disabled={isLoading} className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <Button variant="secondary" size="sm" onClick={refetch} disabled={isLoading} className="flex items-center gap-2 w-full sm:w-auto">
                   <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} /> Actualiser
                 </Button>
-                <Button className="flex items-center gap-2" onClick={handleCreateItem}>
+                <Button className="flex items-center gap-2 w-full sm:w-auto" onClick={handleCreateItem}>
                   <Plus className="w-4 h-4" /> Publier un objet
                 </Button>
               </div>
@@ -181,9 +181,9 @@ const ItemsPage: React.FC = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.5 }}
-            className="sticky top-16 z-10 bg-gray-50/80 backdrop-blur-sm border-b border-gray-200/50 -mx-4 px-4 py-3 mb-6"
+            className="sticky top-16 z-10 bg-gray-50/90 backdrop-blur-sm border-b border-gray-200/50 -mx-3 sm:-mx-4 px-3 sm:px-4 py-3 mb-6"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               {/* Search Toggle Button - Simple Icon */}
               <button
                 onClick={handleSearchToggle}
@@ -223,7 +223,7 @@ const ItemsPage: React.FC = () => {
                 <select
                   value={filters.sortBy}
                   onChange={(e) => setSortBy(e.target.value as 'newest' | 'oldest' | 'value_asc' | 'value_desc' | 'title_asc' | 'title_desc')}
-                  className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all duration-200 min-w-[140px]"
+                  className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all duration-200 min-w-[120px] sm:min-w-[140px]"
                 >
                   <option value="newest">Plus récent</option>
                   <option value="oldest">Plus ancien</option>
@@ -235,10 +235,10 @@ const ItemsPage: React.FC = () => {
               </div>
 
               {/* Offer Type Toggle */}
-              <div className="flex bg-gray-100 rounded-lg p-1">
+              <div className="flex bg-gray-100 rounded-lg p-0.5 sm:p-1">
                 <button
                   onClick={() => setOfferType(undefined)}
-                  className={`px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  className={`px-1.5 sm:px-2 py-1 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-colors ${
                     !filters.offerType 
                       ? 'bg-white text-brand-600 shadow-sm' 
                       : 'text-gray-600 hover:text-gray-800'
@@ -248,7 +248,7 @@ const ItemsPage: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setOfferType('loan')}
-                  className={`px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  className={`px-1.5 sm:px-2 py-1 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-colors ${
                     filters.offerType === 'loan' 
                       ? 'bg-white text-brand-600 shadow-sm' 
                       : 'text-gray-600 hover:text-gray-800'
@@ -258,7 +258,7 @@ const ItemsPage: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setOfferType('trade')}
-                  className={`px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  className={`px-1.5 sm:px-2 py-1 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-colors ${
                     filters.offerType === 'trade' 
                       ? 'bg-white text-brand-600 shadow-sm' 
                       : 'text-gray-600 hover:text-gray-800'
@@ -268,7 +268,7 @@ const ItemsPage: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setOfferType('donation')}
-                  className={`px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  className={`px-1.5 sm:px-2 py-1 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-colors ${
                     filters.offerType === 'donation' 
                       ? 'bg-white text-brand-600 shadow-sm' 
                       : 'text-gray-600 hover:text-gray-800'
@@ -279,30 +279,30 @@ const ItemsPage: React.FC = () => {
               </div>
 
               {/* View Mode Toggle */}
-              <div className="flex bg-gray-100 rounded-lg p-1">
+              <div className="flex bg-gray-100 rounded-lg p-0.5 sm:p-1">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-1.5 rounded-md transition-colors ${
+                  className={`p-1 sm:p-1.5 rounded-md transition-colors ${
                     filters.viewMode === 'grid' 
                       ? 'bg-white text-brand-600 shadow-sm' 
                       : 'text-gray-500 hover:text-gray-700'
                   }`}
                   title="Vue grille"
                 >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                   </svg>
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-1.5 rounded-md transition-colors ${
+                  className={`p-1 sm:p-1.5 rounded-md transition-colors ${
                     filters.viewMode === 'list' 
                       ? 'bg-white text-brand-600 shadow-sm' 
                       : 'text-gray-500 hover:text-gray-700'
                   }`}
                   title="Vue liste"
                 >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
                   </svg>
                 </button>
@@ -311,12 +311,12 @@ const ItemsPage: React.FC = () => {
               {/* Filters Button */}
               <button
                 onClick={handleFiltersToggle}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
               >
-                <Filter size={16} />
-                <span className="text-sm font-medium">Filtres</span>
+                <Filter size={14} className="sm:w-4 sm:h-4" />
+                <span className="text-xs sm:text-sm font-medium">Filtres</span>
                 {activeFiltersCount > 0 && (
-                  <span className="bg-brand-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  <span className="bg-brand-500 text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center">
                     {activeFiltersCount}
                   </span>
                 )}
@@ -429,8 +429,8 @@ const ItemsPage: React.FC = () => {
 
             {/* Results Grid/List */}
             <div className={filters.viewMode === 'grid' 
-              ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4'
-              : 'space-y-4'
+              ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4'
+              : 'space-y-3 sm:space-y-4'
             }>
               {isLoading ? (
                 <ItemCardSkeleton count={8} />

@@ -9,11 +9,11 @@ export const Card: React.FC<CardProps> = ({ as = 'div', className = '', children
   return (
     <Element
       className={[
-        'bg-white/80 backdrop-blur-xl border border-white/20 rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-500 ease-out',
+        'bg-white/90 backdrop-blur-xl border border-white/30 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 ease-out sm:rounded-3xl sm:shadow-2xl sm:hover:shadow-3xl sm:duration-500',
         className,
       ].join(' ')}
       style={{
-        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.6)',
+        boxShadow: '0 8px 16px -4px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6)',
       }}
       {...props}
     >

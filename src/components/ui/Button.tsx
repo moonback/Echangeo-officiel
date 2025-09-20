@@ -19,9 +19,9 @@ const variantClasses: Record<ButtonVariant, string> = {
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: 'h-9 px-4 text-sm rounded-2xl',
-  md: 'h-11 px-6 text-sm rounded-3xl',
-  lg: 'h-12 px-8 text-base rounded-3xl',
+  sm: 'h-10 px-4 text-sm rounded-2xl sm:h-9 sm:px-3',
+  md: 'h-12 px-6 text-base rounded-3xl sm:h-11 sm:px-5 sm:text-sm',
+  lg: 'h-14 px-8 text-lg rounded-3xl sm:h-12 sm:px-6 sm:text-base',
 };
 
 export const Button: React.FC<ButtonProps> = ({
@@ -37,7 +37,7 @@ export const Button: React.FC<ButtonProps> = ({
   return (
     <button
       className={[
-        'inline-flex items-center justify-center font-semibold transition-all duration-500 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] active:translate-y-0 transform-gpu',
+        'inline-flex items-center justify-center font-semibold transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] active:translate-y-0 transform-gpu touch-manipulation',
         variantClasses[variant],
         sizeClasses[size],
         fullWidth ? 'w-full' : '',

@@ -190,7 +190,7 @@ const HomePage: React.FC = () => {
         />
       </div>
 
-      <div className="relative max-w-12xl mx-auto px-4 py-8">
+      <div className="relative max-w-12xl mx-auto px-4 py-4 sm:py-8">
         {/* Hero Section Ultra-Moderne */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -218,7 +218,7 @@ const HomePage: React.FC = () => {
             />
             
             {/* Carte principale avec glassmorphism */}
-            <div className="relative bg-white/80 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl">
+            <div className="relative bg-white/90 backdrop-blur-xl border border-white/30 rounded-2xl p-6 shadow-xl sm:rounded-3xl sm:p-8 sm:shadow-2xl">
               {/* Éléments décoratifs flottants */}
               <motion.div 
                 className="absolute top-6 right-6 w-20 h-20 bg-gradient-to-br from-brand-200/30 to-brand-300/20 rounded-full blur-2xl"
@@ -246,29 +246,29 @@ const HomePage: React.FC = () => {
               />
               
               <div className="relative z-10">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 sm:gap-8">
                   <div className="flex-1">
                     {/* Header avec badges redesignés */}
                     <motion.div 
-                      className="flex items-center gap-4 mb-8"
+                      className="flex items-center gap-3 mb-6 sm:gap-4 sm:mb-8"
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.2 }}
                     >
                       <motion.div 
-                        className="p-5 bg-gradient-to-br from-brand-500 via-brand-600 to-brand-700 rounded-2xl shadow-lg"
+                        className="p-4 sm:p-5 bg-gradient-to-br from-brand-500 via-brand-600 to-brand-700 rounded-2xl shadow-lg"
                         whileHover={{ scale: 1.1, rotate: 5 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <Users className="w-8 h-8 text-white" />
+                        <Users className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                       </motion.div>
                       <div className="flex items-center gap-3">
                         <motion.span 
-                          className="px-5 py-3 bg-gradient-to-r from-emerald-100 via-green-100 to-emerald-100 text-emerald-700 border border-emerald-200/50 rounded-2xl text-sm font-semibold shadow-lg backdrop-blur-sm"
+                          className="px-4 py-2 sm:px-5 sm:py-3 bg-gradient-to-r from-emerald-100 via-green-100 to-emerald-100 text-emerald-700 border border-emerald-200/50 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-semibold shadow-lg backdrop-blur-sm"
                           whileHover={{ scale: 1.05 }}
                           transition={{ duration: 0.2 }}
                         >
-                          <Star className="w-4 h-4 inline mr-2" />
+                          <Star className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1 sm:mr-2" />
                           Bienvenue
                         </motion.span>
                         {signupCommunity && (
@@ -286,7 +286,7 @@ const HomePage: React.FC = () => {
                     
                     {/* Titre avec gradient text */}
                     <motion.h1 
-                      className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-slate-900 via-brand-600 to-slate-900 bg-clip-text text-transparent leading-tight"
+                      className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-slate-900 via-brand-600 to-slate-900 bg-clip-text text-transparent leading-tight"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.3 }}
@@ -296,46 +296,46 @@ const HomePage: React.FC = () => {
                     
                     {/* Badges informatifs redesignés */}
                     <motion.div 
-                      className="flex flex-wrap items-center gap-4 mb-8"
+                      className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6 sm:mb-8"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4 }}
                     >
                       <motion.div 
-                        className="flex items-center gap-3 bg-white/90 backdrop-blur-xl px-5 py-3 rounded-2xl border border-slate-200/50 shadow-lg"
+                        className="flex items-center gap-2 sm:gap-3 bg-white/90 backdrop-blur-xl px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl border border-slate-200/50 shadow-lg"
                         whileHover={{ scale: 1.05, y: -2 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <div className="p-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl">
-                          <MapPin className="w-4 h-4 text-white" />
+                        <div className="p-1.5 sm:p-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg sm:rounded-xl">
+                          <MapPin className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                         </div>
-                        <span className="font-semibold text-slate-700">Votre quartier</span>
+                        <span className="text-sm sm:text-base font-semibold text-slate-700">Votre quartier</span>
                       </motion.div>
                       <motion.div 
-                        className="flex items-center gap-3 bg-white/90 backdrop-blur-xl px-5 py-3 rounded-2xl border border-slate-200/50 shadow-lg"
+                        className="flex items-center gap-2 sm:gap-3 bg-white/90 backdrop-blur-xl px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl border border-slate-200/50 shadow-lg"
                         whileHover={{ scale: 1.05, y: -2 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <div className="p-2 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl">
-                          <Users className="w-4 h-4 text-white" />
+                        <div className="p-1.5 sm:p-2 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg sm:rounded-xl">
+                          <Users className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                         </div>
-                        <span className="font-semibold text-slate-700">Communauté active</span>
+                        <span className="text-sm sm:text-base font-semibold text-slate-700">Communauté active</span>
                       </motion.div>
                       <motion.div 
-                        className="flex items-center gap-3 bg-white/90 backdrop-blur-xl px-5 py-3 rounded-2xl border border-slate-200/50 shadow-lg"
+                        className="flex items-center gap-2 sm:gap-3 bg-white/90 backdrop-blur-xl px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl border border-slate-200/50 shadow-lg"
                         whileHover={{ scale: 1.05, y: -2 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <div className="p-2 bg-gradient-to-r from-pink-500 to-pink-600 rounded-xl">
-                          <Heart className="w-4 h-4 text-white" />
+                        <div className="p-1.5 sm:p-2 bg-gradient-to-r from-pink-500 to-pink-600 rounded-lg sm:rounded-xl">
+                          <Heart className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                         </div>
-                        <span className="font-semibold text-slate-700">Partage responsable</span>
+                        <span className="text-sm sm:text-base font-semibold text-slate-700">Partage responsable</span>
                       </motion.div>
                     </motion.div>
                     
                     {/* Description */}
                     <motion.p 
-                      className="text-slate-600 text-xl leading-relaxed max-w-3xl font-medium"
+                      className="text-slate-600 text-lg sm:text-xl leading-relaxed max-w-3xl font-medium"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.5 }}
@@ -346,12 +346,12 @@ const HomePage: React.FC = () => {
                   
                   {/* Actions rapides redesignées */}
                   <motion.div 
-                    className="flex flex-col items-end gap-6"
+                    className="flex flex-col items-stretch sm:items-end gap-4 sm:gap-6"
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.6 }}
                   >
-                    <div className="text-right">
+                    <div className="text-center sm:text-right">
                       <div className="text-sm text-slate-500 mb-4 font-medium">Actions rapides</div>
                       <div className="flex flex-col gap-3">
                         <motion.div whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.95 }}>
@@ -359,7 +359,7 @@ const HomePage: React.FC = () => {
                             leftIcon={<Plus size={18} />}
                             onClick={() => navigate('/create')}
                             size="lg"
-                            className="shadow-xl hover:shadow-2xl bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-semibold px-8 py-4 rounded-2xl"
+                            className="shadow-xl hover:shadow-2xl bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-semibold px-6 py-3 sm:px-8 sm:py-4 rounded-2xl w-full sm:w-auto"
                           >
                             Publier un objet
                           </Button>
@@ -370,7 +370,7 @@ const HomePage: React.FC = () => {
                             leftIcon={<Search size={18} />}
                             onClick={() => navigate('/items')}
                             size="lg"
-                            className="hover:bg-brand-50 hover:text-brand-700 font-semibold px-8 py-4 rounded-2xl border border-slate-200/50 backdrop-blur-sm"
+                            className="hover:bg-brand-50 hover:text-brand-700 font-semibold px-6 py-3 sm:px-8 sm:py-4 rounded-2xl border border-slate-200/50 backdrop-blur-sm w-full sm:w-auto"
                           >
                             Rechercher
                           </Button>
@@ -401,7 +401,7 @@ const HomePage: React.FC = () => {
               >
                 Actions rapides
               </motion.h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
                 {quickActions.map((action, index) => (
                   <motion.div
                     key={action.title}
@@ -427,7 +427,7 @@ const HomePage: React.FC = () => {
                     />
                     
                     <Card 
-                      className="relative p-6 cursor-pointer border-0 bg-white/90 backdrop-blur-xl shadow-lg hover:shadow-2xl transition-all duration-300 rounded-3xl overflow-hidden"
+                      className="relative p-4 sm:p-6 cursor-pointer border-0 bg-white/90 backdrop-blur-xl shadow-lg hover:shadow-2xl transition-all duration-300 rounded-2xl sm:rounded-3xl overflow-hidden"
                       onClick={action.action}
                     >
                       {/* Effet "Explorer" qui apparaît au hover */}
@@ -441,17 +441,17 @@ const HomePage: React.FC = () => {
                       
                       {/* Icône redesignée */}
                       <motion.div 
-                        className={`w-14 h-14 rounded-2xl bg-gradient-to-r ${action.gradient} text-white flex items-center justify-center mb-4 shadow-lg group-hover:shadow-xl transition-shadow duration-300`}
+                        className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-r ${action.gradient} text-white flex items-center justify-center mb-3 sm:mb-4 shadow-lg group-hover:shadow-xl transition-shadow duration-300`}
                         whileHover={{ rotate: 5, scale: 1.1 }}
                         transition={{ duration: 0.2 }}
                       >
                         {action.icon}
                       </motion.div>
                       
-                      <h3 className="font-bold text-slate-900 text-base mb-2 group-hover:text-brand-600 transition-colors duration-300">
+                      <h3 className="font-bold text-slate-900 text-sm sm:text-base mb-2 group-hover:text-brand-600 transition-colors duration-300">
                         {action.title}
                       </h3>
-                      <p className="text-sm text-slate-600 leading-relaxed">
+                      <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                         {action.description}
                       </p>
                       
@@ -556,7 +556,7 @@ const HomePage: React.FC = () => {
                   </motion.div>
                 </motion.div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
                   {recentItems?.slice(0, 8).map((item: Item, index: number) => (
                     <motion.div
                       key={item.id}
