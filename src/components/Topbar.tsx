@@ -142,7 +142,19 @@ const Topbar: React.FC = () => {
   const UserMenu = () => (
     <div className="relative" ref={userMenuRef}>
       <button onClick={() => setIsUserMenuOpen(p => !p)} className="flex items-center gap-2 rounded-full p-1 pr-3 hover:bg-gray-100 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
-        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center text-white font-bold">
+        {profile?.avatar_url ? (
+          <img 
+            src={profile.avatar_url} 
+            alt="Photo de profil" 
+            className="w-9 h-9 rounded-full object-cover border-2 border-white shadow-sm"
+            onError={(e) => {
+              // Fallback vers l'initiale si l'image ne charge pas
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.nextElementSibling?.classList.remove('hidden');
+            }}
+          />
+        ) : null}
+        <div className={`w-9 h-9 rounded-full bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center text-white font-bold ${profile?.avatar_url ? 'hidden' : ''}`}>
           {(profile?.full_name || user?.email || 'U')?.slice(0, 1).toUpperCase()}
         </div>
         <span className="text-sm font-medium text-gray-700 hidden lg:block">{profile?.full_name || 'Mon Compte'}</span>
@@ -159,7 +171,19 @@ const Topbar: React.FC = () => {
           >
             <div className="p-2">
               <div className="flex items-center gap-3 p-3">
-                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center text-white font-bold text-lg">
+                {profile?.avatar_url ? (
+                  <img 
+                    src={profile.avatar_url} 
+                    alt="Photo de profil" 
+                    className="w-11 h-11 rounded-full object-cover border-2 border-white shadow-sm"
+                    onError={(e) => {
+                      // Fallback vers l'initiale si l'image ne charge pas
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                    }}
+                  />
+                ) : null}
+                <div className={`w-11 h-11 rounded-full bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center text-white font-bold text-lg ${profile?.avatar_url ? 'hidden' : ''}`}>
                   {(profile?.full_name || user?.email || 'U')?.slice(0, 1).toUpperCase()}
                 </div>
                 <div>
