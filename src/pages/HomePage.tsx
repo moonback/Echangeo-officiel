@@ -1,26 +1,64 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Plus, Search, MapPin, Users, Clock, 
-  Heart, Gift, ArrowRight, Sparkles, Trophy, Zap
+  Heart, Gift, ArrowRight, Sparkles, Trophy, Zap,
+  Navigation
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import { useAuthStore } from '../store/authStore';
 import { useItems } from '../hooks/useItems';
-import { useCommunities, useUserSignupCommunity } from '../hooks/useCommunities';
-import type { Item, CommunityOverview } from '../types';
+import { useCommunities, useUserSignupCommunity, useNearbyCommunities } from '../hooks/useCommunities';
+import type { Item } from '../types';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const { profile } = useAuthStore();
   
+  // État pour la géolocalisation
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  
   // Hooks pour récupérer les données
   const { data: recentItems, isLoading: itemsLoading } = useItems();
   
-  const { data: nearbyCommunities, isLoading: communitiesLoading } = useCommunities();
+  // Hooks pour récupérer les communautés
+  const { data: nearbyCommunities, isLoading: nearbyCommunitiesLoading } = useNearbyCommunities(
+    userLocation?.lat || 0, 
+    userLocation?.lng || 0, 
+    15 // 15km de rayon
+  );
+  
+  const { data: allCommunities, isLoading: allCommunitiesLoading } = useCommunities();
+  
+  // Utiliser les communautés proches si géolocalisation disponible, sinon toutes les communautés
+  const communities = userLocation ? nearbyCommunities : allCommunities;
+  const communitiesLoading = userLocation ? nearbyCommunitiesLoading : allCommunitiesLoading;
+  
   const { data: signupCommunity } = useUserSignupCommunity(profile?.id);
+
+  // Récupérer la position de l'utilisateur
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.log('Géolocalisation non disponible:', error.message);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000 // 5 minutes
+        }
+      );
+    }
+  }, []);
 
   const quickActions = [
     {
@@ -303,7 +341,15 @@ const HomePage: React.FC = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.6 }}
             >
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Communautés proches</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Communautés proches</h3>
+                {userLocation && (
+                  <div className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                    <Navigation className="w-3 h-3" />
+                    <span>Géolocalisé</span>
+                  </div>
+                )}
+              </div>
               <Card className="p-0 border-0 bg-white/80 backdrop-blur-sm">
                 {communitiesLoading ? (
                   <div className="space-y-3 p-4">
@@ -314,31 +360,72 @@ const HomePage: React.FC = () => {
                           <div className="h-4 bg-gray-200 rounded animate-pulse mb-1" />
                           <div className="h-3 bg-gray-200 rounded animate-pulse w-2/3" />
                         </div>
+                        <div className="h-6 w-12 bg-gray-200 rounded animate-pulse" />
                       </div>
                     ))}
                   </div>
-                ) : (
+                ) : communities && communities.length > 0 ? (
                   <div className="divide-y divide-gray-100">
-                    {nearbyCommunities?.slice(0, 5).map((community: CommunityOverview) => (
-                      <div 
-                        key={community.id}
-                        className="p-4 hover:bg-gray-50/50 cursor-pointer transition-colors"
-                        onClick={() => navigate(`/communities/${community.id}`)}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-brand-500 to-purple-500 flex items-center justify-center text-white font-bold">
-                            {(community.name || 'C')[0].toUpperCase()}
+                    {communities.slice(0, 5).map((community) => {
+                      // Gérer les types différents
+                      const communityId = 'id' in community ? community.id : community.community_id;
+                      const communityName = 'name' in community ? community.name : community.community_name;
+                      const memberCount = 'stats' in community ? community.stats?.total_members || 0 : community.member_count || 0;
+                      const distance = 'distance_km' in community ? community.distance_km : undefined;
+                      
+                      return (
+                        <div 
+                          key={communityId}
+                          className="p-4 hover:bg-gray-50/50 cursor-pointer transition-colors group"
+                          onClick={() => navigate(`/communities/${communityId}`)}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-brand-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-md group-hover:shadow-lg transition-shadow">
+                              {(communityName || 'C')[0].toUpperCase()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium text-gray-900 truncate group-hover:text-brand-600 transition-colors">
+                                {communityName}
+                              </h4>
+                              <div className="flex items-center gap-2 text-sm text-gray-600">
+                                <Users className="w-3 h-3" />
+                                <span>{String(memberCount)} membres</span>
+                                {distance && typeof distance === 'number' ? (
+                                  <>
+                                    <span className="text-gray-400">•</span>
+                                    <span className="text-blue-600 font-medium">
+                                      {distance < 1 
+                                        ? `${Math.round(distance * 1000)}m` 
+                                        : `${distance.toFixed(1)}km`
+                                      }
+                                    </span>
+                                  </>
+                                ) : null}
+                              </div>
+                            </div>
+                            <ArrowRight size={16} className="text-gray-400 group-hover:text-brand-500 transition-colors" />
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-gray-900 truncate">{community.name}</h4>
-                            <p className="text-sm text-gray-600">
-                              {community.stats?.total_members || 0} membres
-                            </p>
-                          </div>
-                          <ArrowRight size={16} className="text-gray-400" />
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="p-6 text-center">
+                    <MapPin className="w-8 h-8 text-gray-400 mx-auto mb-3" />
+                    <p className="text-sm text-gray-600 mb-2">
+                      {userLocation 
+                        ? "Aucune communauté trouvée dans votre région"
+                        : "Activez la géolocalisation pour voir les communautés proches"
+                      }
+                    </p>
+                    <Button 
+                      variant="secondary" 
+                      size="sm"
+                      onClick={() => navigate('/communities')}
+                      className="text-xs"
+                    >
+                      Voir toutes les communautés
+                    </Button>
                   </div>
                 )}
                 <div className="p-4 border-t border-gray-100">
