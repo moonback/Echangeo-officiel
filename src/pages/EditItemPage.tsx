@@ -23,8 +23,6 @@ const schema = z.object({
   available_from: z.string().optional(),
   available_to: z.string().optional(),
   location_hint: z.string().max(200).optional(),
-  latitude: z.preprocess((v) => (v === '' || v === undefined ? undefined : Number(v)), z.number().min(-90).max(90).optional()),
-  longitude: z.preprocess((v) => (v === '' || v === undefined ? undefined : Number(v)), z.number().min(-180).max(180).optional()),
   is_available: z
     .preprocess((v) => (v === 'true' ? true : v === 'false' ? false : v), z.boolean().optional()),
 });
@@ -56,8 +54,6 @@ const EditItemPage: React.FC = () => {
         available_from: item.available_from as any,
         available_to: item.available_to as any,
         location_hint: item.location_hint ?? '',
-        latitude: item.latitude as any,
-        longitude: item.longitude as any,
         is_available: item.is_available,
       });
     }
@@ -175,18 +171,6 @@ const EditItemPage: React.FC = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Latitude</label>
-            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
-              <Input type="number" step="any" {...register('latitude')} />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Longitude</label>
-            <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
-              <Input type="number" step="any" {...register('longitude')} />
-            </div>
-          </div>
-          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Disponibilité</label>
             <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
               <Select {...register('is_available')}>
@@ -197,36 +181,6 @@ const EditItemPage: React.FC = () => {
           </div>
         </div>
 
-        <div>
-          <Button
-            type="button"
-            variant="ghost"
-            className="border border-gray-300"
-            onClick={() => {
-              if (!navigator.geolocation) return;
-              navigator.geolocation.getCurrentPosition((pos) => {
-                const lat = pos.coords.latitude;
-                const lng = pos.coords.longitude;
-                setValue('latitude', lat as any, { shouldValidate: true, shouldDirty: true });
-                setValue('longitude', lng as any, { shouldValidate: true, shouldDirty: true });
-
-                fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`, {
-                  headers: { 'Accept-Language': 'fr' },
-                })
-                  .then((r) => r.json())
-                  .then((json) => {
-                    const display = json?.display_name as string | undefined;
-                    if (display) {
-                      setValue('location_hint', display, { shouldValidate: true, shouldDirty: true });
-                    }
-                  })
-                  .catch(() => {});
-              });
-            }}
-          >
-            Utiliser ma position
-          </Button>
-        </div>
 
         <div className="flex space-x-3 pt-2">
           <Button type="button" variant="ghost" className="border border-gray-300" onClick={() => navigate(-1)}>Annuler</Button>

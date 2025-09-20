@@ -94,13 +94,6 @@ const HomePage: React.FC = () => {
               >
                 Publier
               </Button>
-              <Button 
-                variant="secondary" 
-                leftIcon={<MapPin size={16} />}
-                onClick={() => navigate('/map')}
-              >
-                Carte
-              </Button>
             </div>
           </div>
 
