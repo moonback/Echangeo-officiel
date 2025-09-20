@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useProfile, useBorrowHistory, useLendHistory } from '../hooks/useProfiles';
 import { supabase } from '../services/supabase';
 import { categories } from '../utils/categories';
-import { Star, MapPin, MessageCircle, Link as LinkIcon } from 'lucide-react';
+import { Star, MapPin, MessageCircle, Link as LinkIcon, Building2 } from 'lucide-react';
 import Card from '../components/ui/Card';
 import EmptyState from '../components/EmptyState';
 import Button from '../components/ui/Button';
@@ -12,14 +12,45 @@ import Badge from '../components/ui/Badge';
 import { fetchProfileReputation, fetchProfileBadges } from '../hooks/useRatings';
 import { useGamificationStats, useUserLevel } from '../hooks/useGamification';
 import ReputationDisplay from '../components/ReputationDisplay';
+import { useCommunity } from '../hooks/useCommunities';
 
-type OwnedItem = { id: string; title: string; description?: string; created_at: string; is_available: boolean; category: string; latitude?: number; longitude?: number };
+type OwnedItem = { id: string; title: string; description?: string; created_at: string; is_available: boolean; category: string; latitude?: number; longitude?: number; community_id?: string };
 type ReviewRow = { id: string; item_id: string; item_title: string; rater_name: string; score: number; comment?: string; created_at: string };
+
+// Composant pour afficher un objet dans le profil avec le quartier
+const ProfileItemCard: React.FC<{ item: OwnedItem }> = ({ item }) => {
+  const { data: community } = useCommunity(item.community_id || '');
+
+  return (
+    <Card className="p-4">
+      <div className="flex items-start justify-between">
+        <div className="min-w-0 pr-3 flex-1">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="text-gray-900 font-medium truncate">{item.title}</div>
+          </div>
+          {item.description && (
+            <div className="text-gray-600 text-sm line-clamp-2 mb-2">{item.description}</div>
+          )}
+          {/* Quartier */}
+          {community && (
+            <div className="flex items-center gap-1 text-xs text-blue-600">
+              <Building2 className="w-3 h-3" />
+              <span className="font-medium">
+                {community.name}
+                {community.city && ` • ${community.city}`}
+              </span>
+            </div>
+          )}
+        </div>
+        <Link to={`/items/${item.id}`} className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-sm ml-2">Voir</Link>
+      </div>
+    </Card>
+  );
+};
 
 const ProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { data: profile, isLoading } = useProfile(id);
-  const [userLoc, setUserLoc] = React.useState<{ lat: number; lng: number } | null>(null);
   // Client-managed items with server pagination & filters
   const [items, setItems] = React.useState<OwnedItem[]>([]);
   const [itemsPage, setItemsPage] = React.useState(0);
@@ -74,18 +105,6 @@ const ProfilePage: React.FC = () => {
     loadReputation();
   }, [id]);
 
-  const distanceKm = React.useMemo(() => {
-    const lat = profile?.latitude as number | undefined;
-    const lng = profile?.longitude as number | undefined;
-    if (!userLoc || typeof lat !== 'number' || typeof lng !== 'number') return null;
-    const toRad = (v: number) => (v * Math.PI) / 180;
-    const R = 6371;
-    const dLat = toRad(lat - userLoc.lat);
-    const dLon = toRad(lng - userLoc.lng);
-    const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(userLoc.lat)) * Math.cos(toRad(lat)) * Math.sin(dLon / 2) ** 2;
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  }, [userLoc, profile]);
 
   React.useEffect(() => {
     const loadRatingStats = async () => {
@@ -248,14 +267,9 @@ const ProfilePage: React.FC = () => {
                     </motion.div>
                     <div className="flex-1 min-w-0">
                       <h2 className="text-xl md:text-2xl font-semibold text-gray-900 truncate">{profile.full_name || profile.email}</h2>
-                      {(profile.address || distanceKm != null) && (
+                      {profile.address && (
                         <div className="mt-1 text-sm text-gray-600 flex items-center flex-wrap gap-2">
-                          {profile.address && <span className="inline-flex items-center"><MapPin className="w-4 h-4 mr-1" /> {profile.address}</span>}
-                          {distanceKm != null && (
-                            <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[11px]">
-                              {distanceKm.toFixed(1)} km
-                            </span>
-                          )}
+                          <span className="inline-flex items-center"><MapPin className="w-4 h-4 mr-1" /> {profile.address}</span>
                         </div>
                       )}
                       {profile.bio && (
@@ -382,34 +396,7 @@ const ProfilePage: React.FC = () => {
                       return ab - aa;
                     })
                     .map((it) => {
-                      let dist: number | null = null;
-                      if (userLoc && typeof it.latitude === 'number' && typeof it.longitude === 'number') {
-                        const toRad = (v: number) => (v * Math.PI) / 180;
-                        const R = 6371;
-                        const dLat = toRad(it.latitude - userLoc.lat);
-                        const dLon = toRad(it.longitude - userLoc.lng);
-                        const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(userLoc.lat)) * Math.cos(toRad(it.latitude)) * Math.sin(dLon / 2) ** 2;
-                        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-                        dist = R * c;
-                      }
-                      return (
-                        <Card key={it.id} className="p-4">
-                          <div className="flex items-start justify-between">
-                            <div className="min-w-0 pr-3">
-                              <div className="flex items-center gap-2">
-                                <div className="text-gray-900 font-medium truncate">{it.title}</div>
-                                {dist != null && (
-                                  <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[11px]">{dist.toFixed(1)} km</span>
-                                )}
-                              </div>
-                              {it.description && (
-                                <div className="text-gray-600 text-sm line-clamp-2">{it.description}</div>
-                              )}
-                            </div>
-                            <Link to={`/items/${it.id}`} className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-sm">Voir</Link>
-                          </div>
-                        </Card>
-                      );
+                      return <ProfileItemCard key={it.id} item={it} />;
                     })}
                   {itemsHasMore && (
                     <div className="col-span-full flex justify-center pt-2">

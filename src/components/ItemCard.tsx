@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { MapPin, User, Star, Heart, Trash2 } from 'lucide-react';
+import { User, Star, Heart, Trash2, Building2 } from 'lucide-react';
 import type { Item } from '../types';
 import { getCategoryIcon, getCategoryLabel } from '../utils/categories';
 import { getOfferTypeIcon, getOfferTypeLabel } from '../utils/offerTypes';
@@ -11,6 +11,7 @@ import { useFavorites, useIsItemFavorited } from '../hooks/useFavorites';
 import { useDeleteItem } from '../hooks/useItems';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
+import { useCommunity } from '../hooks/useCommunities';
 
 interface ItemCardProps {
   item: Item;
@@ -18,25 +19,18 @@ interface ItemCardProps {
   userLocation?: { lat: number; lng: number };
 }
 
-const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation }) => {
+const ItemCard: React.FC<ItemCardProps> = ({ item, className = '' }) => {
   const CategoryIcon = getCategoryIcon(item.category);
   const OfferTypeIcon = getOfferTypeIcon(item.offer_type);
-  const distanceKm = React.useMemo(() => {
-    if (!userLocation || item.latitude === undefined || item.longitude === undefined) return null;
-    const toRad = (v: number) => (v * Math.PI) / 180;
-    const R = 6371; // km
-    const dLat = toRad(item.latitude - userLocation.lat);
-    const dLon = toRad(item.longitude - userLocation.lng);
-    const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(userLocation.lat)) * Math.cos(toRad(item.latitude)) * Math.sin(dLon / 2) ** 2;
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  }, [userLocation, item.latitude, item.longitude]);
   
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { toggle } = useFavorites();
   const { data: isFavorited = false } = useIsItemFavorited(item.id);
   const deleteItem = useDeleteItem();
+  
+  // Récupérer les informations de la communauté si l'objet en a une
+  const { data: community } = useCommunity(item.community_id || '');
   
   const desiredItemsList = React.useMemo(() => {
     if (item.offer_type !== 'trade' || !item.desired_items) return { items: [] as string[], total: 0 };
@@ -328,18 +322,20 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, className = '', userLocation 
                 </motion.span>
               </div>
               
-              <motion.div 
-                className="flex items-center text-sm text-gray-500 bg-gradient-to-r from-gray-50/90 to-gray-100/90 rounded-full px-2.5 py-1 backdrop-blur-sm border border-gray-200/50 group-hover:from-brand-50/90 group-hover:to-brand-100/90 group-hover:border-brand-200/50 transition-all duration-300"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <MapPin className="w-3.5 h-3.5 mr-1 group-hover:text-brand-600 transition-colors duration-300" />
-                <span className="font-medium group-hover:text-brand-700 transition-colors duration-300">
-                  {distanceKm != null ? 
-                    (distanceKm < 1 ? `${Math.round(distanceKm * 1000)}m` : `${distanceKm.toFixed(1)} km`) 
-                    : 'Distance inconnue'}
-                </span>
-              </motion.div>
+              {/* Quartier */}
+              {community && (
+                <motion.div 
+                  className="flex items-center text-sm text-gray-500 bg-gradient-to-r from-blue-50/90 to-blue-100/90 rounded-full px-2.5 py-1 backdrop-blur-sm border border-blue-200/50 group-hover:from-blue-100/90 group-hover:to-blue-200/90 group-hover:border-blue-300/50 transition-all duration-300"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Building2 className="w-3.5 h-3.5 mr-1 group-hover:text-blue-600 transition-colors duration-300" />
+                  <span className="font-medium group-hover:text-blue-700 transition-colors duration-300">
+                    {community.name}
+                    {community.city && ` • ${community.city}`}
+                  </span>
+                </motion.div>
+              )}
             </motion.div>
           </motion.div>
           
