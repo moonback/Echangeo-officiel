@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Users, Calendar, MessageCircle, TrendingUp, UserPlus } from 'lucide-react';
 import Card from './ui/Card';
-import Badge from './ui/Badge';
 import Button from './ui/Button';
 import ConfirmDialog from './ui/ConfirmDialog';
 import { useJoinCommunity, useLeaveCommunity, useUserCommunities } from '../hooks/useCommunities';
@@ -68,23 +67,23 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
       console.error('Erreur lors de la sortie de la communauté:', error);
     }
   };
-  const getActivityColor = (level: string) => {
-    switch (level) {
-      case 'active': return 'bg-gradient-to-r from-green-500 to-green-600 text-white border-0';
-      case 'moderate': return 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0';
-      case 'inactive': return 'bg-gradient-to-r from-gray-400 to-gray-500 text-white border-0';
-      default: return 'bg-gradient-to-r from-gray-400 to-gray-500 text-white border-0';
-    }
-  };
+  // const getActivityColor = (level: string) => {
+  //   switch (level) {
+  //     case 'active': return 'bg-gradient-to-r from-green-500 to-green-600 text-white border-0';
+  //     case 'moderate': return 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0';
+  //     case 'inactive': return 'bg-gradient-to-r from-gray-400 to-gray-500 text-white border-0';
+  //     default: return 'bg-gradient-to-r from-gray-400 to-gray-500 text-white border-0';
+  //   }
+  // };
 
-  const getActivityLabel = (level: string) => {
-    switch (level) {
-      case 'active': return 'Très actif';
-      case 'moderate': return 'Modérément actif';
-      case 'inactive': return 'Peu actif';
-      default: return 'Inconnu';
-    }
-  };
+  // const getActivityLabel = (level: string) => {
+  //   switch (level) {
+  //     case 'active': return 'Très actif';
+  //     case 'moderate': return 'Modérément actif';
+  //     case 'inactive': return 'Peu actif';
+  //     default: return 'Inconnu';
+  //   }
+  // };
 
   return (
     <motion.div
@@ -124,11 +123,11 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
                       )}
                     </div>
                   </div>
-                  <span 
+                  {/* <span 
                     className={`px-3 py-1 rounded-full text-xs font-medium ${getActivityColor(community.activity_level)}`}
                   >
                     {getActivityLabel(community.activity_level)}
-                  </span>
+                  </span> */}
                 </div>
                 
                 {community.description && (
@@ -218,11 +217,11 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
                   </div>
                 </div>
                 
-                <span 
+                {/* <span 
                   className={`px-2 py-1 rounded-full text-xs font-medium ${getActivityColor(community.activity_level)}`}
                 >
                   {getActivityLabel(community.activity_level)}
-                </span>
+                </span> */}
               </div>
 
               {/* Description compacte */}
