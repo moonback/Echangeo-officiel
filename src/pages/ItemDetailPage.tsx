@@ -107,9 +107,9 @@ const ItemDetailPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="p-4 max-w1-2xl mx-auto">
+      <div className="p-3 sm:p-4 max-w-2xl mx-auto">
         <div className="animate-pulse">
-          <div className="aspect-video bg-gray-200 rounded-xl mb-6" />
+          <div className="aspect-video bg-gray-200 rounded-2xl sm:rounded-xl mb-6" />
           <div className="h-8 bg-gray-200 rounded mb-4" />
           <div className="h-4 bg-gray-200 rounded mb-2 w-3/4" />
           <div className="h-4 bg-gray-200 rounded mb-2 w-1/2" />
@@ -120,8 +120,8 @@ const ItemDetailPage: React.FC = () => {
 
   if (!item) {
     return (
-      <div className="p-4 max-w1-2xl mx-auto text-center">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Objet non trouvé</h1>
+      <div className="p-3 sm:p-4 max-w-2xl mx-auto text-center">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Objet non trouvé</h1>
         <Link 
           to="/items" 
           className="text-blue-600 hover:text-blue-700"
@@ -165,35 +165,35 @@ const ItemDetailPage: React.FC = () => {
   };
 
   return (
-    <div className="p-4 max-w1-2xl mx-auto">
+    <div className="p-3 sm:p-4 max-w-2xl mx-auto">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center mb-6"
+        className="flex items-center mb-4 sm:mb-6"
       >
         <Link
           to="/items"
-          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-white hover:shadow-sm transition-all mr-4 bg-white/70 backdrop-blur-sm"
+          className="inline-flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-white hover:shadow-sm transition-all mr-3 sm:mr-4 bg-white/70 backdrop-blur-sm"
         >
-          <ArrowLeft size={18} />
-          <span className="text-sm font-medium">Retour</span>
+          <ArrowLeft size={16} className="sm:w-[18px] sm:h-[18px]" />
+          <span className="text-xs sm:text-sm font-medium">Retour</span>
         </Link>
-        <h1 className="text-2xl font-bold flex-1">
+        <h1 className="text-lg sm:text-2xl font-bold flex-1">
           <span className="bg-gradient-to-r from-gray-900 via-brand-700 to-gray-900 bg-clip-text text-transparent">Détails de l'objet</span>
         </h1>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <button
-            className={`inline-flex items-center justify-center w-10 h-10 rounded-xl border transition-all backdrop-blur-sm shadow-sm hover:shadow ${isFavorited ? 'bg-red-500 text-white border-red-400 hover:bg-red-600' : 'bg-white/80 text-gray-700 border-gray-200 hover:bg-white'}`}
+            className={`inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl border transition-all backdrop-blur-sm shadow-sm hover:shadow ${isFavorited ? 'bg-red-500 text-white border-red-400 hover:bg-red-600' : 'bg-white/80 text-gray-700 border-gray-200 hover:bg-white'}`}
             onClick={async () => { if (!id) return; if (!user) { window.location.href = '/login'; return; } await toggle(id); }}
             aria-pressed={isFavorited}
             aria-label={isFavorited ? 'Retirer des favoris' : 'Ajouter aux favoris'}
             title="Favori"
           >
-            <Heart size={18} className={isFavorited ? 'fill-current' : ''} />
+            <Heart size={16} className={`sm:w-[18px] sm:h-[18px] ${isFavorited ? 'fill-current' : ''}`} />
           </button>
           <button
-            className="inline-flex items-center justify-center w-10 h-10 rounded-xl border bg-white/80 text-gray-700 border-gray-200 hover:bg-white backdrop-blur-sm shadow-sm hover:shadow"
+            className="inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl border bg-white/80 text-gray-700 border-gray-200 hover:bg-white backdrop-blur-sm shadow-sm hover:shadow"
             onClick={async () => {
               try {
                 await navigator.clipboard.writeText(window.location.href);

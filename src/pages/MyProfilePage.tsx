@@ -242,7 +242,7 @@ const MyProfilePage: React.FC = () => {
         />
       </div>
 
-      <div className="relative max-w-12xl mx-auto px-4 py-8">
+      <div className="relative max-w-12xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -253,7 +253,7 @@ const MyProfilePage: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6 }}
-            className="mb-12"
+            className="mb-8 sm:mb-12"
           >
             <motion.div
               className="relative"
@@ -277,8 +277,8 @@ const MyProfilePage: React.FC = () => {
               />
               
               {/* Carte principale avec glassmorphism */}
-              <Card className="relative p-0 border-0 bg-white/80 backdrop-blur-xl shadow-2xl hover:shadow-3xl transition-all duration-500 rounded-3xl overflow-hidden">
-                <div className="relative bg-gradient-to-br from-brand-50/80 via-white/60 to-purple-50/40 p-6 md:p-8">
+              <Card className="relative p-0 border-0 bg-white/90 backdrop-blur-xl shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl sm:shadow-2xl sm:hover:shadow-3xl sm:duration-500 sm:rounded-3xl overflow-hidden">
+                <div className="relative bg-gradient-to-br from-brand-50/80 via-white/60 to-purple-50/40 p-4 sm:p-6 md:p-8">
                   {/* Background Decorations */}
                   <motion.div 
                     className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-brand-200/20 to-purple-200/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"
