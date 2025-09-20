@@ -37,13 +37,7 @@ const HomePage: React.FC = () => {
       color: "from-green-500 to-green-600",
       action: () => navigate('/items')
     },
-    {
-      icon: <MapPin className="w-6 h-6" />,
-      title: "Voir la carte",
-      description: "Explorez votre quartier",
-      color: "from-purple-500 to-purple-600",
-      action: () => navigate('/map')
-    },
+    
     {
       icon: <Users className="w-6 h-6" />,
       title: "Communautés",
