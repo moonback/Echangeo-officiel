@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { MapPin, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
 import { useItem, useUpdateItem, useDeleteItem } from '../hooks/useItems';
 import { categories } from '../utils/categories';
+import { geocodeWithRetry, cleanAddress } from '../utils/geocoding';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
@@ -35,10 +37,15 @@ const EditItemPage: React.FC = () => {
   const { data: item, isLoading } = useItem(id!);
   const updateItem = useUpdateItem();
   const deleteItem = useDeleteItem();
+  
+  const [isGeocoding, setIsGeocoding] = useState(false);
+  const [geocodingResult, setGeocodingResult] = useState<any>(null);
 
-  const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<FormData>({
+  const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
+
+  const locationHint = watch('location_hint');
 
   React.useEffect(() => {
     if (item) {
@@ -58,6 +65,42 @@ const EditItemPage: React.FC = () => {
       });
     }
   }, [item, reset]);
+
+  const handleGeocode = async () => {
+    if (!locationHint || !id) return;
+    
+    setIsGeocoding(true);
+    setGeocodingResult(null);
+    
+    try {
+      console.log('🔄 Géocodage manuel pour:', locationHint);
+      const cleanedAddress = cleanAddress(locationHint);
+      const geocodeResult = await geocodeWithRetry(cleanedAddress);
+      
+      if (geocodeResult) {
+        setGeocodingResult(geocodeResult);
+        
+        // Mettre à jour les coordonnées dans la base de données
+        await updateItem.mutateAsync({
+          id,
+          payload: {
+            latitude: geocodeResult.latitude,
+            longitude: geocodeResult.longitude
+          }
+        });
+        
+        console.log('✅ Géocodage manuel réussi:', geocodeResult);
+      } else {
+        setGeocodingResult({ error: 'Géocodage échoué' });
+        console.error('❌ Géocodage manuel échoué');
+      }
+    } catch (error) {
+      setGeocodingResult({ error: error instanceof Error ? error.message : 'Erreur inconnue' });
+      console.error('❌ Erreur lors du géocodage manuel:', error);
+    } finally {
+      setIsGeocoding(false);
+    }
+  };
 
   const onSubmit = async (data: FormData) => {
     if (!id) return;
@@ -165,8 +208,80 @@ const EditItemPage: React.FC = () => {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Indication de localisation</label>
           <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
-            <Input {...register('location_hint')} />
+            <div className="flex gap-2">
+              <Input 
+                {...register('location_hint')} 
+                placeholder="Entrez une adresse complète..."
+                className="flex-1"
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={handleGeocode}
+                disabled={isGeocoding || !locationHint?.trim()}
+                className="flex items-center gap-2 whitespace-nowrap"
+              >
+                {isGeocoding ? (
+                  <>
+                    <RefreshCw size={16} className="animate-spin" />
+                    Géocodage...
+                  </>
+                ) : (
+                  <>
+                    <MapPin size={16} />
+                    Géocoder
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
+          
+          {/* État des coordonnées */}
+          <div className="mt-2 flex items-center gap-2 text-sm">
+            {item?.latitude && item?.longitude ? (
+              <div className="flex items-center gap-2 text-green-600">
+                <CheckCircle size={16} />
+                <span>Coordonnées GPS disponibles</span>
+                <span className="text-gray-500">
+                  ({item.longitude.toFixed(4)}, {item.latitude.toFixed(4)})
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-amber-600">
+                <AlertCircle size={16} />
+                <span>Coordonnées GPS manquantes</span>
+              </div>
+            )}
+          </div>
+
+          {/* Résultat du géocodage */}
+          {geocodingResult && (
+            <div className={`mt-2 p-3 rounded-lg ${
+              geocodingResult.error 
+                ? 'bg-red-50 border border-red-200' 
+                : 'bg-green-50 border border-green-200'
+            }`}>
+              {geocodingResult.error ? (
+                <div className="flex items-center gap-2 text-red-700">
+                  <AlertCircle size={16} />
+                  <span>{geocodingResult.error}</span>
+                </div>
+              ) : (
+                <div className="space-y-1 text-green-700">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle size={16} />
+                    <span className="font-medium">Géocodage réussi !</span>
+                  </div>
+                  <div className="text-sm">
+                    <div><strong>Adresse trouvée:</strong> {geocodingResult.address}</div>
+                    <div><strong>Coordonnées:</strong> {geocodingResult.longitude.toFixed(4)}, {geocodingResult.latitude.toFixed(4)}</div>
+                    <div><strong>Confiance:</strong> {geocodingResult.confidence}%</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

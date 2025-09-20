@@ -9,6 +9,7 @@ import {
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import ItemCard from '../components/ItemCard';
+import MapButton from '../components/MapButton';
 import { useAuthStore } from '../store/authStore';
 import { useItems } from '../hooks/useItems';
 import { useCommunities, useUserSignupCommunity, useNearbyCommunities } from '../hooks/useCommunities';
@@ -939,6 +940,9 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Bouton flottant pour la carte */}
+      <MapButton variant="floating" />
     </div>
   );
 };

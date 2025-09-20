@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../services/supabase';
 import type { Item, ItemCategory, OfferType } from '../types';
+import { geocodeWithRetry, cleanAddress } from '../utils/geocoding';
 
 export function useItems(filters?: {
   category?: ItemCategory;
@@ -197,6 +198,30 @@ export function useCreateItem() {
       const user = await supabase.auth.getUser();
       if (!user.data.user) throw new Error('Not authenticated');
 
+      // Géocodage automatique si location_hint est fourni mais pas de coordonnées
+      let finalLatitude = data.latitude;
+      let finalLongitude = data.longitude;
+
+      if (data.location_hint && (!data.latitude || !data.longitude)) {
+        console.log('🔄 Géocodage automatique pour:', data.location_hint);
+        
+        const cleanedAddress = cleanAddress(data.location_hint);
+        const geocodeResult = await geocodeWithRetry(cleanedAddress);
+        
+        if (geocodeResult) {
+          finalLatitude = geocodeResult.latitude;
+          finalLongitude = geocodeResult.longitude;
+          console.log('✅ Géocodage réussi:', {
+            original: data.location_hint,
+            cleaned: cleanedAddress,
+            coordinates: [finalLongitude, finalLatitude],
+            confidence: geocodeResult.confidence
+          });
+        } else {
+          console.warn('⚠️ Géocodage échoué pour:', data.location_hint);
+        }
+      }
+
       // Create item
       const { data: item, error: itemError } = await supabase
         .from('items')
@@ -215,8 +240,8 @@ export function useCreateItem() {
           available_from: data.available_from || null,
           available_to: data.available_to || null,
           location_hint: data.location_hint || null,
-          latitude: typeof data.latitude === 'number' ? data.latitude : null,
-          longitude: typeof data.longitude === 'number' ? data.longitude : null,
+          latitude: typeof finalLatitude === 'number' ? finalLatitude : null,
+          longitude: typeof finalLongitude === 'number' ? finalLongitude : null,
           community_id: data.community_id || null,
         })
         .select()
@@ -293,6 +318,30 @@ export function useUpdateItem() {
     }) => {
       const { id, payload } = params;
 
+      // Géocodage automatique si location_hint est modifié
+      let finalLatitude = payload.latitude;
+      let finalLongitude = payload.longitude;
+
+      if (payload.location_hint !== undefined && payload.location_hint && (!payload.latitude || !payload.longitude)) {
+        console.log('🔄 Géocodage automatique lors de la modification pour:', payload.location_hint);
+        
+        const cleanedAddress = cleanAddress(payload.location_hint);
+        const geocodeResult = await geocodeWithRetry(cleanedAddress);
+        
+        if (geocodeResult) {
+          finalLatitude = geocodeResult.latitude;
+          finalLongitude = geocodeResult.longitude;
+          console.log('✅ Géocodage réussi lors de la modification:', {
+            original: payload.location_hint,
+            cleaned: cleanedAddress,
+            coordinates: [finalLongitude, finalLatitude],
+            confidence: geocodeResult.confidence
+          });
+        } else {
+          console.warn('⚠️ Géocodage échoué lors de la modification pour:', payload.location_hint);
+        }
+      }
+
       // Transform fields for DB
       const update: Record<string, any> = { };
       if (payload.title !== undefined) update.title = payload.title;
@@ -306,8 +355,8 @@ export function useUpdateItem() {
       if (payload.available_from !== undefined) update.available_from = payload.available_from || null;
       if (payload.available_to !== undefined) update.available_to = payload.available_to || null;
       if (payload.location_hint !== undefined) update.location_hint = payload.location_hint || null;
-      if (payload.latitude !== undefined) update.latitude = typeof payload.latitude === 'number' ? payload.latitude : null;
-      if (payload.longitude !== undefined) update.longitude = typeof payload.longitude === 'number' ? payload.longitude : null;
+      if (payload.latitude !== undefined) update.latitude = typeof finalLatitude === 'number' ? finalLatitude : null;
+      if (payload.longitude !== undefined) update.longitude = typeof finalLongitude === 'number' ? finalLongitude : null;
       if (payload.is_available !== undefined) update.is_available = payload.is_available;
 
       const { error } = await supabase

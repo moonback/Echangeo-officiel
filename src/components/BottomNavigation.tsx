@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Search, Users, MessageCircle, User, CheckCircle } from 'lucide-react';
+import { Home, Search, Users, MessageCircle, User, CheckCircle, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const BottomNavigation: React.FC = () => {
@@ -8,6 +8,7 @@ const BottomNavigation: React.FC = () => {
     { to: '/', icon: Home, label: 'Accueil' },
     { to: '/items', icon: Search, label: 'Rechercher' },
     { to: '/communities', icon: Users, label: 'Quartiers' },
+    { to: '/map', icon: MapPin, label: 'Carte' },
     { to: '/messages', icon: MessageCircle, label: 'Messages' },
     { to: '/requests', icon: CheckCircle, label: 'Annonces' },
     { to: '/me', icon: User, label: 'Profil' },
@@ -15,7 +16,7 @@ const BottomNavigation: React.FC = () => {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-gray-200/50 shadow-xl z-50 safe-area-inset-bottom">
-      <div className="grid grid-cols-6 h-16">
+      <div className="grid grid-cols-7 h-16">
         {navItems.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
