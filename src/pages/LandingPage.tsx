@@ -89,13 +89,31 @@ const LandingPage: React.FC = () => {
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-brand-200/5 to-brand-300/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '4s' }} />
       </div>
       
-      <header className="relative max-w-7xl mx-auto px-6 py-8 flex items-center justify-between">
-        <Link to="/" className="group">
-          <img src="/logo.png" alt="Échangeo Logo" className="w-20 h-20 object-contain" />
-        </Link>
-        <div className="flex items-center gap-4">
-          <Link to="/login"><Button variant="ghost" size="sm">Créer un compte</Button></Link>
-          <Link to="/login"><Button size="sm">Se connecter</Button></Link>
+      <header className="relative max-w-7xl mx-auto px-6 py-8">
+        {/* Desktop Layout */}
+        <div className="hidden md:flex items-center justify-between">
+          <Link to="/" className="group">
+            <img src="/logo.png" alt="Échangeo Logo" className="w-[180px] object-contain" />
+          </Link>
+          <div className="flex items-center gap-4">
+            <Link to="/login"><Button variant="ghost" size="sm">Créer un compte</Button></Link>
+            <Link to="/login"><Button size="sm">Se connecter</Button></Link>
+          </div>
+        </div>
+        
+        {/* Mobile Layout */}
+        <div className="md:hidden flex flex-col items-center">
+          <Link to="/" className="group">
+            <img src="/logo.png" alt="Échangeo Logo" className="w-[180px] object-contain" />
+          </Link>
+          <div className="flex items-center gap-2 mt-4">
+            <Link to="/login">
+              <Button variant="ghost" size="sm">Créer un compte</Button>
+            </Link>
+            <Link to="/login">
+              <Button size="sm">Se connecter</Button>
+            </Link>
+          </div>
         </div>
       </header>
 
