@@ -316,7 +316,73 @@ const CreateItemPage: React.FC = () => {
   };
 
   return (
-    <div className="p-4 max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-brand-50/40 relative overflow-hidden">
+      {/* Background Ultra-Moderne */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        {/* Grille subtile */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:50px_50px] opacity-30" />
+        
+        {/* Dégradés radiaux animés */}
+        <motion.div 
+          className="absolute top-10 left-10 w-[600px] h-[600px] bg-gradient-radial from-brand-200/20 via-brand-300/10 to-transparent rounded-full blur-3xl"
+          animate={{ 
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.6, 0.3],
+            x: [0, 50, 0],
+            y: [0, -30, 0]
+          }}
+          transition={{ 
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div 
+          className="absolute bottom-10 right-10 w-[500px] h-[500px] bg-gradient-radial from-emerald-200/20 via-teal-300/10 to-transparent rounded-full blur-3xl"
+          animate={{ 
+            scale: [1.2, 1, 1.2],
+            opacity: [0.4, 0.7, 0.4],
+            x: [0, -40, 0],
+            y: [0, 20, 0]
+          }}
+          transition={{ 
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2
+          }}
+        />
+        
+        {/* Éléments flottants */}
+        <motion.div 
+          className="absolute top-20 right-1/4 w-4 h-4 bg-brand-400/40 rounded-full"
+          animate={{ 
+            y: [0, -20, 0],
+            opacity: [0.4, 0.8, 0.4]
+          }}
+          transition={{ 
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div 
+          className="absolute bottom-1/3 left-1/3 w-6 h-6 bg-emerald-400/30 rounded-full"
+          animate={{ 
+            y: [0, 15, 0],
+            x: [0, 10, 0],
+            opacity: [0.3, 0.7, 0.3]
+          }}
+          transition={{ 
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1
+          }}
+        />
+      </div>
+
+      <div className="relative p-4 max-w-7xl mx-auto">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -329,9 +395,14 @@ const CreateItemPage: React.FC = () => {
         >
           <ArrowLeft size={20} />
         </button>
-        <h1 className="text-2xl font-bold text-gray-900">
-          Ajouter un objet <span className="text-sm text-gray-500 font-normal">(Étape {step}/{TOTAL_STEPS})</span>
-        </h1>
+        <motion.h1 
+          className="text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-slate-900 via-brand-600 to-slate-900 bg-clip-text text-transparent leading-tight"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          Ajouter un objet <span className="text-lg text-gray-500 font-normal">(Étape {step}/{TOTAL_STEPS})</span>
+        </motion.h1>
       </motion.div>
 
       <motion.form
@@ -341,6 +412,13 @@ const CreateItemPage: React.FC = () => {
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-6"
       >
+        {/* Container principal avec glassmorphism */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-white/80 backdrop-blur-xl border border-white/20 shadow-2xl rounded-3xl p-8"
+        >
         {/* Stepper */}
         <Stepper
           currentStep={step}
@@ -432,9 +510,11 @@ const CreateItemPage: React.FC = () => {
           onSubmit={handleSubmit(onSubmit)}
           onCancel={() => navigate(-1)}
         />
+        </motion.div>
 
       </motion.form>
 
+      </div>
     </div>
   );
 };

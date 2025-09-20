@@ -65,7 +65,7 @@ const StatsDisplay: React.FC<StatsDisplayProps> = ({ className = '' }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 + index * 0.1 }}
-          className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 border border-gray-200/50"
+          className="bg-white/80 backdrop-blur-xl rounded-3xl p-4 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500"
         >
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-lg bg-gray-100 ${stat.color}`}>

@@ -229,11 +229,11 @@ const ItemCard: React.FC<ItemCardProps> = memo(({
         className="h-full block"
         aria-label={`Voir les détails de ${item.title}`}
       >
-        <Card className="relative overflow-hidden p-0 group h-full flex flex-col bg-white/95 backdrop-blur-sm border border-gray-200/60 shadow-lg hover:shadow-2xl transition-all duration-300 card-hover rounded-xl">
+        <Card className="relative overflow-hidden p-0 group h-full flex flex-col bg-white/80 backdrop-blur-xl border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 card-hover rounded-3xl">
           
           {/* Image Container compact */}
           <motion.div 
-            className="relative bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden rounded-t-xl" 
+            className="relative bg-gradient-to-br from-brand-50 to-purple-50 overflow-hidden rounded-t-3xl" 
             style={{ aspectRatio: '16 / 10' }}
             variants={ANIMATION_VARIANTS.image}
             whileHover="hover"
@@ -288,7 +288,7 @@ const ItemCard: React.FC<ItemCardProps> = memo(({
               <Badge 
                 variant="neutral" 
                 size="sm"
-                className="bg-white/95 backdrop-blur-md text-gray-700 shadow-lg border border-white/30 group-hover:bg-white group-hover:shadow-xl transition-all duration-300"
+                className="bg-white/90 backdrop-blur-xl text-gray-700 shadow-xl border border-white/20 group-hover:bg-white group-hover:shadow-2xl transition-all duration-500"
               >
                 <CategoryIcon className="w-3 h-3 mr-1 group-hover:scale-110 transition-transform duration-200" />
                 {getCategoryLabel(item.category)}
@@ -298,7 +298,7 @@ const ItemCard: React.FC<ItemCardProps> = memo(({
               <Badge 
                 variant={item.offer_type === 'trade' ? 'warning' : 'info'}
                 size="sm"
-                className="shadow-lg backdrop-blur-md group-hover:shadow-xl transition-all duration-300"
+                className="shadow-xl backdrop-blur-xl group-hover:shadow-2xl transition-all duration-500"
               >
                 <OfferTypeIcon className="w-3 h-3 mr-1 group-hover:scale-110 transition-transform duration-200" />
                 {getOfferTypeLabel(item.offer_type)}
@@ -312,7 +312,7 @@ const ItemCard: React.FC<ItemCardProps> = memo(({
                 onClick={handleToggleFavorite}
                 aria-label={isFavorited ? `Retirer ${item.title} des favoris` : `Ajouter ${item.title} aux favoris`}
                 aria-pressed={isFavorited}
-                className={`inline-flex items-center justify-center w-7 h-7 rounded-full border backdrop-blur-md shadow-lg transition-all hover:scale-110 hover:shadow-xl ${
+                className={`inline-flex items-center justify-center w-7 h-7 rounded-full border backdrop-blur-xl shadow-xl transition-all hover:scale-110 hover:shadow-2xl ${
                   isFavorited
                     ? 'bg-red-500 text-white border-red-400 hover:bg-red-600'
                     : 'bg-white/95 text-gray-700 border-gray-200 hover:bg-white'
@@ -331,7 +331,7 @@ const ItemCard: React.FC<ItemCardProps> = memo(({
                 <motion.button
                   onClick={handleDeleteItem}
                   aria-label={`Supprimer ${item.title}`}
-                  className="inline-flex items-center justify-center w-7 h-7 rounded-full border backdrop-blur-md shadow-lg transition-all bg-red-500 text-white border-red-400 hover:bg-red-600 hover:scale-110 opacity-0 group-hover:opacity-100 hover:shadow-xl focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                  className="inline-flex items-center justify-center w-7 h-7 rounded-full border backdrop-blur-xl shadow-xl transition-all bg-red-500 text-white border-red-400 hover:bg-red-600 hover:scale-110 opacity-0 group-hover:opacity-100 hover:shadow-2xl focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                   variants={ANIMATION_VARIANTS.button}
                   whileHover="hover"
                   whileTap="tap"
@@ -353,7 +353,7 @@ const ItemCard: React.FC<ItemCardProps> = memo(({
             
             {typeof item.average_rating === 'number' && (item.ratings_count || 0) > 0 && (
               <div className="absolute bottom-3 right-3">
-                <div className="flex items-center bg-white/95 backdrop-blur-md rounded-full px-2.5 py-1 shadow-xl border border-white/30 group-hover:shadow-2xl transition-all duration-300">
+                <div className="flex items-center bg-white/90 backdrop-blur-xl rounded-full px-2.5 py-1 shadow-2xl border border-white/20 group-hover:shadow-3xl transition-all duration-500">
                   <Star className="w-3.5 h-3.5 text-yellow-500 mr-1 group-hover:scale-110 transition-transform duration-200" />
                   <span className="text-xs font-semibold text-gray-800">
                     {item.average_rating.toFixed(1)}

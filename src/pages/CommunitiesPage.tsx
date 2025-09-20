@@ -201,8 +201,73 @@ const CommunitiesPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="p-4 max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-brand-50/40 relative overflow-hidden">
+      {/* Background Ultra-Moderne */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        {/* Grille subtile */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:50px_50px] opacity-30" />
+        
+        {/* Dégradés radiaux animés */}
+        <motion.div 
+          className="absolute top-10 left-10 w-[600px] h-[600px] bg-gradient-radial from-brand-200/20 via-brand-300/10 to-transparent rounded-full blur-3xl"
+          animate={{ 
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.6, 0.3],
+            x: [0, 50, 0],
+            y: [0, -30, 0]
+          }}
+          transition={{ 
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div 
+          className="absolute bottom-10 right-10 w-[500px] h-[500px] bg-gradient-radial from-emerald-200/20 via-teal-300/10 to-transparent rounded-full blur-3xl"
+          animate={{ 
+            scale: [1.2, 1, 1.2],
+            opacity: [0.4, 0.7, 0.4],
+            x: [0, -40, 0],
+            y: [0, 20, 0]
+          }}
+          transition={{ 
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2
+          }}
+        />
+        
+        {/* Éléments flottants */}
+        <motion.div 
+          className="absolute top-20 right-1/4 w-4 h-4 bg-brand-400/40 rounded-full"
+          animate={{ 
+            y: [0, -20, 0],
+            opacity: [0.4, 0.8, 0.4]
+          }}
+          transition={{ 
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div 
+          className="absolute bottom-1/3 left-1/3 w-6 h-6 bg-emerald-400/30 rounded-full"
+          animate={{ 
+            y: [0, 15, 0],
+            x: [0, 10, 0],
+            opacity: [0.3, 0.7, 0.3]
+          }}
+          transition={{ 
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1
+          }}
+        />
+      </div>
+
+      <div className="relative p-4 max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -223,9 +288,14 @@ const CommunitiesPage: React.FC = () => {
                   </div>
                   <div>
                     <div className="flex items-center gap-3 mb-1">
-                      <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                      <motion.h1 
+                        className="text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-slate-900 via-brand-600 to-slate-900 bg-clip-text text-transparent leading-tight"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                      >
                         Quartiers
-                      </h1>
+                      </motion.h1>
                       <div className="flex items-center gap-1.5 px-2 py-1 bg-brand-50 rounded-full border border-brand-200/50">
                         <Users className="text-brand-600" size={12} />
                         <span className="text-xs font-semibold text-brand-700">
@@ -261,7 +331,7 @@ const CommunitiesPage: React.FC = () => {
             transition={{ delay: 0.3, duration: 0.5 }}
             className="sticky top-16 z-10 mb-4"
           >
-            <Card className="p-4 shadow-md hover:shadow-lg transition-all duration-300 bg-white/95 backdrop-blur-sm border border-gray-200/60">
+            <Card className="p-4 shadow-lg hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-xl border border-white/20 rounded-2xl">
               <div className="flex items-center gap-3">
                 {/* Barre de recherche principale */}
                 <div className="flex-1">
@@ -378,11 +448,20 @@ const CommunitiesPage: React.FC = () => {
               </AnimatePresence>
             </div>
           ) : (
-            <Card className="p-8 text-center">
-              <div className="max-w-sm mx-auto">
-                <div className="w-16 h-16 bg-gradient-to-r from-brand-500 to-brand-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-md">
-                  <Users className="w-8 h-8 text-white" />
-                </div>
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <Card className="p-8 text-center bg-white/80 backdrop-blur-xl border border-white/20 shadow-2xl rounded-3xl">
+                <div className="max-w-sm mx-auto">
+                  <motion.div 
+                    className="w-16 h-16 bg-gradient-to-r from-brand-500 to-brand-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg"
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <Users className="w-8 h-8 text-white" />
+                  </motion.div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
                   Aucun quartier trouvé
                 </h3>
@@ -417,7 +496,8 @@ const CommunitiesPage: React.FC = () => {
                   </Link>
                 </div>
               </div>
-            </Card>
+              </Card>
+            </motion.div>
           )}
         </motion.div>
 
@@ -429,7 +509,13 @@ const CommunitiesPage: React.FC = () => {
               transition={{ delay: 0.6, duration: 0.5 }}
               className="mt-6"
             >
-              <Card className="p-4 bg-gradient-to-br from-brand-50 to-brand-100 border-brand-200">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                whileHover={{ scale: 1.02 }}
+              >
+                <Card className="p-6 bg-white/80 backdrop-blur-xl border border-white/20 shadow-2xl rounded-3xl">
                 <div className="text-center">
                   <div className="w-12 h-12 bg-gradient-to-r from-brand-500 to-brand-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-md">
                     <Star className="w-6 h-6 text-white" />
@@ -463,7 +549,8 @@ const CommunitiesPage: React.FC = () => {
                     </Link>
                   </div>
                 </div>
-              </Card>
+                </Card>
+              </motion.div>
             </motion.div>
           )}
         </motion.div>

@@ -15,7 +15,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ icon, title, description, actio
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
-      className={["glass-card p-8 text-center", className].join(' ')}
+      className={["bg-white/80 backdrop-blur-xl border border-white/20 shadow-2xl rounded-3xl p-8 text-center", className].join(' ')}
     >
       {icon && (
         <div className="mx-auto mb-4 text-gray-400 icon-tap">

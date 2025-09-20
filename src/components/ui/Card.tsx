@@ -9,7 +9,7 @@ export const Card: React.FC<CardProps> = ({ as = 'div', className = '', children
   return (
     <Element
       className={[
-        'bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-3xl shadow-soft hover-lift transition-all duration-300 ease-out',
+        'bg-white/80 backdrop-blur-xl border border-white/20 rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-500 ease-out',
         className,
       ].join(' ')}
       style={{
