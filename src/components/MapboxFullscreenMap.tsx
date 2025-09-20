@@ -72,7 +72,7 @@ const MapboxFullscreenMap: React.FC<MapboxFullscreenMapProps> = ({
   const [isRotating, setIsRotating] = useState(false);
   // Variable de rotation supprimée car non utilisée
   
-  const { userLocation, getCurrentLocation } = useGeolocation();
+  const { userLocation, getCurrentLocation, isLocating } = useGeolocation();
   const { data: items } = useItems();
   const { data: communities } = useCommunities();
 
@@ -101,32 +101,72 @@ const MapboxFullscreenMap: React.FC<MapboxFullscreenMapProps> = ({
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
-    const center = initialCenter || (userLocation ? [userLocation.lng, userLocation.lat] : [2.3522, 48.8566]);
+    // Essayer d'obtenir la position utilisateur d'abord
+    const initializeMap = async () => {
+      let center = initialCenter;
+      
+      // Si pas de centre initial, essayer d'obtenir la position utilisateur
+      if (!center) {
+        if (userLocation) {
+          center = [userLocation.lng, userLocation.lat];
+        } else {
+          // Essayer de récupérer la position utilisateur immédiatement
+          try {
+            console.log('🔍 Tentative de géolocalisation...');
+            await getCurrentLocation();
+            console.log('✅ Géolocalisation réussie');
+            // Attendre un peu que userLocation soit mis à jour
+            await new Promise(resolve => setTimeout(resolve, 100));
+            // Utiliser Paris par défaut pour l'instant, la géolocalisation sera gérée plus tard
+            center = [2.3522, 48.8566];
+            console.log('📍 Centre défini sur Paris par défaut (géolocalisation en arrière-plan)');
+          } catch (error) {
+            console.warn('❌ Impossible d\'obtenir la position utilisateur:', error);
+            center = [2.3522, 48.8566];
+            console.log('📍 Centre défini sur Paris par défaut');
+          }
+        }
+      }
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: `mapbox://styles/mapbox/${mapStyle}-v11`,
-      center: center,
-      zoom: initialZoom,
-      pitch: 60,
-      bearing: -17.6,
-      antialias: true,
-      projection: 'globe'
-    });
+      if (mapContainer.current) {
+        map.current = new mapboxgl.Map({
+          container: mapContainer.current,
+          style: `mapbox://styles/mapbox/${mapStyle}-v11`,
+          center: center,
+          zoom: initialZoom,
+          pitch: 60,
+          bearing: -17.6,
+          antialias: true,
+          projection: 'globe'
+        });
+      }
+    };
 
-    map.current.on('load', () => {
-      setIsMapLoaded(true);
-      setupMapSources();
-      setupMapLayers();
-      addMarkers();
-      setupGlobeLighting();
-    });
+    initializeMap();
 
-    map.current.on('style.load', () => {
-      setupMapSources();
-      setupMapLayers();
-      setupGlobeLighting();
-    });
+    // Attendre que la carte soit initialisée avant d'ajouter les event listeners
+    const checkMapReady = () => {
+      if (map.current) {
+        map.current.on('load', () => {
+          setIsMapLoaded(true);
+          setupMapSources();
+          setupMapLayers();
+          addMarkers();
+          setupGlobeLighting();
+        });
+
+        map.current.on('style.load', () => {
+          setupMapSources();
+          setupMapLayers();
+          setupGlobeLighting();
+        });
+      } else {
+        // Retry après un court délai
+        setTimeout(checkMapReady, 100);
+      }
+    };
+    
+    checkMapReady();
 
     // Gestionnaire pour fermer avec Escape
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -147,7 +187,19 @@ const MapboxFullscreenMap: React.FC<MapboxFullscreenMapProps> = ({
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialCenter, initialZoom, mapStyle, onClose, userLocation]);
+  }, [initialCenter, initialZoom, mapStyle, onClose]);
+
+  // Recentrer la carte quand la position utilisateur change
+  useEffect(() => {
+    if (userLocation && map.current && isMapLoaded && !initialCenter) {
+      console.log('🔄 Recentrage automatique sur position utilisateur:', userLocation);
+      map.current.flyTo({
+        center: [userLocation.lng, userLocation.lat],
+        zoom: 15,
+        duration: 2000
+      });
+    }
+  }, [userLocation, isMapLoaded, initialCenter]);
 
 
   // Configuration de l'éclairage du globe
@@ -174,8 +226,8 @@ const MapboxFullscreenMap: React.FC<MapboxFullscreenMapProps> = ({
       console.log('Coordonnées item:', {
         latitude: items[0].latitude,
         longitude: items[0].longitude,
-        center_latitude: (items[0] as any).center_latitude,
-        center_longitude: (items[0] as any).center_longitude
+        center_latitude: (items[0] as Item & { center_latitude?: number }).center_latitude,
+        center_longitude: (items[0] as Item & { center_longitude?: number }).center_longitude
       });
     }
     if (communities && communities.length > 0) {
@@ -553,26 +605,50 @@ const MapboxFullscreenMap: React.FC<MapboxFullscreenMapProps> = ({
   }, [userLocation, isMapLoaded]);
 
   // Recentrer sur la position utilisateur
-  const centerOnUser = useCallback(() => {
-    if (!map.current || !userLocation) {
-      getCurrentLocation().then(() => {
-        if (map.current && userLocation) {
-          map.current.flyTo({
-            center: [userLocation.lng, userLocation.lat],
-            zoom: 15,
-            duration: 2000,
-            pitch: 60,
-            bearing: 0
-          });
-        }
-      });
-    } else {
+  const centerOnUser = useCallback(async () => {
+    if (!map.current) {
+      console.warn('❌ Carte non initialisée');
+      return;
+    }
+
+    try {
+      console.log('🎯 Recentrage sur position utilisateur...');
+      
+      // Si pas de position utilisateur, essayer de l'obtenir
+      if (!userLocation) {
+        console.log('🔍 Récupération de la position utilisateur...');
+        await getCurrentLocation();
+        
+        // Attendre un peu que userLocation soit mis à jour
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+
+      if (userLocation) {
+        console.log('📍 Position utilisateur:', userLocation);
+        map.current.flyTo({
+          center: [userLocation.lng, userLocation.lat],
+          zoom: 15,
+          duration: 2000,
+          pitch: 60,
+          bearing: 0
+        });
+        console.log('✅ Recentrage effectué');
+      } else {
+        console.warn('❌ Impossible d\'obtenir la position utilisateur');
+        // Centrer sur Paris par défaut
+        map.current.flyTo({
+          center: [2.3522, 48.8566],
+          zoom: 10,
+          duration: 2000
+        });
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors du recentrage:', error);
+      // Centrer sur Paris par défaut en cas d'erreur
       map.current.flyTo({
-        center: [userLocation.lng, userLocation.lat],
-        zoom: 15,
-        duration: 2000,
-        pitch: 60,
-        bearing: 0
+        center: [2.3522, 48.8566],
+        zoom: 10,
+        duration: 2000
       });
     }
   }, [userLocation, getCurrentLocation]);
@@ -741,10 +817,19 @@ const MapboxFullscreenMap: React.FC<MapboxFullscreenMapProps> = ({
             size="sm"
             onClick={centerOnUser}
             className="w-full flex items-center justify-center gap-2"
-            disabled={!userLocation}
+            disabled={isLocating}
           >
-            <Target size={16} />
-            Ma position
+            {isLocating ? (
+              <>
+                <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                Localisation...
+              </>
+            ) : (
+              <>
+                <Target size={16} />
+                Ma position
+              </>
+            )}
           </Button>
           
           <Button

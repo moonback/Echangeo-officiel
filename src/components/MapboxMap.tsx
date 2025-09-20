@@ -95,29 +95,65 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
-    const center = initialCenter || (userLocation ? [userLocation.lng, userLocation.lat] : [2.3522, 48.8566]); // Paris par défaut
+    // Essayer d'obtenir la position utilisateur d'abord
+    const initializeMap = async () => {
+      let center = initialCenter;
+      
+      // Si pas de centre initial, essayer d'obtenir la position utilisateur
+      if (!center) {
+        if (userLocation) {
+          center = [userLocation.lng, userLocation.lat];
+        } else {
+          // Utiliser Paris par défaut pour l'instant
+          center = [2.3522, 48.8566];
+        }
+      }
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: `mapbox://styles/mapbox/${mapStyle}-v11`,
-      center: center,
-      zoom: initialZoom,
-      pitch: 45,
-      bearing: -17.6,
-      antialias: true
-    });
+      if (mapContainer.current) {
+        map.current = new mapboxgl.Map({
+          container: mapContainer.current,
+          style: `mapbox://styles/mapbox/${mapStyle}-v11`,
+          center: center,
+          zoom: initialZoom,
+          pitch: 45,
+          bearing: -17.6,
+          antialias: true
+        });
+      }
+    };
 
-    map.current.on('load', () => {
-      setIsMapLoaded(true);
-      setupMapSources();
-      setupMapLayers();
-      addMarkers();
-    });
+    initializeMap();
 
-    map.current.on('style.load', () => {
-      setupMapSources();
-      setupMapLayers();
-    });
+    // Attendre que la carte soit initialisée avant d'ajouter les event listeners
+    const checkMapReady = () => {
+      if (map.current) {
+        map.current.on('load', () => {
+          setIsMapLoaded(true);
+          setupMapSources();
+          setupMapLayers();
+          addMarkers();
+        });
+      } else {
+        // Retry après un court délai
+        setTimeout(checkMapReady, 100);
+      }
+    };
+    
+    checkMapReady();
+
+    // Ajouter les autres event listeners quand la carte est prête
+    const addEventListeners = () => {
+      if (map.current) {
+        map.current.on('style.load', () => {
+          setupMapSources();
+          setupMapLayers();
+        });
+      } else {
+        setTimeout(addEventListeners, 100);
+      }
+    };
+    
+    addEventListeners();
 
     return () => {
       if (map.current) {
@@ -127,6 +163,17 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Recentrer la carte quand la position utilisateur change
+  useEffect(() => {
+    if (userLocation && map.current && isMapLoaded && !initialCenter) {
+      map.current.flyTo({
+        center: [userLocation.lng, userLocation.lat],
+        zoom: 15,
+        duration: 2000
+      });
+    }
+  }, [userLocation, isMapLoaded, initialCenter]);
 
   // Mise à jour du style de carte
   useEffect(() => {
