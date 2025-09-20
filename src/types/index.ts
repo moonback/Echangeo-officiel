@@ -260,6 +260,7 @@ export interface NearbyCommunity {
   community_name: string;
   distance_km: number;
   member_count: number;
+  items_count?: number;
 }
 
 export interface CommunityOverview extends Community {

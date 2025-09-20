@@ -109,7 +109,7 @@ export function useNearbyCommunities(
             name,
             center_latitude,
             center_longitude,
-            stats:community_stats(total_members)
+            stats:community_stats(total_members, total_items)
           `)
           .eq('is_active', true)
           .not('center_latitude', 'is', null)
@@ -125,7 +125,7 @@ export function useNearbyCommunities(
               name: string;
               center_latitude: number;
               center_longitude: number;
-              stats?: { total_members: number };
+              stats?: { total_members: number; total_items: number };
             };
             
             const distance = calculateDistance(
@@ -138,7 +138,8 @@ export function useNearbyCommunities(
               community_id: communityData.id,
               community_name: communityData.name,
               distance_km: distance,
-              member_count: communityData.stats?.total_members || 0
+              member_count: communityData.stats?.total_members || 0,
+              items_count: communityData.stats?.total_items || 0
             };
           })
           .filter(community => community.distance_km <= radiusKm)
