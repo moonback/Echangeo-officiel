@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Eye, EyeOff, MapPin, Users } from 'lucide-react';
+import { Eye, EyeOff, MapPin, Users, Navigation, AlertCircle } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
-import { useCommunities } from '../hooks/useCommunities';
+import { useCommunities, useNearbyCommunities } from '../hooks/useCommunities';
 import { supabase } from '../services/supabase';
 
 const loginSchema = z.object({
@@ -30,10 +30,20 @@ const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
-  const { signIn, signUp } = useAuthStore();
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
+  const { signIn } = useAuthStore();
   
   // Hook pour récupérer les communautés disponibles
   const { data: communities, isLoading: communitiesLoading } = useCommunities();
+  
+  // Hook pour récupérer les communautés proches si la géolocalisation est disponible
+  const { data: nearbyCommunities, isLoading: nearbyCommunitiesLoading } = useNearbyCommunities(
+    userLocation?.lat || 0,
+    userLocation?.lng || 0,
+    20 // 20km de rayon
+  );
 
   const {
     register,
@@ -44,32 +54,104 @@ const LoginPage: React.FC = () => {
     resolver: zodResolver(isSignup ? signupSchema : loginSchema),
   });
 
+  // Fonction pour obtenir la géolocalisation de l'utilisateur
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError('La géolocalisation n\'est pas supportée par votre navigateur');
+      return;
+    }
+
+    setIsLocating(true);
+    setLocationError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        });
+        setIsLocating(false);
+      },
+      (error) => {
+        console.error('Erreur de géolocalisation:', error);
+        setIsLocating(false);
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            setLocationError('Accès à la géolocalisation refusé. Veuillez autoriser l\'accès pour voir les quartiers proches.');
+            break;
+          case error.POSITION_UNAVAILABLE:
+            setLocationError('Position non disponible. Veuillez vérifier votre connexion.');
+            break;
+          case error.TIMEOUT:
+            setLocationError('Délai d\'attente dépassé. Veuillez réessayer.');
+            break;
+          default:
+            setLocationError('Erreur de géolocalisation. Veuillez réessayer.');
+            break;
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000 // 5 minutes
+      }
+    );
+  };
+
+  // Obtenir automatiquement la géolocalisation au chargement de la page
+  useEffect(() => {
+    if (isSignup) {
+      getCurrentLocation();
+    }
+  }, [isSignup]);
+
   const onSubmit = async (data: LoginForm | SignupForm) => {
     setLoading(true);
     try {
       if (isSignup) {
         const signupData = data as SignupForm;
         
-        // Créer le compte utilisateur
-        await signUp(signupData.email, signupData.password, signupData.fullName);
-        
-        // Attendre que l'utilisateur soit créé et récupérer son ID
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (user && signupData.selectedCommunityId) {
-          // Ajouter l'utilisateur à la communauté sélectionnée
-          const { error: joinError } = await supabase
-            .from('community_members')
+        // Créer le compte utilisateur et récupérer l'utilisateur créé
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: signupData.email,
+          password: signupData.password,
+        });
+
+        if (authError) throw authError;
+
+        if (authData.user) {
+          // Créer le profil utilisateur
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const supabaseAny = supabase as any;
+          const { error: profileError } = await supabaseAny
+            .from('profiles')
             .insert({
-              community_id: signupData.selectedCommunityId,
-              user_id: user.id,
-              role: 'member',
-              is_active: true,
-              joined_at: new Date().toISOString()
+              id: authData.user.id,
+              email: authData.user.email!,
+              full_name: signupData.fullName,
             });
-          
-          if (joinError) {
-            console.error('Erreur lors de l\'ajout à la communauté:', joinError);
+
+          if (profileError) {
+            console.error('Erreur lors de la création du profil:', profileError);
+            throw new Error('Erreur lors de la création du profil utilisateur');
+          }
+
+          // Ajouter l'utilisateur à la communauté sélectionnée
+          if (signupData.selectedCommunityId) {
+            const { error: joinError } = await supabaseAny
+              .from('community_members')
+              .insert({
+                community_id: signupData.selectedCommunityId,
+                user_id: authData.user.id,
+                role: 'member',
+                is_active: true,
+                joined_at: new Date().toISOString()
+              });
+            
+            if (joinError) {
+              console.error('Erreur lors de l\'ajout à la communauté:', joinError);
+              throw new Error('Erreur lors de l\'ajout au quartier sélectionné');
+            }
           }
         }
         
@@ -80,6 +162,7 @@ const LoginPage: React.FC = () => {
         await signIn(loginData.email, loginData.password);
       }
     } catch (error) {
+      console.error('Erreur lors de l\'inscription:', error);
       setError('email', { 
         message: error instanceof Error ? error.message : 'Une erreur est survenue' 
       });
@@ -258,10 +341,61 @@ const LoginPage: React.FC = () => {
                 <MapPin className="w-4 h-4 inline mr-2" />
                 Choisir votre quartier
               </label>
-              {communitiesLoading ? (
+              
+              {/* Bouton pour activer la géolocalisation */}
+              {!userLocation && !locationError && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-3"
+                >
+                  <button
+                    type="button"
+                    onClick={getCurrentLocation}
+                    disabled={isLocating}
+                    className="w-full px-4 py-2 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl text-blue-700 hover:from-blue-100 hover:to-blue-200 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {isLocating ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+                        <span>Détection de votre position...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Navigation className="w-4 h-4" />
+                        <span>Voir les quartiers proches</span>
+                      </>
+                    )}
+                  </button>
+                </motion.div>
+              )}
+
+              {/* Message d'erreur de géolocalisation */}
+              {locationError && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="mb-3 rounded-xl bg-amber-50/80 backdrop-blur-sm border border-amber-200/50 text-amber-800 px-3 py-2 text-sm flex items-center gap-2"
+                >
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <span>{locationError}</span>
+                  <button
+                    type="button"
+                    onClick={getCurrentLocation}
+                    className="ml-auto text-amber-600 hover:text-amber-700 underline text-xs"
+                  >
+                    Réessayer
+                  </button>
+                </motion.div>
+              )}
+
+              {/* Sélecteur de quartiers */}
+              {communitiesLoading || nearbyCommunitiesLoading ? (
                 <div className="w-full px-4 py-3 border border-gray-300/60 rounded-2xl bg-white/60 backdrop-blur-sm flex items-center justify-center">
                   <div className="w-5 h-5 border-2 border-brand-500/30 border-t-brand-500 rounded-full animate-spin mr-2" />
-                  <span className="text-gray-600">Chargement des quartiers...</span>
+                  <span className="text-gray-600">
+                    {userLocation ? 'Chargement des quartiers proches...' : 'Chargement des quartiers...'}
+                  </span>
                 </div>
               ) : (
                 <select
@@ -270,19 +404,49 @@ const LoginPage: React.FC = () => {
                   className="w-full px-4 py-3 border border-gray-300/60 rounded-2xl bg-white/60 backdrop-blur-sm focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 focus:-translate-y-0.5 focus:shadow-lg transition-all duration-200"
                 >
                   <option value="">Sélectionnez votre quartier</option>
-                  {communities?.map((community) => (
-                    <option key={community.id} value={community.id}>
-                      {community.name} • {community.city}
-                    </option>
-                  ))}
+                  
+                  {/* Quartiers proches (si géolocalisation disponible) */}
+                  {userLocation && nearbyCommunities && nearbyCommunities.length > 0 && (
+                    <optgroup label="📍 Quartiers proches de vous">
+                      {nearbyCommunities.slice(0, 5).map((nearbyCommunity) => {
+                        const community = communities?.find(c => c.id === nearbyCommunity.community_id);
+                        if (!community) return null;
+                        return (
+                          <option key={community.id} value={community.id}>
+                            {community.name} • {community.city} ({nearbyCommunity.distance_km.toFixed(1)} km)
+                          </option>
+                        );
+                      })}
+                    </optgroup>
+                  )}
+                  
+                  {/* Tous les autres quartiers */}
+                  <optgroup label={userLocation ? "🌍 Autres quartiers" : "🌍 Tous les quartiers"}>
+                    {communities?.map((community) => {
+                      // Ne pas afficher les quartiers déjà dans la liste des proches
+                      const isNearby = userLocation && nearbyCommunities?.some(nc => nc.community_id === community.id);
+                      if (isNearby) return null;
+                      
+                      return (
+                        <option key={community.id} value={community.id}>
+                          {community.name} • {community.city}
+                        </option>
+                      );
+                    })}
+                  </optgroup>
                 </select>
               )}
+              
               {(errors as Record<string, { message?: string }>).selectedCommunityId && (
                 <p className="text-red-500 text-xs mt-2">{(errors as Record<string, { message?: string }>).selectedCommunityId.message}</p>
               )}
+              
               <p className="text-xs text-gray-500 mt-2">
                 <Users className="w-3 h-3 inline mr-1" />
-                Vous pourrez rejoindre d'autres quartiers plus tard depuis votre profil
+                {userLocation 
+                  ? 'Les quartiers les plus proches sont affichés en premier. Vous pourrez rejoindre d\'autres quartiers plus tard.'
+                  : 'Vous pourrez rejoindre d\'autres quartiers plus tard depuis votre profil'
+                }
               </p>
             </motion.div>
           )}
