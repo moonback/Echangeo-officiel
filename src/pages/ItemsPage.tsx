@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Image, Plus, Filter, TrendingUp, RefreshCw, Search } from 'lucide-react';
+import { Image, Plus, Filter, TrendingUp, RefreshCw, Search } from 'lucide-react';
 import { useItemFilters } from '../hooks/useItemFilters';
 import { useGeolocation } from '../hooks/useGeolocation';
 import ItemCard from '../components/ItemCard';
@@ -362,10 +362,7 @@ const ItemsPage: React.FC = () => {
               {sortedItems && sortedItems.length > 0 && (
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                   <div className="flex items-center gap-4 text-sm text-gray-500">
-                    <span className="flex items-center gap-1 bg-gray-50 px-3 py-1 rounded-full">
-                      <MapPin size={14} />
-                      {sortedItems.filter(item => item.latitude && item.longitude).length} géolocalisés
-                    </span>
+                    
                     <span className="flex items-center gap-1 bg-gray-50 px-3 py-1 rounded-full">
                       <Image size={14} />
                       {sortedItems.filter(item => item.images && item.images.length > 0).length} avec photos
