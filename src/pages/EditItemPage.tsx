@@ -4,10 +4,9 @@ import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { MapPin, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
+import { MapPin, Navigation, Loader2 } from 'lucide-react';
 import { useItem, useUpdateItem, useDeleteItem } from '../hooks/useItems';
 import { categories } from '../utils/categories';
-import { geocodeWithRetry, cleanAddress } from '../utils/geocoding';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
@@ -25,6 +24,8 @@ const schema = z.object({
   available_from: z.string().optional(),
   available_to: z.string().optional(),
   location_hint: z.string().max(200).optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
   is_available: z
     .preprocess((v) => (v === 'true' ? true : v === 'false' ? false : v), z.boolean().optional()),
 });
@@ -38,14 +39,72 @@ const EditItemPage: React.FC = () => {
   const updateItem = useUpdateItem();
   const deleteItem = useDeleteItem();
   
-  const [isGeocoding, setIsGeocoding] = useState(false);
-  const [geocodingResult, setGeocodingResult] = useState<any>(null);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [locationStatus, setLocationStatus] = useState<string>('');
 
-  const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<FormData>({
+  const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
 
-  const locationHint = watch('location_hint');
+  const getCurrentLocation = async () => {
+    if (!navigator.geolocation) {
+      setLocationStatus('Géolocalisation non supportée par votre navigateur');
+      return;
+    }
+
+    setIsGettingLocation(true);
+    setLocationStatus('Recherche de votre position...');
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        
+        // Mettre à jour les coordonnées dans le formulaire
+        setValue('latitude', latitude);
+        setValue('longitude', longitude);
+        
+        // Optionnel : essayer de récupérer une adresse depuis les coordonnées
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`
+          );
+          const data = await response.json();
+          
+          if (data.display_name) {
+            setValue('location_hint', data.display_name);
+            setLocationStatus(`Position détectée: ${data.display_name}`);
+          } else {
+            setLocationStatus(`Position détectée: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+          }
+        } catch (error) {
+          setLocationStatus(`Position détectée: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+        }
+        
+        setIsGettingLocation(false);
+      },
+      (error) => {
+        let message = 'Erreur de géolocalisation';
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            message = 'Permission de géolocalisation refusée';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            message = 'Position non disponible';
+            break;
+          case error.TIMEOUT:
+            message = 'Délai d\'attente dépassé';
+            break;
+        }
+        setLocationStatus(message);
+        setIsGettingLocation(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000
+      }
+    );
+  };
 
   React.useEffect(() => {
     if (item) {
@@ -61,46 +120,12 @@ const EditItemPage: React.FC = () => {
         available_from: item.available_from as any,
         available_to: item.available_to as any,
         location_hint: item.location_hint ?? '',
+        latitude: item.latitude ?? undefined,
+        longitude: item.longitude ?? undefined,
         is_available: item.is_available,
       });
     }
   }, [item, reset]);
-
-  const handleGeocode = async () => {
-    if (!locationHint || !id) return;
-    
-    setIsGeocoding(true);
-    setGeocodingResult(null);
-    
-    try {
-      console.log('🔄 Géocodage manuel pour:', locationHint);
-      const cleanedAddress = cleanAddress(locationHint);
-      const geocodeResult = await geocodeWithRetry(cleanedAddress);
-      
-      if (geocodeResult) {
-        setGeocodingResult(geocodeResult);
-        
-        // Mettre à jour les coordonnées dans la base de données
-        await updateItem.mutateAsync({
-          id,
-          payload: {
-            latitude: geocodeResult.latitude,
-            longitude: geocodeResult.longitude
-          }
-        });
-        
-        console.log('✅ Géocodage manuel réussi:', geocodeResult);
-      } else {
-        setGeocodingResult({ error: 'Géocodage échoué' });
-        console.error('❌ Géocodage manuel échoué');
-      }
-    } catch (error) {
-      setGeocodingResult({ error: error instanceof Error ? error.message : 'Erreur inconnue' });
-      console.error('❌ Erreur lors du géocodage manuel:', error);
-    } finally {
-      setIsGeocoding(false);
-    }
-  };
 
   const onSubmit = async (data: FormData) => {
     if (!id) return;
@@ -209,79 +234,49 @@ const EditItemPage: React.FC = () => {
           <label className="block text-sm font-medium text-gray-700 mb-1">Indication de localisation</label>
           <div className="p-4 rounded-xl border border-gray-200 bg-white glass">
             <div className="flex gap-2">
-              <Input 
-                {...register('location_hint')} 
-                placeholder="Entrez une adresse complète..."
+              <Input
+                {...register('location_hint')}
+                placeholder="Saisissez une adresse ou cliquez sur le bouton GPS"
                 className="flex-1"
               />
               <Button
                 type="button"
                 variant="secondary"
                 size="sm"
-                onClick={handleGeocode}
-                disabled={isGeocoding || !locationHint?.trim()}
+                onClick={getCurrentLocation}
+                disabled={isGettingLocation}
                 className="flex items-center gap-2 whitespace-nowrap"
               >
-                {isGeocoding ? (
+                {isGettingLocation ? (
                   <>
-                    <RefreshCw size={16} className="animate-spin" />
-                    Géocodage...
+                    <Loader2 size={16} className="animate-spin" />
+                    GPS...
                   </>
                 ) : (
                   <>
-                    <MapPin size={16} />
-                    Géocoder
+                    <Navigation size={16} />
+                    GPS
                   </>
                 )}
               </Button>
             </div>
-          </div>
-          
-          {/* État des coordonnées */}
-          <div className="mt-2 flex items-center gap-2 text-sm">
-            {item?.latitude && item?.longitude ? (
-              <div className="flex items-center gap-2 text-green-600">
-                <CheckCircle size={16} />
-                <span>Coordonnées GPS disponibles</span>
-                <span className="text-gray-500">
-                  ({item.longitude.toFixed(4)}, {item.latitude.toFixed(4)})
-                </span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 text-amber-600">
-                <AlertCircle size={16} />
-                <span>Coordonnées GPS manquantes</span>
+            
+            {/* Statut de la géolocalisation */}
+            {locationStatus && (
+              <div className={`mt-2 text-sm ${
+                locationStatus.includes('Position détectée') 
+                  ? 'text-green-600' 
+                  : locationStatus.includes('Erreur') || locationStatus.includes('Permission')
+                  ? 'text-red-600'
+                  : 'text-blue-600'
+              }`}>
+                <div className="flex items-center gap-2">
+                  <MapPin size={14} />
+                  <span>{locationStatus}</span>
+                </div>
               </div>
             )}
           </div>
-
-          {/* Résultat du géocodage */}
-          {geocodingResult && (
-            <div className={`mt-2 p-3 rounded-lg ${
-              geocodingResult.error 
-                ? 'bg-red-50 border border-red-200' 
-                : 'bg-green-50 border border-green-200'
-            }`}>
-              {geocodingResult.error ? (
-                <div className="flex items-center gap-2 text-red-700">
-                  <AlertCircle size={16} />
-                  <span>{geocodingResult.error}</span>
-                </div>
-              ) : (
-                <div className="space-y-1 text-green-700">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle size={16} />
-                    <span className="font-medium">Géocodage réussi !</span>
-                  </div>
-                  <div className="text-sm">
-                    <div><strong>Adresse trouvée:</strong> {geocodingResult.address}</div>
-                    <div><strong>Coordonnées:</strong> {geocodingResult.longitude.toFixed(4)}, {geocodingResult.latitude.toFixed(4)}</div>
-                    <div><strong>Confiance:</strong> {geocodingResult.confidence}%</div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

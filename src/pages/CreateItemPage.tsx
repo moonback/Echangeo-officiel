@@ -40,6 +40,8 @@ const createItemSchema = z.object({
   available_from: z.string().optional(),
   available_to: z.string().optional(),
   location_hint: z.string().max(200).optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
   community_id: z.string().optional(),
 });
 

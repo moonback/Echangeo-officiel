@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { X, Plus } from 'lucide-react';
+import { X, Plus, MapPin, Navigation, Loader2 } from 'lucide-react';
 import { UseFormRegister, FieldErrors, UseFormWatch, UseFormSetValue } from 'react-hook-form';
 import Input from '../ui/Input';
+import Button from '../ui/Button';
 import type { CreateItemForm } from '../../pages/CreateItemPage';
 import type { ItemCategory } from '../../types';
 
@@ -131,6 +132,68 @@ const Step3Details: React.FC<Step3DetailsProps> = ({
   aiAnalysisApplied,
   tagSuggestions,
 }) => {
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [locationStatus, setLocationStatus] = useState<string>('');
+
+  const getCurrentLocation = async () => {
+    if (!navigator.geolocation) {
+      setLocationStatus('Géolocalisation non supportée par votre navigateur');
+      return;
+    }
+
+    setIsGettingLocation(true);
+    setLocationStatus('Recherche de votre position...');
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        
+        // Mettre à jour les coordonnées dans le formulaire
+        setValue('latitude', latitude);
+        setValue('longitude', longitude);
+        
+        // Optionnel : essayer de récupérer une adresse depuis les coordonnées
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`
+          );
+          const data = await response.json();
+          
+          if (data.display_name) {
+            setValue('location_hint', data.display_name);
+            setLocationStatus(`Position détectée: ${data.display_name}`);
+          } else {
+            setLocationStatus(`Position détectée: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+          }
+        } catch (error) {
+          setLocationStatus(`Position détectée: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+        }
+        
+        setIsGettingLocation(false);
+      },
+      (error) => {
+        let message = 'Erreur de géolocalisation';
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            message = 'Permission de géolocalisation refusée';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            message = 'Position non disponible';
+            break;
+          case error.TIMEOUT:
+            message = 'Délai d\'attente dépassé';
+            break;
+        }
+        setLocationStatus(message);
+        setIsGettingLocation(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000
+      }
+    );
+  };
   const tagsValue = watch('tags') || '';
 
   return (
@@ -206,13 +269,52 @@ const Step3Details: React.FC<Step3DetailsProps> = ({
 
         <div className="p-4 rounded-xl border border-gray-200 bg-white glass mb-4">
           <label htmlFor="location_hint" className="block text-sm font-medium text-gray-700 mb-1">
-            Indication de localisation (ex: étage, bâtiment, etc.)
+            Indication de localisation
           </label>
-          <Input
-            {...register('location_hint')}
-            id="location_hint"
-            placeholder="Saisissez une adresse pour obtenir des suggestions"
-          />
+          <div className="flex gap-2">
+            <Input
+              {...register('location_hint')}
+              id="location_hint"
+              placeholder="Saisissez une adresse ou cliquez sur le bouton GPS"
+              className="flex-1"
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={getCurrentLocation}
+              disabled={isGettingLocation}
+              className="flex items-center gap-2 whitespace-nowrap"
+            >
+              {isGettingLocation ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  GPS...
+                </>
+              ) : (
+                <>
+                  <Navigation size={16} />
+                  GPS
+                </>
+              )}
+            </Button>
+          </div>
+          
+          {/* Statut de la géolocalisation */}
+          {locationStatus && (
+            <div className={`mt-2 text-sm ${
+              locationStatus.includes('Position détectée') 
+                ? 'text-green-600' 
+                : locationStatus.includes('Erreur') || locationStatus.includes('Permission')
+                ? 'text-red-600'
+                : 'text-blue-600'
+            }`}>
+              <div className="flex items-center gap-2">
+                <MapPin size={14} />
+                <span>{locationStatus}</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Coordonnées cachées - gérées automatiquement par la géolocalisation */}
