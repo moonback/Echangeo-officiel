@@ -651,7 +651,6 @@ const HomePage: React.FC = () => {
                         const communityId = 'id' in community ? community.id : community.community_id;
                         const communityName = 'name' in community ? community.name : community.community_name;
                         const memberCount = 'stats' in community ? community.stats?.total_members || 0 : community.member_count || 0;
-                        const itemsCount = 'stats' in community ? community.stats?.total_items || 0 : community.items_count || 0;
                         const distance = 'distance_km' in community ? community.distance_km : undefined;
                         
                         return (
@@ -679,11 +678,6 @@ const HomePage: React.FC = () => {
                                   <div className="flex items-center gap-1">
                                     <Users className="w-4 h-4 text-brand-500" />
                                     <span className="font-medium">{String(memberCount)} membres</span>
-                                  </div>
-                                  <span className="text-slate-400">•</span>
-                                  <div className="flex items-center gap-1">
-                                    <Gift className="w-4 h-4 text-emerald-500" />
-                                    <span className="font-medium text-emerald-600">{String(itemsCount)} objets</span>
                                   </div>
                                   {distance && typeof distance === 'number' ? (
                                     <>
