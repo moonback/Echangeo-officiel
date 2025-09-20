@@ -20,10 +20,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           id={inputId}
           className={[
-            'w-full px-4 py-3 border rounded-3xl bg-white/80 backdrop-blur-xl placeholder:text-gray-400',
-            'focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 focus:-translate-y-0.5 focus:shadow-2xl',
-            'transition-all duration-500 ease-out',
-            error ? 'border-red-300 focus:border-red-500 focus:ring-red-500/40' : 'border-white/20',
+            'w-full px-4 py-3 sm:py-3 border rounded-2xl sm:rounded-3xl bg-white/90 backdrop-blur-xl placeholder:text-gray-400',
+            'focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 focus:-translate-y-0.5 focus:shadow-xl sm:focus:shadow-2xl',
+            'transition-all duration-300 ease-out sm:duration-500',
+            error ? 'border-red-300 focus:border-red-500 focus:ring-red-500/40' : 'border-white/30',
             className,
           ].join(' ')}
           {...props}

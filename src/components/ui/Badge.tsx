@@ -19,9 +19,9 @@ const variantClasses: Record<BadgeVariant, string> = {
 };
 
 const sizeClasses: Record<BadgeSize, string> = {
-  sm: 'px-2 py-0.5 text-xs',
-  md: 'px-3 py-1 text-xs',
-  lg: 'px-4 py-1.5 text-sm',
+  sm: 'px-2 py-0.5 text-xs sm:px-2 sm:py-0.5 sm:text-xs',
+  md: 'px-2.5 py-1 text-xs sm:px-3 sm:py-1 sm:text-xs',
+  lg: 'px-3 py-1.5 text-sm sm:px-4 sm:py-1.5 sm:text-sm',
 };
 
 export const Badge: React.FC<BadgeProps> = ({ 
@@ -35,7 +35,7 @@ export const Badge: React.FC<BadgeProps> = ({
   return (
     <span
       className={[
-        'inline-flex items-center rounded-full font-semibold backdrop-blur-xl transition-all duration-500 hover:scale-105',
+        'inline-flex items-center rounded-full font-semibold backdrop-blur-xl transition-all duration-300 hover:scale-105 sm:duration-500',
         variantClasses[variant],
         sizeClasses[size],
         pulse ? 'animate-pulse' : '',

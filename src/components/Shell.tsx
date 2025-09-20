@@ -131,7 +131,7 @@ const Shell: React.FC<ShellProps> = ({ children }) => {
           {/* Bouton FAB principal */}
           <motion.button
             onClick={() => setShowFABMenu(!showFABMenu)}
-            className="fixed right-4 bottom-20 z-50 inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-brand-500 to-brand-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 active:scale-95"
+            className="fixed right-4 bottom-20 z-50 inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-brand-500 to-brand-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 active:scale-95 touch-manipulation"
             aria-label="Menu d'actions"
             animate={{ rotate: showFABMenu ? 45 : 0 }}
             transition={{ duration: 0.3 }}
