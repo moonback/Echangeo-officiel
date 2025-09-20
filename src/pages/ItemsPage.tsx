@@ -166,9 +166,7 @@ const ItemsPage: React.FC = () => {
                 <p className="text-gray-600 text-base sm:text-lg">Découvrez les objets disponibles dans votre quartier</p>
               </div>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                <Button variant="secondary" size="sm" onClick={refetch} disabled={isLoading} className="flex items-center gap-2 w-full sm:w-auto">
-                   Actualiser
-                </Button>
+                
                 <Button variant="primary" size="sm" onClick={handleCreateItem} className="flex items-center gap-2 w-full sm:w-auto">
                    Publier un objet
                 </Button>
