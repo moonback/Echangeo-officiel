@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Image, Plus, Filter, TrendingUp, RefreshCw, Search } from 'lucide-react';
 import { useItemFilters } from '../hooks/useItemFilters';
@@ -13,6 +13,7 @@ import Card from '../components/ui/Card';
 
 const ItemsPage: React.FC = () => {
   const [showSearch, setShowSearch] = React.useState(false);
+  const [itemsToShow, setItemsToShow] = React.useState(20); // Limite initiale
   
   // Géolocalisation de l'utilisateur
   const { userLocation, getCurrentLocation } = useGeolocation();
@@ -58,6 +59,49 @@ const ItemsPage: React.FC = () => {
       setShowSearch(true);
     }
   }, [filters.search, showSearch]);
+
+  // Optimisation: mémorisation des statistiques des objets
+  const itemsStats = useMemo(() => {
+    if (!sortedItems) return { total: 0, withImages: 0 };
+    
+    const withImages = sortedItems.filter(item => item.images && item.images.length > 0).length;
+    return {
+      total: sortedItems.length,
+      withImages
+    };
+  }, [sortedItems]);
+
+  // Optimisation: objets à afficher avec pagination
+  const displayedItems = useMemo(() => {
+    if (!sortedItems) return [];
+    return sortedItems.slice(0, itemsToShow);
+  }, [sortedItems, itemsToShow]);
+
+  // Reset pagination quand les filtres changent
+  React.useEffect(() => {
+    setItemsToShow(20);
+  }, [filters.search, filters.selectedCategory, filters.offerType, activeFiltersCount]);
+
+  // Optimisation: handlers mémorisés
+  const handleSearchToggle = useCallback(() => {
+    setShowSearch(!showSearch);
+  }, [showSearch]);
+
+  const handleFiltersToggle = useCallback(() => {
+    setShowFilters(!showFilters);
+  }, [showFilters, setShowFilters]);
+
+  const handleCreateItem = useCallback(() => {
+    window.location.href = '/create';
+  }, []);
+
+  const handleRequestsPage = useCallback(() => {
+    window.location.href = '/requests';
+  }, []);
+
+  const handleLoadMore = useCallback(() => {
+    setItemsToShow(prev => prev + 20);
+  }, []);
 
   const handleFilterChange = (key: keyof typeof filters, value: string | boolean | undefined) => {
     switch (key) {
@@ -125,7 +169,7 @@ const ItemsPage: React.FC = () => {
                 <Button variant="secondary" size="sm" onClick={refetch} disabled={isLoading} className="flex items-center gap-2">
                   <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} /> Actualiser
                 </Button>
-                <Button className="flex items-center gap-2" onClick={() => window.location.href = '/create'}>
+                <Button className="flex items-center gap-2" onClick={handleCreateItem}>
                   <Plus className="w-4 h-4" /> Publier un objet
                 </Button>
               </div>
@@ -142,7 +186,7 @@ const ItemsPage: React.FC = () => {
             <div className="flex items-center gap-3">
               {/* Search Toggle Button - Simple Icon */}
               <button
-                onClick={() => setShowSearch(!showSearch)}
+                onClick={handleSearchToggle}
                 className={`p-2 rounded-lg transition-colors ${
                   showSearch 
                     ? 'bg-brand-100 text-brand-600' 
@@ -266,7 +310,7 @@ const ItemsPage: React.FC = () => {
 
               {/* Filters Button */}
               <button
-                onClick={() => setShowFilters(!showFilters)}
+                onClick={handleFiltersToggle}
                 className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
               >
                 <Filter size={16} />
@@ -326,13 +370,13 @@ const ItemsPage: React.FC = () => {
                 {filters.search || filters.selectedCategory || activeFiltersCount > 0 ? (
                   <div className="space-y-1">
                     <p className="text-lg font-semibold text-gray-900">
-                      {sortedItems?.length || 0} résultat{(sortedItems?.length || 0) > 1 ? 's' : ''}
+                      {itemsStats.total} résultat{itemsStats.total > 1 ? 's' : ''}
                     </p>
                     <div className="flex flex-wrap gap-2 text-sm text-gray-600">
                       {filters.search && (
-                        <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
-                          Recherche: "{filters.search}"
-                        </span>
+                    <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
+                      Recherche: &quot;{filters.search}&quot;
+                    </span>
                       )}
                       {filters.selectedCategory && (
                         <span className="bg-green-50 text-green-700 px-2 py-1 rounded-full">
@@ -349,7 +393,7 @@ const ItemsPage: React.FC = () => {
                 ) : (
                   <div className="space-y-1">
                     <p className="text-lg font-semibold text-gray-900">
-                      {sortedItems?.length || 0} objet{(sortedItems?.length || 0) > 1 ? 's' : ''} disponible{(sortedItems?.length || 0) > 1 ? 's' : ''}
+                      {itemsStats.total} objet{itemsStats.total > 1 ? 's' : ''} disponible{itemsStats.total > 1 ? 's' : ''}
                     </p>
                     <p className="text-sm text-gray-600">
                       Tous les objets disponibles dans votre région
@@ -365,7 +409,7 @@ const ItemsPage: React.FC = () => {
                     
                     <span className="flex items-center gap-1 bg-gray-50 px-3 py-1 rounded-full">
                       <Image size={14} />
-                      {sortedItems.filter(item => item.images && item.images.length > 0).length} avec photos
+                      {itemsStats.withImages} avec photos
                     </span>
                   </div>
                   {activeFiltersCount > 0 && (
@@ -385,14 +429,14 @@ const ItemsPage: React.FC = () => {
 
             {/* Results Grid/List */}
             <div className={filters.viewMode === 'grid' 
-              ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4'
+              ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4'
               : 'space-y-4'
             }>
               {isLoading ? (
                 <ItemCardSkeleton count={8} />
-              ) : sortedItems && sortedItems.length > 0 ? (
+              ) : displayedItems && displayedItems.length > 0 ? (
                 <AnimatePresence mode="wait">
-                  {sortedItems.map((item, index) => (
+                  {displayedItems.map((item, index) => (
                     <motion.div
                       key={item.id}
                       initial={{ opacity: 0, y: 20 }}
@@ -404,7 +448,9 @@ const ItemsPage: React.FC = () => {
                       <ItemCard 
                         item={item} 
                         userLocation={userLocation || undefined}
+                        priority={index < 6} // Lazy loading optimisé pour les 6 premières cartes
                         className={filters.viewMode === 'list' ? 'flex flex-row items-center space-x-4' : ''}
+                        showOwnerActions={true}
                       />
                     </motion.div>
                   ))}
@@ -437,6 +483,24 @@ const ItemsPage: React.FC = () => {
                 />
               )}
             </div>
+
+            {/* Bouton "Voir plus" si nécessaire */}
+            {sortedItems && sortedItems.length > itemsToShow && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="mt-8 text-center"
+              >
+                <Button 
+                  variant="secondary" 
+                  onClick={handleLoadMore}
+                  className="flex items-center gap-2"
+                >
+                  Voir plus d'objets ({sortedItems.length - itemsToShow} restants)
+                </Button>
+              </motion.div>
+            )}
           </motion.div>
 
           {/* Quick Actions */}
@@ -458,7 +522,7 @@ const ItemsPage: React.FC = () => {
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <Button 
                       className="flex items-center gap-2"
-                      onClick={() => window.location.href = '/create'}
+                      onClick={handleCreateItem}
                     >
                       <Plus size={16} />
                       Publier un objet
@@ -466,7 +530,7 @@ const ItemsPage: React.FC = () => {
                     <Button 
                       variant="secondary" 
                       className="flex items-center gap-2"
-                      onClick={() => window.location.href = '/requests'}
+                      onClick={handleRequestsPage}
                     >
                       <TrendingUp size={16} />
                       Faire une demande
