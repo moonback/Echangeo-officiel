@@ -200,6 +200,35 @@ export function useUserCommunities(userId?: string) {
 }
 
 /**
+ * Hook pour récupérer le quartier d'inscription de l'utilisateur (le premier quartier rejoint)
+ */
+export function useUserSignupCommunity(userId?: string) {
+  return useQuery({
+    queryKey: ['userSignupCommunity', userId],
+    queryFn: async (): Promise<Community | null> => {
+      if (!userId) return null;
+
+      // Récupérer le premier quartier rejoint par l'utilisateur (chronologiquement)
+      const { data, error } = await supabase
+        .from('community_members')
+        .select(`
+          community:communities(*)
+        `)
+        .eq('user_id', userId)
+        .eq('is_active', true)
+        .order('joined_at', { ascending: true })
+        .limit(1);
+
+      if (error) throw error;
+      const firstCommunity = data?.[0]?.community;
+      return firstCommunity || null;
+    },
+    enabled: !!userId,
+    staleTime: 1000 * 60 * 10, // Cache plus long car le quartier d'inscription ne change pas
+  });
+}
+
+/**
  * Hook pour récupérer les membres d'une communauté
  */
 export function useCommunityMembers(communityId: string) {

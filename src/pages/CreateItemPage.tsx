@@ -6,10 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ArrowLeft } from 'lucide-react';
 import { useCreateItem } from '../hooks/useItems';
-import { useUserCommunities } from '../hooks/useCommunities';
+import { useUserCommunities, useUserSignupCommunity } from '../hooks/useCommunities';
 import { useAuthStore } from '../store/authStore';
-import { useGeolocation } from '../hooks/useGeolocation';
-import { useCommunitySearch } from '../hooks/useCommunitySearch';
 import type { AIAnalysisResult } from '../services/aiService';
 import NeighborhoodSelectionModal from '../components/modals/NeighborhoodSelectionModal';
 import {
@@ -62,6 +60,9 @@ const CreateItemPage: React.FC = () => {
   // Récupérer les communautés de l'utilisateur
   const { data: userCommunities } = useUserCommunities(user?.id);
   
+  // Récupérer le quartier d'inscription de l'utilisateur
+  const { data: signupCommunity } = useUserSignupCommunity(user?.id);
+  
   // États locaux
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -70,35 +71,25 @@ const CreateItemPage: React.FC = () => {
   const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
   const [aiAnalysisApplied, setAiAnalysisApplied] = useState(false);
   const [selectedCommunity, setSelectedCommunity] = useState<string>('');
-  const [isNeighborhoodModalOpen, setIsNeighborhoodModalOpen] = useState(false);
 
-  // Hooks personnalisés
-  const {
-    userLocation,
-    isLocating,
-    detectedAddress,
-    getCurrentLocation,
-    getAddressFromCoordinates,
-  } = useGeolocation();
-
-  const {
-    nearbyCommunities,
-    communitiesLoading,
-    isSearchingNeighborhoods,
-    selectedNeighborhood,
-    allSuggestions,
-    createdCommunityId,
-    handleSelectNeighborhood,
-    handleSuggestionsFound,
-  } = useCommunitySearch(userLocation, getAddressFromCoordinates);
-
-  // Définir automatiquement la première communauté de l'utilisateur comme sélectionnée
+  // Définir automatiquement le quartier d'inscription comme sélectionné par défaut
   React.useEffect(() => {
-    if (userCommunities && userCommunities.length > 0 && !selectedCommunity) {
+    console.log('🔍 Debug CreateItemPage:', {
+      signupCommunity,
+      userCommunities,
+      selectedCommunity,
+      userId: user?.id
+    });
+
+    if (signupCommunity && !selectedCommunity) {
+      setSelectedCommunity(signupCommunity.id);
+      console.log('✅ Quartier d\'inscription sélectionné automatiquement:', signupCommunity.name);
+    } else if (userCommunities && userCommunities.length > 0 && !selectedCommunity && !signupCommunity) {
+      // Fallback : utiliser la première communauté si le quartier d'inscription n'est pas trouvé
       setSelectedCommunity(userCommunities[0].id);
-      console.log('Communauté utilisateur sélectionnée automatiquement:', userCommunities[0].name);
+      console.log('⚠️ Première communauté utilisateur sélectionnée automatiquement:', userCommunities[0].name);
     }
-  }, [userCommunities, selectedCommunity]);
+  }, [signupCommunity, userCommunities, selectedCommunity, user?.id]);
 
 
   const {
@@ -285,24 +276,15 @@ const CreateItemPage: React.FC = () => {
     setAiAnalysisApplied(true);
   };
 
-  // Gérer l'ouverture du modal de suggestion de quartiers avec géolocalisation
-  const handleOpenNeighborhoodModal = async () => {
-    try {
-      await getCurrentLocation();
-      if (detectedAddress) {
-          setIsNeighborhoodModalOpen(true);
-        } else {
-          alert('Impossible de détecter votre adresse. Veuillez saisir manuellement un code postal ou une ville.');
-          setIsNeighborhoodModalOpen(true);
-        }
-    } catch (error) {
-        console.error('Erreur de géolocalisation:', error);
-        alert('Impossible d\'obtenir votre position. Veuillez autoriser la géolocalisation ou saisir manuellement.');
-        setIsNeighborhoodModalOpen(true);
-    }
-  };
 
   const onSubmit = async (data: CreateItemForm) => {
+    console.log('🚀 Début de la création d\'objet:', {
+      data,
+      selectedCommunity,
+      selectedImages: selectedImages.length,
+      user: user?.id
+    });
+
     try {
       // Permettre la création sans photos (mais recommander d'en ajouter)
       if (selectedImages.length === 0) {
@@ -312,20 +294,28 @@ const CreateItemPage: React.FC = () => {
         if (!confirm) {
           setStep(1);
           setImagesError('Ajoutez au moins une photo pour une meilleure visibilité');
-        return;
+          return;
         }
       }
       
+      console.log('📝 Données envoyées à createItem:', {
+        ...data,
+        community_id: selectedCommunity || undefined,
+        images: selectedImages,
+      });
+
       await createItem.mutateAsync({
         ...data,
         community_id: selectedCommunity || undefined,
         images: selectedImages,
         onProgress: (current, total, fileName) => setUploadProgress({ current, total, fileName }),
       });
+      
+      console.log('✅ Objet créé avec succès');
       localStorage.removeItem('create_item_draft');
       navigate('/items');
     } catch (error) {
-      console.error('Error creating item:', error);
+      console.error('❌ Erreur lors de la création d\'objet:', error);
     }
   };
 
@@ -416,16 +406,9 @@ const CreateItemPage: React.FC = () => {
             watch={watch}
             setValue={setValue}
             userCommunities={userCommunities || []}
-            nearbyCommunities={nearbyCommunities || []}
             selectedCommunity={selectedCommunity}
             setSelectedCommunity={setSelectedCommunity}
-            userLocation={userLocation}
-            detectedAddress={detectedAddress}
-            isLocating={isLocating}
-            isSearchingNeighborhoods={isSearchingNeighborhoods}
-            communitiesLoading={communitiesLoading}
-            onOpenNeighborhoodModal={handleOpenNeighborhoodModal}
-            onGetCurrentLocation={getCurrentLocation}
+            signupCommunity={signupCommunity}
           />
         )}
 
@@ -437,11 +420,8 @@ const CreateItemPage: React.FC = () => {
             imagePreviews={imagePreviews}
             aiAnalysisApplied={aiAnalysisApplied}
             selectedCommunity={selectedCommunity}
-            selectedNeighborhood={selectedNeighborhood}
             userCommunities={userCommunities || []}
-            nearbyCommunities={nearbyCommunities || []}
-            createdCommunityId={createdCommunityId}
-            allSuggestions={allSuggestions}
+            signupCommunity={signupCommunity}
           />
         )}
 
@@ -459,27 +439,6 @@ const CreateItemPage: React.FC = () => {
 
       </motion.form>
 
-      {/* Modal de suggestion de quartiers */}
-      <NeighborhoodSelectionModal
-        isOpen={isNeighborhoodModalOpen}
-        onClose={() => setIsNeighborhoodModalOpen(false)}
-        onSelectNeighborhood={handleSelectNeighborhood}
-        onSuggestionsFound={handleSuggestionsFound}
-        existingCommunities={(nearbyCommunities || []).map(nc => ({
-          id: nc.community_id,
-          name: nc.community_name,
-          description: '',
-          city: '',
-          country: 'France',
-          center_latitude: undefined,
-          center_longitude: undefined,
-          radius_km: 2,
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }))}
-        searchInput={detectedAddress}
-      />
     </div>
   );
 };

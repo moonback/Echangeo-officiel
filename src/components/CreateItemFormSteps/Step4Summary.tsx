@@ -19,11 +19,8 @@ interface Step4SummaryProps {
   imagePreviews: string[];
   aiAnalysisApplied: boolean;
   selectedCommunity: string;
-  selectedNeighborhood: any;
   userCommunities: any[];
-  nearbyCommunities: any[];
-  createdCommunityId: string;
-  allSuggestions: any[];
+  signupCommunity?: any;
 }
 
 const Step4Summary: React.FC<Step4SummaryProps> = ({
@@ -32,11 +29,8 @@ const Step4Summary: React.FC<Step4SummaryProps> = ({
   imagePreviews,
   aiAnalysisApplied,
   selectedCommunity,
-  selectedNeighborhood,
   userCommunities,
-  nearbyCommunities,
-  createdCommunityId,
-  allSuggestions,
+  signupCommunity,
 }) => {
   const formData = watch();
 
@@ -106,37 +100,21 @@ const Step4Summary: React.FC<Step4SummaryProps> = ({
                 </p>
               </div>
             )}
-            {(selectedCommunity || selectedNeighborhood) && (
+            {selectedCommunity && (
               <div>
                 <h4 className="font-medium text-gray-900">Quartier</h4>
                 <p className="text-sm text-gray-700">
-                  {selectedNeighborhood 
-                    ? `${selectedNeighborhood.name} (${selectedNeighborhood.city})`
-                    : userCommunities?.find(c => c.id === selectedCommunity)?.name ||
-                      nearbyCommunities?.find(c => c.community_id === selectedCommunity)?.community_name ||
-                      'Quartier sélectionné'
-                  }
+                  {userCommunities?.find(c => c.id === selectedCommunity)?.name ||
+                   'Quartier sélectionné'}
                 </p>
-                {selectedNeighborhood && (
+                {signupCommunity && selectedCommunity === signupCommunity.id && (
                   <div className="mt-1">
-                    <p className="text-xs text-purple-600">
-                      ✨ Suggéré par IA
+                    <p className="text-xs text-blue-600 font-medium">
+                      🏠 Quartier d'inscription
                     </p>
-                    {createdCommunityId && (
-                      <div>
-                        <p className="text-xs text-green-600 font-medium">
-                          ✅ Communauté créée automatiquement
-                        </p>
-                        {allSuggestions.length > 1 && (
-                          <p className="text-xs text-blue-600 mt-1">
-                            📊 +{allSuggestions.length - 1} autres communautés créées en masse
-                          </p>
-                        )}
-                      </div>
-                    )}
                   </div>
                 )}
-                {!selectedNeighborhood && userCommunities?.find(c => c.id === selectedCommunity) && (
+                {userCommunities?.find(c => c.id === selectedCommunity) && (
                   <div className="mt-1">
                     <p className="text-xs text-green-600 font-medium">
                       ✅ Quartier où vous êtes membre
