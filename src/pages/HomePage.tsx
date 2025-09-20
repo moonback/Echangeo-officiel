@@ -96,41 +96,89 @@ const HomePage: React.FC = () => {
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 py-8">
-        {/* Header de bienvenue */}
+        {/* Hero Section moderne */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-8"
+          className="mb-12"
         >
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-                Bonjour {profile?.full_name || 'Voisin'} ! 👋
-              </h1>
-              <div className="flex items-center gap-2 mb-2">
-                <p className="text-gray-600">
-                  Découvrez ce qui se passe dans votre quartier aujourd'hui
-                </p>
-                {signupCommunity && (
-                  <span className="px-3 py-1.5 text-xs bg-gradient-to-r from-brand-100 to-brand-200 text-brand-700 rounded-full font-medium border border-brand-200 shadow-sm">
-                    🏠 {signupCommunity.name}
-                  </span>
-                )}
+          <Card className="relative overflow-hidden p-0">
+            {/* Background decorations */}
+            <div className="absolute inset-0 bg-gradient-to-br from-brand-50/30 via-white to-brand-50/20"></div>
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-brand-200/10 to-brand-300/10 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-brand-200/10 to-brand-300/10 rounded-full blur-2xl"></div>
+            
+            <div className="relative p-8 md:p-12">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-4 bg-gradient-to-r from-brand-500 to-brand-600 rounded-2xl shadow-lg">
+                      <Users className="w-7 h-7 text-white" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="px-4 py-2 bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-700 border border-emerald-200 rounded-xl text-sm font-medium">
+                        🌟 Bienvenue
+                      </span>
+                      {signupCommunity && (
+                        <span className="px-3 py-1.5 text-xs bg-gradient-to-r from-brand-100 to-brand-200 text-brand-700 rounded-full font-medium border border-brand-200 shadow-sm">
+                          🏠 {signupCommunity.name}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                    Bonjour {profile?.full_name || 'Voisin'} ! 👋
+                  </h1>
+                  
+                  <div className="flex flex-wrap items-center gap-3 mb-6">
+                    <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-xl border border-gray-200/50 shadow-sm">
+                      <MapPin className="w-4 h-4 text-brand-600" />
+                      <span className="font-medium text-gray-700">Votre quartier</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-xl border border-gray-200/50 shadow-sm">
+                      <Users className="w-4 h-4 text-brand-600" />
+                      <span className="font-medium text-gray-700">Communauté active</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-xl border border-gray-200/50 shadow-sm">
+                      <Heart className="w-4 h-4 text-brand-600" />
+                      <span className="font-medium text-gray-700">Partage responsable</span>
+                    </div>
+                  </div>
+                  
+                  <p className="text-gray-600 text-lg leading-relaxed max-w-3xl">
+                    Découvrez ce qui se passe dans votre quartier aujourd'hui. Empruntez, échangez ou donnez vos objets avec vos voisins dans une communauté bienveillante.
+                  </p>
+                </div>
+                
+                <div className="flex flex-col items-end gap-4">
+                  <div className="text-right">
+                    <div className="text-sm text-gray-500 mb-2">Actions rapides</div>
+                    <div className="flex flex-col gap-2">
+                      <Button 
+                        leftIcon={<Plus size={16} />}
+                        onClick={() => navigate('/create')}
+                        size="md"
+                        className="shadow-md hover:shadow-lg"
+                      >
+                        Publier un objet
+                      </Button>
+                      <Button 
+                        variant="ghost"
+                        leftIcon={<Search size={16} />}
+                        onClick={() => navigate('/items')}
+                        size="md"
+                        className="hover:bg-brand-50 hover:text-brand-700"
+                      >
+                        Rechercher
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="hidden md:flex items-center gap-3">
-              <Button 
-                leftIcon={<Plus size={14} />}
-                onClick={() => navigate('/create')}
-                size="sm"
-                className="shadow-md hover:shadow-lg"
-              >
-                Publier
-              </Button>
-            </div>
-          </div>
-
+          </Card>
         </motion.div>
 
         <div className="grid lg:grid-cols-3 gap-8">

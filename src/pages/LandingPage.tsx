@@ -51,25 +51,25 @@ const LandingPage: React.FC = () => {
       icon: <Users className="w-6 h-6" />,
       title: "Communauté Locale",
       description: "Rejoignez votre quartier et découvrez vos voisins",
-      color: "from-blue-500 to-blue-600"
+      color: "from-brand-500 to-brand-600"
     },
     {
       icon: <Heart className="w-6 h-6" />,
       title: "Économie Circulaire",
       description: "Empruntez, échangez ou donnez vos objets",
-      color: "from-green-500 to-green-600"
+      color: "from-brand-500 to-brand-600"
     },
     {
       icon: <Shield className="w-6 h-6" />,
       title: "Sécurisé & Fiable",
       description: "Profils vérifiés et messagerie intégrée",
-      color: "from-purple-500 to-purple-600"
+      color: "from-brand-500 to-brand-600"
     },
     {
       icon: <Zap className="w-6 h-6" />,
       title: "Simple & Rapide",
       description: "Trouvez ce dont vous avez besoin en quelques clics",
-      color: "from-orange-500 to-orange-600"
+      color: "from-brand-500 to-brand-600"
     }
   ];
 
@@ -81,32 +81,31 @@ const LandingPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-brand-50/30 to-purple-50/20">
+    <div className="min-h-screen bg-gradient-to-br from-white via-brand-50/30 to-brand-50/20">
       {/* Background Decorations */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-20 w-96 h-96 bg-gradient-to-br from-brand-200/10 to-purple-200/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-20 right-20 w-80 h-80 bg-gradient-to-tl from-blue-200/10 to-brand-200/10 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-pink-200/5 to-yellow-200/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '4s' }} />
+        <div className="absolute top-20 left-20 w-96 h-96 bg-gradient-to-br from-brand-200/10 to-brand-300/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-20 right-20 w-80 h-80 bg-gradient-to-tl from-brand-300/10 to-brand-200/10 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-brand-200/5 to-brand-300/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '4s' }} />
       </div>
       
-      <header className="relative max-w1-2xl mx-auto px-6 py-8 flex items-center justify-between">
+      <header className="relative max-w-7xl mx-auto px-6 py-8 flex items-center justify-between">
         <Link to="/" className="group">
           <img src="/logo.png" alt="Échangeo Logo" className="w-20 h-20 object-contain" />
         </Link>
         <div className="flex items-center gap-4">
-          <Link to="/pro" className="text-sm font-semibold text-gray-700 hover:text-brand-600 transition-colors duration-200">Pro</Link>
           <Link to="/login"><Button variant="ghost" size="sm">Créer un compte</Button></Link>
           <Link to="/login"><Button size="sm">Se connecter</Button></Link>
         </div>
       </header>
 
-      <main className="relative max-w1-2xl mx-auto px-6">
+      <main className="relative max-w-7xl mx-auto px-6">
         {/* Hero Section */}
         <motion.section 
           initial={{ opacity: 0, y: 30 }} 
           animate={{ opacity: 1, y: 0 }} 
           transition={{ duration: 0.6, ease: "easeOut" }} 
-          className="py-16 md:py-24"
+          className=""
         >
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
@@ -124,10 +123,10 @@ const LandingPage: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.6 }}
-                className="text-4xl md:text-6xl font-bold text-gray-900 leading-tight"
+                className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight"
               >
                 Partagez, empruntez et{' '}
-                <span className="bg-gradient-to-r from-brand-600 to-purple-600 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-brand-600 to-brand-700 bg-clip-text text-transparent">
                   donnez
                 </span>{' '}
                 des objets entre voisins
@@ -137,7 +136,7 @@ const LandingPage: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.6 }}
-                className="text-xl text-gray-600 leading-relaxed"
+                className="text-lg text-gray-600 leading-relaxed"
               >
                 Économisez, désencombrez et créez du lien social. Empruntez, échangez ou donnez vos objets à vos voisins. Rejoignez la communauté Échangeo et découvrez une nouvelle façon de consommer responsable.
               </motion.p>
@@ -149,12 +148,12 @@ const LandingPage: React.FC = () => {
                 className="flex flex-col sm:flex-row gap-4"
               >
                 <Link to="/login">
-                  <Button rightIcon={<ArrowRight className="w-5 h-5" />} size="lg" className="min-w-[180px] shadow-lg">
+                  <Button rightIcon={<ArrowRight className="w-4 h-4" />} size="md" className="min-w-[180px] shadow-md hover:shadow-lg">
                     Commencer gratuitement
                   </Button>
                 </Link>
                 <Link to="/items">
-                  <Button variant="ghost" leftIcon={<Search className="w-5 h-5" />} size="lg" className="min-w-[180px]">
+                  <Button variant="ghost" leftIcon={<Search className="w-4 h-4" />} size="md" className="min-w-[180px] hover:bg-brand-50 hover:text-brand-700">
                     Parcourir les objets
                   </Button>
                 </Link>
@@ -188,48 +187,138 @@ const LandingPage: React.FC = () => {
               className="relative"
             >
               {/* Background Glow */}
-              <div className="absolute -inset-8 bg-gradient-to-r from-brand-200/20 via-purple-200/20 to-blue-200/20 blur-3xl rounded-full" />
+              <div className="absolute -inset-8 bg-gradient-to-r from-brand-200/20 via-brand-300/20 to-brand-200/20 blur-3xl rounded-full" />
               
-              <Card className="relative p-8 glass-strong">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-3 h-3 bg-red-400 rounded-full"></div>
-                    <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-                    <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-                    <span className="text-sm text-gray-500 ml-4">Échangeo - Plateforme de partage</span>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    {[
-                      { title: "Perceuse", user: "Marie D.", distance: "200m", color: "from-blue-500 to-blue-600", type: "Prêt" },
-                      { title: "Livres", user: "Pierre M.", distance: "150m", color: "from-green-500 to-green-600", type: "Don" },
-                      { title: "Vélo", user: "Sophie L.", distance: "300m", color: "from-purple-500 to-purple-600", type: "Échange" },
-                      { title: "Outils", user: "Jean P.", distance: "100m", color: "from-orange-500 to-orange-600", type: "Prêt" }
-                    ].map((item, i) => (
-                      <motion.div 
-                        key={i}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.8 + i * 0.1, duration: 0.4 }}
-                        className="p-4 rounded-2xl bg-gradient-to-br from-white/80 to-brand-50/80 border border-brand-100/50 shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"
-                      >
-                        <div className={`w-8 h-8 rounded-lg bg-gradient-to-r ${item.color} mb-3`}></div>
-                        <h3 className="font-semibold text-gray-900 text-sm">{item.title}</h3>
-                        <p className="text-xs text-gray-600">{item.user}</p>
-                        <div className="flex items-center justify-between">
-                          <p className="text-xs text-brand-600 font-medium">{item.distance}</p>
-                          <span className={`text-xs px-2 py-1 rounded-full text-white font-medium ${
-                            item.type === 'Don' ? 'bg-green-500' : 
-                            item.type === 'Échange' ? 'bg-purple-500' : 'bg-blue-500'
-                          }`}>
-                            {item.type}
-                          </span>
+              {/* Hero Visual */}
+              <div className="relative">
+                {/* Main Container */}
+                <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/20">
+                  {/* Floating Cards */}
+                  <div className="grid grid-cols-2 gap-6">
+                    {/* Item Card 1 */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20, rotate: -5 }}
+                      animate={{ opacity: 1, y: 0, rotate: -3 }}
+                      transition={{ delay: 0.5, duration: 0.6 }}
+                      className="bg-gradient-to-br from-white to-brand-50/50 rounded-2xl p-4 shadow-lg border border-brand-100/50 transform hover:scale-105 transition-transform duration-300"
+                    >
+                      <div className="w-full h-24 bg-gradient-to-br from-brand-100 to-brand-200 rounded-xl mb-3 flex items-center justify-center">
+                        <div className="w-8 h-8 bg-brand-500 rounded-lg flex items-center justify-center">
+                          <Search className="w-5 h-5 text-white" />
                         </div>
-                      </motion.div>
-                    ))}
+                      </div>
+                      <h4 className="font-semibold text-gray-900 text-sm mb-1">Perceuse électrique</h4>
+                      <p className="text-xs text-gray-600">À emprunter</p>
+                      <div className="flex items-center gap-1 mt-2">
+                        <div className="w-4 h-4 bg-gradient-to-r from-brand-500 to-brand-600 rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">M</span>
+                        </div>
+                        <span className="text-xs text-gray-600">Marie, 200m</span>
+                      </div>
+                    </motion.div>
+
+                    {/* Item Card 2 */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20, rotate: 5 }}
+                      animate={{ opacity: 1, y: 0, rotate: 3 }}
+                      transition={{ delay: 0.7, duration: 0.6 }}
+                      className="bg-gradient-to-br from-white to-green-50/50 rounded-2xl p-4 shadow-lg border border-green-100/50 transform hover:scale-105 transition-transform duration-300"
+                    >
+                      <div className="w-full h-24 bg-gradient-to-br from-green-100 to-green-200 rounded-xl mb-3 flex items-center justify-center">
+                        <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                          <Heart className="w-5 h-5 text-white" />
+                        </div>
+                      </div>
+                      <h4 className="font-semibold text-gray-900 text-sm mb-1">Vélo enfant</h4>
+                      <p className="text-xs text-gray-600">À donner</p>
+                      <div className="flex items-center gap-1 mt-2">
+                        <div className="w-4 h-4 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">P</span>
+                        </div>
+                        <span className="text-xs text-gray-600">Pierre, 150m</span>
+                      </div>
+                    </motion.div>
+
+                    {/* Item Card 3 */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20, rotate: 5 }}
+                      animate={{ opacity: 1, y: 0, rotate: 2 }}
+                      transition={{ delay: 0.9, duration: 0.6 }}
+                      className="bg-gradient-to-br from-white to-purple-50/50 rounded-2xl p-4 shadow-lg border border-purple-100/50 transform hover:scale-105 transition-transform duration-300"
+                    >
+                      <div className="w-full h-24 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl mb-3 flex items-center justify-center">
+                        <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+                          <Users className="w-5 h-5 text-white" />
+                        </div>
+                      </div>
+                      <h4 className="font-semibold text-gray-900 text-sm mb-1">Table de jardin</h4>
+                      <p className="text-xs text-gray-600">À échanger</p>
+                      <div className="flex items-center gap-1 mt-2">
+                        <div className="w-4 h-4 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">S</span>
+                        </div>
+                        <span className="text-xs text-gray-600">Sophie, 300m</span>
+                      </div>
+                    </motion.div>
+
+                    {/* Item Card 4 */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20, rotate: -3 }}
+                      animate={{ opacity: 1, y: 0, rotate: -2 }}
+                      transition={{ delay: 1.1, duration: 0.6 }}
+                      className="bg-gradient-to-br from-white to-orange-50/50 rounded-2xl p-4 shadow-lg border border-orange-100/50 transform hover:scale-105 transition-transform duration-300"
+                    >
+                      <div className="w-full h-24 bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl mb-3 flex items-center justify-center">
+                        <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                          <Zap className="w-5 h-5 text-white" />
+                        </div>
+                      </div>
+                      <h4 className="font-semibold text-gray-900 text-sm mb-1">Livre de cuisine</h4>
+                      <p className="text-xs text-gray-600">À emprunter</p>
+                      <div className="flex items-center gap-1 mt-2">
+                        <div className="w-4 h-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">T</span>
+                        </div>
+                        <span className="text-xs text-gray-600">Thomas, 100m</span>
+                      </div>
+                    </motion.div>
                   </div>
+
+                  {/* Central Connection Animation */}
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 1.3, duration: 0.6 }}
+                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                  >
+                    <div className="w-16 h-16 bg-gradient-to-r from-brand-500 to-brand-600 rounded-full flex items-center justify-center shadow-2xl border-4 border-white">
+                      <Users className="w-8 h-8 text-white" />
+                    </div>
+                    {/* Animated Rings */}
+                    <div className="absolute inset-0 rounded-full border-2 border-brand-300/30 animate-ping" />
+                    <div className="absolute inset-0 rounded-full border-2 border-brand-300/20 animate-ping" style={{ animationDelay: '1s' }} />
+                  </motion.div>
                 </div>
-              </Card>
+
+                {/* Floating Elements */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.5, duration: 0.6 }}
+                  className="absolute -top-4 -right-4 bg-gradient-to-r from-green-400 to-green-500 text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg"
+                >
+                  +50 nouveaux objets
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.7, duration: 0.6 }}
+                  className="absolute -bottom-4 -left-4 bg-gradient-to-r from-blue-400 to-blue-500 text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg"
+                >
+                  12 voisins actifs
+                </motion.div>
+              </div>
             </motion.div>
           </div>
         </motion.section>
@@ -241,20 +330,22 @@ const LandingPage: React.FC = () => {
           transition={{ delay: 0.2 }}
           className="py-16"
         >
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + index * 0.1 }}
-                className="text-center"
-              >
-                <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">{stat.number}</div>
-                <div className="text-sm text-gray-600">{stat.label}</div>
-              </motion.div>
-            ))}
-          </div>
+          <Card className="p-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              {stats.map((stat, index) => (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 + index * 0.1 }}
+                  className="text-center"
+                >
+                  <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-brand-600 to-brand-700 bg-clip-text text-transparent mb-2">{stat.number}</div>
+                  <div className="text-xs text-gray-600">{stat.label}</div>
+                </motion.div>
+              ))}
+            </div>
+          </Card>
         </motion.section>
 
         {/* Features Section */}
@@ -269,7 +360,7 @@ const LandingPage: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
+              className="text-2xl md:text-3xl font-bold text-gray-900 mb-4"
             >
               Pourquoi choisir Échangeo ?
             </motion.h2>
@@ -277,7 +368,7 @@ const LandingPage: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="text-xl text-gray-600 max-w-2xl mx-auto"
+              className="text-lg text-gray-600 max-w-2xl mx-auto"
             >
               Une plateforme complète pour révolutionner votre façon de consommer et de partager
             </motion.p>
@@ -292,11 +383,11 @@ const LandingPage: React.FC = () => {
                 transition={{ delay: 0.6 + index * 0.1 }}
                 className="group"
               >
-                <Card className="p-6 glass hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${feature.color} text-white flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                <Card className="p-6 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 text-white flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-md">
                     {feature.icon}
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">{feature.title}</h3>
                   <p className="text-gray-600 text-sm leading-relaxed">{feature.description}</p>
                 </Card>
               </motion.div>
@@ -309,14 +400,14 @@ const LandingPage: React.FC = () => {
           initial={{ opacity: 0, y: 20 }} 
           animate={{ opacity: 1, y: 0 }} 
           transition={{ delay: 0.4 }} 
-          className="py-20 bg-gradient-to-r from-brand-50/50 to-purple-50/50 rounded-3xl"
+          className="py-20"
         >
           <div className="text-center mb-16">
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
+              className="text-2xl md:text-3xl font-bold text-gray-900 mb-4"
             >
               Ce que disent nos utilisateurs
             </motion.h2>
@@ -324,13 +415,13 @@ const LandingPage: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
-              className="text-xl text-gray-600"
+              className="text-lg text-gray-600"
             >
               Plus de 10 000 utilisateurs nous font confiance
             </motion.p>
           </div>
 
-          <div className="relative max-w-12xl mx-auto">
+          <div className="relative max-w-4xl mx-auto">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentTestimonial}
@@ -340,17 +431,17 @@ const LandingPage: React.FC = () => {
                 transition={{ duration: 0.5 }}
                 className="text-center"
               >
-                <Card className="p-8 glass-strong">
+                <Card className="p-6">
                   <div className="flex justify-center mb-4">
                     {[...Array(testimonials[currentTestimonial].rating)].map((_, i) => (
                       <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
                     ))}
                   </div>
-                  <blockquote className="text-lg text-gray-700 mb-6 italic">
+                  <blockquote className="text-base text-gray-700 mb-6 italic">
                     "{testimonials[currentTestimonial].text}"
                   </blockquote>
                   <div className="flex items-center justify-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-brand-500 to-purple-500 flex items-center justify-center text-white font-bold">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-brand-500 to-brand-600 flex items-center justify-center text-white font-bold shadow-md">
                       {testimonials[currentTestimonial].name[0]}
                     </div>
                     <div className="text-left">
@@ -386,12 +477,12 @@ const LandingPage: React.FC = () => {
           transition={{ delay: 0.5 }} 
           className="py-20"
         >
-          <div className="text-center">
+          <Card className="p-12 text-center">
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
-              className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
+              className="text-2xl md:text-3xl font-bold text-gray-900 mb-4"
             >
               Prêt à rejoindre la communauté ?
             </motion.h2>
@@ -399,7 +490,7 @@ const LandingPage: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7 }}
-              className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto"
+              className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto"
             >
               Commencez dès aujourd'hui et découvrez une nouvelle façon de consommer responsable. Empruntez, échangez ou donnez vos objets !
             </motion.p>
@@ -410,23 +501,23 @@ const LandingPage: React.FC = () => {
               className="flex flex-col sm:flex-row gap-4 justify-center"
             >
               <Link to="/login">
-                <Button rightIcon={<ArrowRight className="w-5 h-5" />} size="lg" className="min-w-[200px] shadow-lg">
+                <Button rightIcon={<ArrowRight className="w-4 h-4" />} size="md" className="min-w-[200px] shadow-md hover:shadow-lg">
                   Créer mon compte
                 </Button>
               </Link>
               <Link to="/items">
-                <Button variant="ghost" leftIcon={<Search className="w-5 h-5" />} size="lg" className="min-w-[200px]">
+                <Button variant="ghost" leftIcon={<Search className="w-4 h-4" />} size="md" className="min-w-[200px] hover:bg-brand-50 hover:text-brand-700">
                   Explorer la plateforme
                 </Button>
               </Link>
             </motion.div>
-          </div>
+          </Card>
         </motion.section>
       </main>
 
       {/* Footer */}
       <footer className="relative bg-gray-900 text-white">
-        <div className="max-w1-2xl mx-auto px-6 py-16">
+        <div className="max-w-7xl mx-auto px-6 py-16">
           <div className="grid md:grid-cols-4 gap-8">
             {/* Logo & Description */}
             <div className="md:col-span-2">
@@ -467,7 +558,6 @@ const LandingPage: React.FC = () => {
               <h3 className="text-lg font-semibold mb-4">Entreprise</h3>
               <ul className="space-y-3">
                 <li><Link to="/about" className="text-gray-400 hover:text-white transition-colors">À propos</Link></li>
-                <li><Link to="/pro" className="text-gray-400 hover:text-white transition-colors">Offres Pro</Link></li>
                 <li><Link to="/careers" className="text-gray-400 hover:text-white transition-colors">Carrières</Link></li>
                 <li><Link to="/press" className="text-gray-400 hover:text-white transition-colors">Presse</Link></li>
                 <li><Link to="/contact" className="text-gray-400 hover:text-white transition-colors">Contact</Link></li>
