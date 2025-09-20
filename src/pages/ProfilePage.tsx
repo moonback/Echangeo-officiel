@@ -77,12 +77,7 @@ const ProfilePage: React.FC = () => {
   const { data: gamificationStats } = useGamificationStats(id);
   const { data: userLevel } = useUserLevel(id);
 
-  React.useEffect(() => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition((pos) => {
-      setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-    });
-  }, []);
+  // Suppression de l'effet de géolocalisation non utilisé
 
   React.useEffect(() => {
     const loadReputation = async () => {
@@ -211,54 +206,213 @@ const ProfilePage: React.FC = () => {
   }, [id, reviewsPage]);
 
   return (
-    <div className="p-4 max-w-6xl mx-auto">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-      >
-        {/* Enhanced Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.5 }}
-          className="mb-8"
-        >
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 gradient-text">
-            {profile?.full_name || profile?.email || 'Profil utilisateur'}
-          </h1>
-          <p className="text-gray-600 text-lg">Découvrez le profil et les objets de ce membre de la communauté</p>
-        </motion.div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-brand-50/40 relative overflow-hidden">
+      {/* Background Ultra-Moderne */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        {/* Grille subtile */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:50px_50px] opacity-30" />
+        
+        {/* Dégradés radiaux animés */}
+        <motion.div 
+          className="absolute top-10 left-10 w-[600px] h-[600px] bg-gradient-radial from-brand-200/20 via-brand-300/10 to-transparent rounded-full blur-3xl"
+          animate={{ 
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.6, 0.3],
+            x: [0, 50, 0],
+            y: [0, -30, 0]
+          }}
+          transition={{ 
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div 
+          className="absolute bottom-10 right-10 w-[500px] h-[500px] bg-gradient-radial from-emerald-200/20 via-teal-300/10 to-transparent rounded-full blur-3xl"
+          animate={{ 
+            scale: [1.2, 1, 1.2],
+            opacity: [0.4, 0.7, 0.4],
+            x: [0, -40, 0],
+            y: [0, 20, 0]
+          }}
+          transition={{ 
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2
+          }}
+        />
+        
+        {/* Éléments flottants */}
+        <motion.div 
+          className="absolute top-20 right-1/4 w-4 h-4 bg-brand-400/40 rounded-full"
+          animate={{ 
+            y: [0, -20, 0],
+            opacity: [0.4, 0.8, 0.4]
+          }}
+          transition={{ 
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div 
+          className="absolute bottom-1/3 left-1/3 w-6 h-6 bg-emerald-400/30 rounded-full"
+          animate={{ 
+            y: [0, 15, 0],
+            x: [0, 10, 0],
+            opacity: [0.3, 0.7, 0.3]
+          }}
+          transition={{ 
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1
+          }}
+        />
+      </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="md:col-span-3">
-            <Card className="p-0 overflow-hidden glass-strong">
-              <div className="relative bg-gradient-to-br from-brand-50/80 via-white/60 to-purple-50/40 p-6 md:p-8">
-                {/* Background Decorations */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-brand-200/20 to-purple-200/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-blue-200/20 to-brand-200/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
+      <div className="relative max-w-12xl mx-auto px-4 py-8">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        >
+          {/* Header Ultra-Moderne */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+            className="mb-12"
+          >
+            <motion.h1 
+              className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-slate-900 via-brand-600 to-slate-900 bg-clip-text text-transparent leading-tight"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              {profile?.full_name || profile?.email || 'Profil utilisateur'}
+            </motion.h1>
+            <motion.p 
+              className="text-slate-600 text-xl leading-relaxed max-w-3xl font-medium"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              Découvrez le profil et les objets de ce membre de la communauté
+            </motion.p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="md:col-span-3">
+              <motion.div
+                className="relative"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                whileHover={{ scale: 1.02 }}
+              >
+                {/* Effet de glow animé */}
+                <motion.div 
+                  className="absolute inset-0 bg-gradient-to-br from-brand-400/20 via-brand-500/10 to-emerald-400/20 rounded-3xl blur-xl"
+                  animate={{ 
+                    opacity: [0.3, 0.6, 0.3],
+                    scale: [1, 1.05, 1]
+                  }}
+                  transition={{ 
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
+                
+                {/* Carte principale avec glassmorphism */}
+                <Card className="relative p-0 border-0 bg-white/80 backdrop-blur-xl shadow-2xl hover:shadow-3xl transition-all duration-500 rounded-3xl overflow-hidden">
+                  <div className="relative bg-gradient-to-br from-brand-50/80 via-white/60 to-purple-50/40 p-6 md:p-8">
+                    {/* Background Decorations */}
+                    <motion.div 
+                      className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-brand-200/20 to-purple-200/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"
+                      animate={{ 
+                        scale: [1, 1.2, 1],
+                        opacity: [0.2, 0.4, 0.2]
+                      }}
+                      transition={{ 
+                        duration: 6,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    />
+                    <motion.div 
+                      className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-blue-200/20 to-brand-200/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2"
+                      animate={{ 
+                        scale: [1.2, 1, 1.2],
+                        opacity: [0.3, 0.5, 0.3]
+                      }}
+                      transition={{ 
+                        duration: 8,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 2
+                      }}
+                    />
                 
                 {isLoading ? (
                   <div className="text-gray-500 text-sm">Chargement…</div>
                 ) : profile ? (
                   <div className="relative flex items-start md:items-center gap-6 md:gap-8 flex-col md:flex-row">
-                    {/* Enhanced Avatar */}
+                    {/* Avatar Ultra-Moderne avec Glow */}
                     <motion.div
                       initial={{ scale: 0.8, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
-                      transition={{ delay: 0.2, duration: 0.5 }}
-                      className="relative"
+                      transition={{ delay: 0.6, duration: 0.5 }}
+                      className="relative group"
                     >
-                      {/* Glow Effect */}
-                      <div className="absolute -inset-3 rounded-full bg-gradient-to-r from-brand-400/30 via-purple-400/30 to-brand-600/30 blur-lg animate-pulse" />
-                      <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-brand-500/40 to-purple-500/40 blur-md animate-pulse" style={{ animationDelay: '0.5s' }} />
+                      {/* Effet de glow multi-couches */}
+                      <motion.div 
+                        className="absolute -inset-4 rounded-full bg-gradient-to-r from-brand-400 via-brand-500 to-brand-600 opacity-20 blur-xl"
+                        animate={{ 
+                          scale: [1, 1.1, 1],
+                          opacity: [0.2, 0.4, 0.2]
+                        }}
+                        transition={{ 
+                          duration: 3,
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
+                      />
+                      <motion.div 
+                        className="absolute -inset-3 rounded-full bg-gradient-to-r from-brand-500 to-brand-600 opacity-30 blur-lg"
+                        animate={{ 
+                          scale: [1.1, 1, 1.1],
+                          opacity: [0.3, 0.5, 0.3]
+                        }}
+                        transition={{ 
+                          duration: 4,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                          delay: 0.5
+                        }}
+                      />
+                      <motion.div 
+                        className="absolute -inset-2 rounded-full bg-gradient-to-r from-emerald-400 to-brand-500 opacity-40 blur-md"
+                        animate={{ 
+                          scale: [1, 1.2, 1],
+                          opacity: [0.4, 0.6, 0.4]
+                        }}
+                        transition={{ 
+                          duration: 5,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                          delay: 1
+                        }}
+                      />
                       
-                      <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full bg-white border-4 border-white shadow-2xl overflow-hidden">
+                      <div className="relative w-28 h-28 md:w-32 md:h-32 rounded-full bg-white border-4 border-white shadow-2xl overflow-hidden group-hover:shadow-3xl transition-shadow duration-300">
                         {profile.avatar_url ? (
-                          <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                          <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
                         ) : (
                           <div className="w-full h-full bg-gradient-to-br from-brand-100 to-brand-200 flex items-center justify-center">
-                            <span className="text-brand-600 text-2xl font-bold">
+                            <span className="text-brand-600 text-3xl font-bold">
                               {(profile.full_name || profile.email || '?').slice(0,1).toUpperCase()}
                             </span>
                           </div>
@@ -266,46 +420,88 @@ const ProfilePage: React.FC = () => {
                       </div>
                     </motion.div>
                     <div className="flex-1 min-w-0">
-                      <h2 className="text-xl md:text-2xl font-semibold text-gray-900 truncate">{profile.full_name || profile.email}</h2>
+                      <motion.h2 
+                        className="text-2xl md:text-3xl font-bold text-slate-900 truncate mb-3"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.7 }}
+                      >
+                        {profile.full_name || profile.email}
+                      </motion.h2>
                       {profile.address && (
-                        <div className="mt-1 text-sm text-gray-600 flex items-center flex-wrap gap-2">
-                          <span className="inline-flex items-center"><MapPin className="w-4 h-4 mr-1" /> {profile.address}</span>
-                        </div>
+                        <motion.div 
+                          className="mt-2 mb-4"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.8 }}
+                        >
+                          <span className="inline-flex items-center gap-2 bg-white/90 backdrop-blur-xl px-4 py-2 rounded-2xl border border-slate-200/50 shadow-lg">
+                            <div className="p-1.5 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg">
+                              <MapPin className="w-4 h-4 text-white" />
+                            </div>
+                            <span className="font-semibold text-slate-700">{profile.address}</span>
+                          </span>
+                        </motion.div>
                       )}
                       {profile.bio && (
-                        <p className="mt-2 text-gray-700 text-sm md:text-base max-w-prose">{profile.bio}</p>
+                        <motion.p 
+                          className="mt-3 text-slate-700 text-base md:text-lg max-w-prose leading-relaxed"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.9 }}
+                        >
+                          {profile.bio}
+                        </motion.p>
                       )}
-                      {/* <div className="mt-3 flex items-center gap-2 flex-wrap">
-                        <Badge variant="info" className="px-3 py-1"><Package className="w-3 h-3 mr-1" /> {(profile as any)?.items_count ?? 0} objets</Badge>
-                        <Badge variant="success" className="px-3 py-1">{(profile as any)?.completed_borrows ?? 0} emprunts</Badge>
-                        {ratingStats.count ? (
-                          <Badge variant="warning" className="px-3 py-1"><Star className="w-3 h-3 mr-1 text-yellow-600" /> {ratingStats.average?.toFixed(1)} ({ratingStats.count})</Badge>
-                        ) : null}
-                      </div> */}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <motion.div 
+                      className="flex items-center gap-3"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 1.0 }}
+                    >
                       {id && (
-                        <Link to={`/chat/${id}`}>
-                          <Button variant="secondary" size="sm" leftIcon={<MessageCircle size={16} />}>Discuter</Button>
-                        </Link>
+                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                          <Link to={`/chat/${id}`}>
+                            <Button 
+                              variant="secondary" 
+                              size="md" 
+                              leftIcon={<MessageCircle size={18} />}
+                              className="shadow-lg hover:shadow-xl font-semibold px-6 py-3 rounded-2xl bg-gradient-to-r from-blue-100 to-indigo-100 hover:from-blue-200 hover:to-indigo-200 text-blue-700 border border-blue-200/50"
+                            >
+                              Discuter
+                            </Button>
+                          </Link>
+                        </motion.div>
                       )}
-                      <Button variant="ghost" size="sm" className="border border-gray-300" leftIcon={<LinkIcon size={16} />} onClick={async () => {
-                        try {
-                          await navigator.clipboard.writeText(window.location.href);
-                          setCopied(true);
-                          setTimeout(() => setCopied(false), 1500);
-                        } catch {
-                          // Do nothing
-                        }
-                      }}>{copied ? 'Copié' : 'Copier le lien'}</Button>
-                    </div>
+                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                        <Button 
+                          variant="ghost" 
+                          size="md" 
+                          className="border border-slate-200/50 backdrop-blur-sm font-semibold px-6 py-3 rounded-2xl hover:bg-brand-50 hover:text-brand-700" 
+                          leftIcon={<LinkIcon size={18} />} 
+                          onClick={async () => {
+                            try {
+                              await navigator.clipboard.writeText(window.location.href);
+                              setCopied(true);
+                              setTimeout(() => setCopied(false), 1500);
+                            } catch {
+                              // Do nothing
+                            }
+                          }}
+                        >
+                          {copied ? 'Copié' : 'Copier le lien'}
+                        </Button>
+                      </motion.div>
+                    </motion.div>
                   </div>
                 ) : (
                   <div className="text-gray-500 text-sm">Profil introuvable.</div>
                 )}
-              </div>
-            </Card>
-          </div>
+                  </div>
+                </Card>
+              </motion.div>
+            </div>
           <div className="md:col-span-2">
             {/* Section Gamification et Réputation */}
             {(gamificationStats || reputation.count || badges.length > 0 || ratingStats.count) && (
@@ -503,7 +699,8 @@ const ProfilePage: React.FC = () => {
             </Card>
           </div>
         </div>
-      </motion.div>
+        </motion.div>
+      </div>
     </div>
   );
 };

@@ -159,8 +159,73 @@ const CommunityDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-brand-50/40 relative overflow-hidden">
+      {/* Background Ultra-Moderne */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        {/* Grille subtile */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:50px_50px] opacity-30" />
+        
+        {/* Dégradés radiaux animés */}
+        <motion.div 
+          className="absolute top-10 left-10 w-[600px] h-[600px] bg-gradient-radial from-brand-200/20 via-brand-300/10 to-transparent rounded-full blur-3xl"
+          animate={{ 
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.6, 0.3],
+            x: [0, 50, 0],
+            y: [0, -30, 0]
+          }}
+          transition={{ 
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div 
+          className="absolute bottom-10 right-10 w-[500px] h-[500px] bg-gradient-radial from-emerald-200/20 via-teal-300/10 to-transparent rounded-full blur-3xl"
+          animate={{ 
+            scale: [1.2, 1, 1.2],
+            opacity: [0.4, 0.7, 0.4],
+            x: [0, -40, 0],
+            y: [0, 20, 0]
+          }}
+          transition={{ 
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2
+          }}
+        />
+        
+        {/* Éléments flottants */}
+        <motion.div 
+          className="absolute top-20 right-1/4 w-4 h-4 bg-brand-400/40 rounded-full"
+          animate={{ 
+            y: [0, -20, 0],
+            opacity: [0.4, 0.8, 0.4]
+          }}
+          transition={{ 
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div 
+          className="absolute bottom-1/3 left-1/3 w-6 h-6 bg-emerald-400/30 rounded-full"
+          animate={{ 
+            y: [0, 15, 0],
+            x: [0, 10, 0],
+            opacity: [0.3, 0.7, 0.3]
+          }}
+          transition={{ 
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1
+          }}
+        />
+      </div>
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -203,14 +268,59 @@ const CommunityDetailPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Hero Section moderne */}
-          <Card className="relative overflow-hidden p-0">
-            {/* Background decorations */}
-            <div className="absolute inset-0 bg-gradient-to-br from-brand-50/30 via-white to-brand-50/20"></div>
-            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-brand-200/10 to-brand-300/10 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-brand-200/10 to-brand-300/10 rounded-full blur-2xl"></div>
+          {/* Hero Section Ultra-Moderne */}
+          <motion.div
+            className="relative"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            whileHover={{ scale: 1.02 }}
+          >
+            {/* Effet de glow animé */}
+            <motion.div 
+              className="absolute inset-0 bg-gradient-to-br from-brand-400/20 via-brand-500/10 to-emerald-400/20 rounded-3xl blur-xl"
+              animate={{ 
+                opacity: [0.3, 0.6, 0.3],
+                scale: [1, 1.05, 1]
+              }}
+              transition={{ 
+                duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
             
-            <div className="relative">
+            {/* Carte principale avec glassmorphism */}
+            <Card className="relative p-0 border-0 bg-white/80 backdrop-blur-xl shadow-2xl hover:shadow-3xl transition-all duration-500 rounded-3xl overflow-hidden">
+              <div className="relative bg-gradient-to-br from-brand-50/80 via-white/60 to-purple-50/40 p-6 md:p-8">
+                {/* Background Decorations */}
+                <motion.div 
+                  className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-brand-200/20 to-purple-200/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"
+                  animate={{ 
+                    scale: [1, 1.2, 1],
+                    opacity: [0.2, 0.4, 0.2]
+                  }}
+                  transition={{ 
+                    duration: 6,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
+                <motion.div 
+                  className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-blue-200/20 to-brand-200/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2"
+                  animate={{ 
+                    scale: [1.2, 1, 1.2],
+                    opacity: [0.3, 0.5, 0.3]
+                  }}
+                  transition={{ 
+                    duration: 8,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: 2
+                  }}
+                />
+                
+                <div className="relative">
               <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-6">
@@ -237,9 +347,14 @@ const CommunityDetailPage: React.FC = () => {
                     </div>
                   </div>
                   
-                  <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                  <motion.h1 
+                    className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-slate-900 via-brand-600 to-slate-900 bg-clip-text text-transparent leading-tight"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                  >
                     {community.name}
-                  </h1>
+                  </motion.h1>
                   
                   <div className="flex flex-wrap items-center gap-3 mb-6">
                     <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-xl border border-gray-200/50 shadow-sm">
@@ -294,8 +409,9 @@ const CommunityDetailPage: React.FC = () => {
                 </div>
               </div>
             </div>
-          </Card>
-        </motion.div>
+              </div>
+            </Card>
+          </motion.div>
 
 
         {/* Objets du quartier - Section moderne */}
@@ -532,6 +648,7 @@ const CommunityDetailPage: React.FC = () => {
               </div>
             )}
           </Card>
+        </motion.div>
         </motion.div>
         </motion.div>
       </div>

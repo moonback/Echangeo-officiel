@@ -149,6 +149,11 @@
     background-clip: text;
   }
 
+  /* Radial Gradients */
+  .bg-gradient-radial {
+    background: radial-gradient(circle, var(--tw-gradient-stops));
+  }
+
   /* Floating Elements */
   .floating {
     animation: float 6s ease-in-out infinite;
