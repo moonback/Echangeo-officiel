@@ -120,13 +120,13 @@ const HomePage: React.FC = () => {
                       <span className="px-4 py-2 bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-700 border border-emerald-200 rounded-xl text-sm font-medium">
                         🌟 Bienvenue
                       </span>
-                      {signupCommunity && (
+                {signupCommunity && (
                         <span className="px-3 py-1.5 text-xs bg-gradient-to-r from-brand-100 to-brand-200 text-brand-700 rounded-full font-medium border border-brand-200 shadow-sm">
-                          🏠 {signupCommunity.name}
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                    🏠 {signupCommunity.name}
+                  </span>
+                )}
+              </div>
+            </div>
                   
                   <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                     Bonjour {profile?.full_name || 'Voisin'} ! 👋
@@ -156,9 +156,9 @@ const HomePage: React.FC = () => {
                   <div className="text-right">
                     <div className="text-sm text-gray-500 mb-2">Actions rapides</div>
                     <div className="flex flex-col gap-2">
-                      <Button 
-                        leftIcon={<Plus size={16} />}
-                        onClick={() => navigate('/create')}
+              <Button 
+                leftIcon={<Plus size={16} />}
+                onClick={() => navigate('/create')}
                         size="md"
                         className="shadow-md hover:shadow-lg"
                       >
@@ -172,9 +172,9 @@ const HomePage: React.FC = () => {
                         className="hover:bg-brand-50 hover:text-brand-700"
                       >
                         Rechercher
-                      </Button>
-                    </div>
-                  </div>
+              </Button>
+            </div>
+          </div>
                 </div>
               </div>
             </div>
@@ -257,7 +257,7 @@ const HomePage: React.FC = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {recentItems?.slice(0, 8).map((item: Item, index: number) => (
-                    <motion.div
+      <motion.div
                       key={item.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -267,7 +267,7 @@ const HomePage: React.FC = () => {
                         item={item}
                         priority={index < 4}
                       />
-                    </motion.div>
+      </motion.div>
                   ))}
                 </div>
               )}

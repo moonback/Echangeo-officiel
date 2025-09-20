@@ -7,7 +7,6 @@ import {
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
-import DonationSection from '../components/DonationSection';
 
 const LandingPage: React.FC = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -170,11 +169,7 @@ const LandingPage: React.FC = () => {
                     Commencer gratuitement
                   </Button>
                 </Link>
-                <Link to="/items">
-                  <Button variant="ghost" leftIcon={<Search className="w-4 h-4" />} size="md" className="min-w-[180px] hover:bg-brand-50 hover:text-brand-700">
-                    Parcourir les objets
-                  </Button>
-                </Link>
+
               </motion.div>
               
               <motion.div 
@@ -199,29 +194,29 @@ const LandingPage: React.FC = () => {
             </div>
             
             <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }} 
+              initial={{ opacity: 0, scale: 0.92, y: 24 }} 
               animate={{ opacity: 1, scale: 1, y: 0 }} 
-              transition={{ delay: 0.3, duration: 0.8, ease: "easeOut" }} 
+              transition={{ delay: 0.25, duration: 0.9, ease: "easeOut" }} 
               className="relative"
             >
-              {/* Background Glow */}
-              <div className="absolute -inset-8 bg-gradient-to-r from-brand-200/20 via-brand-300/20 to-brand-200/20 blur-3xl rounded-full" />
-              
-              {/* Hero Visual */}
+              {/* Halo d'arrière-plan amélioré */}
+              <div className="absolute -inset-10 bg-gradient-to-r from-brand-200/30 via-brand-300/30 to-brand-200/30 blur-[80px] rounded-full pointer-events-none" />
+
+              {/* Visuel principal */}
               <div className="relative">
-                {/* Main Container */}
-                <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/20">
-                  {/* Floating Cards */}
-                  <div className="grid grid-cols-2 gap-6">
-                    {/* Item Card 1 */}
+                {/* Conteneur principal */}
+                <div className="relative bg-white/90 backdrop-blur-md rounded-3xl p-10 shadow-2xl border border-white/30">
+                  {/* Cartes flottantes */}
+                  <div className="grid grid-cols-2 gap-8">
+                    {/* Carte Objet 1 */}
                     <motion.div
-                      initial={{ opacity: 0, y: 20, rotate: -5 }}
+                      initial={{ opacity: 0, y: 24, rotate: -7 }}
                       animate={{ opacity: 1, y: 0, rotate: -3 }}
                       transition={{ delay: 0.5, duration: 0.6 }}
-                      className="bg-gradient-to-br from-white to-brand-50/50 rounded-2xl p-4 shadow-lg border border-brand-100/50 transform hover:scale-105 transition-transform duration-300"
+                      className="bg-gradient-to-br from-white to-brand-50/60 rounded-2xl p-5 shadow-xl border border-brand-100/60 transform hover:scale-105 transition-transform duration-300"
                     >
                       <div className="w-full h-24 bg-gradient-to-br from-brand-100 to-brand-200 rounded-xl mb-3 flex items-center justify-center">
-                        <div className="w-8 h-8 bg-brand-500 rounded-lg flex items-center justify-center">
+                        <div className="w-9 h-9 bg-brand-500 rounded-lg flex items-center justify-center shadow-md">
                           <Search className="w-5 h-5 text-white" />
                         </div>
                       </div>
@@ -235,15 +230,15 @@ const LandingPage: React.FC = () => {
                       </div>
                     </motion.div>
 
-                    {/* Item Card 2 */}
+                    {/* Carte Objet 2 */}
                     <motion.div
-                      initial={{ opacity: 0, y: 20, rotate: 5 }}
+                      initial={{ opacity: 0, y: 24, rotate: 7 }}
                       animate={{ opacity: 1, y: 0, rotate: 3 }}
                       transition={{ delay: 0.7, duration: 0.6 }}
-                      className="bg-gradient-to-br from-white to-green-50/50 rounded-2xl p-4 shadow-lg border border-green-100/50 transform hover:scale-105 transition-transform duration-300"
+                      className="bg-gradient-to-br from-white to-green-50/60 rounded-2xl p-5 shadow-xl border border-green-100/60 transform hover:scale-105 transition-transform duration-300"
                     >
                       <div className="w-full h-24 bg-gradient-to-br from-green-100 to-green-200 rounded-xl mb-3 flex items-center justify-center">
-                        <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                        <div className="w-9 h-9 bg-green-500 rounded-lg flex items-center justify-center shadow-md">
                           <Heart className="w-5 h-5 text-white" />
                         </div>
                       </div>
@@ -257,15 +252,15 @@ const LandingPage: React.FC = () => {
                       </div>
                     </motion.div>
 
-                    {/* Item Card 3 */}
+                    {/* Carte Objet 3 */}
                     <motion.div
-                      initial={{ opacity: 0, y: 20, rotate: 5 }}
+                      initial={{ opacity: 0, y: 24, rotate: 6 }}
                       animate={{ opacity: 1, y: 0, rotate: 2 }}
                       transition={{ delay: 0.9, duration: 0.6 }}
-                      className="bg-gradient-to-br from-white to-purple-50/50 rounded-2xl p-4 shadow-lg border border-purple-100/50 transform hover:scale-105 transition-transform duration-300"
+                      className="bg-gradient-to-br from-white to-purple-50/60 rounded-2xl p-5 shadow-xl border border-purple-100/60 transform hover:scale-105 transition-transform duration-300"
                     >
                       <div className="w-full h-24 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl mb-3 flex items-center justify-center">
-                        <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+                        <div className="w-9 h-9 bg-purple-500 rounded-lg flex items-center justify-center shadow-md">
                           <Users className="w-5 h-5 text-white" />
                         </div>
                       </div>
@@ -279,15 +274,15 @@ const LandingPage: React.FC = () => {
                       </div>
                     </motion.div>
 
-                    {/* Item Card 4 */}
+                    {/* Carte Objet 4 */}
                     <motion.div
-                      initial={{ opacity: 0, y: 20, rotate: -3 }}
+                      initial={{ opacity: 0, y: 24, rotate: -4 }}
                       animate={{ opacity: 1, y: 0, rotate: -2 }}
                       transition={{ delay: 1.1, duration: 0.6 }}
-                      className="bg-gradient-to-br from-white to-orange-50/50 rounded-2xl p-4 shadow-lg border border-orange-100/50 transform hover:scale-105 transition-transform duration-300"
+                      className="bg-gradient-to-br from-white to-orange-50/60 rounded-2xl p-5 shadow-xl border border-orange-100/60 transform hover:scale-105 transition-transform duration-300"
                     >
                       <div className="w-full h-24 bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl mb-3 flex items-center justify-center">
-                        <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                        <div className="w-9 h-9 bg-orange-500 rounded-lg flex items-center justify-center shadow-md">
                           <Zap className="w-5 h-5 text-white" />
                         </div>
                       </div>
@@ -302,28 +297,28 @@ const LandingPage: React.FC = () => {
                     </motion.div>
                   </div>
 
-                  {/* Central Connection Animation */}
+                  {/* Animation centrale de connexion */}
                   <motion.div
                     initial={{ opacity: 0, scale: 0 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 1.3, duration: 0.6 }}
-                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
                   >
-                    <div className="w-16 h-16 bg-gradient-to-r from-brand-500 to-brand-600 rounded-full flex items-center justify-center shadow-2xl border-4 border-white">
-                      <Users className="w-8 h-8 text-white" />
+                    <div className="w-20 h-20 bg-gradient-to-r from-brand-500 to-brand-600 rounded-full flex items-center justify-center shadow-2xl border-4 border-white">
+                      <Users className="w-9 h-9 text-white" />
                     </div>
-                    {/* Animated Rings */}
+                    {/* Anneaux animés */}
                     <div className="absolute inset-0 rounded-full border-2 border-brand-300/30 animate-ping" />
                     <div className="absolute inset-0 rounded-full border-2 border-brand-300/20 animate-ping" style={{ animationDelay: '1s' }} />
                   </motion.div>
                 </div>
 
-                {/* Floating Elements */}
+                {/* Éléments flottants */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1.5, duration: 0.6 }}
-                  className="absolute -top-4 -right-4 bg-gradient-to-r from-green-400 to-green-500 text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg"
+                  className="absolute -top-5 -right-5 bg-gradient-to-r from-green-400 to-green-500 text-white px-4 py-1.5 rounded-full text-xs font-semibold shadow-xl"
                 >
                   +50 nouveaux objets
                 </motion.div>
@@ -332,7 +327,7 @@ const LandingPage: React.FC = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1.7, duration: 0.6 }}
-                  className="absolute -bottom-4 -left-4 bg-gradient-to-r from-blue-400 to-blue-500 text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg"
+                  className="absolute -bottom-5 -left-5 bg-gradient-to-r from-blue-400 to-blue-500 text-white px-4 py-1.5 rounded-full text-xs font-semibold shadow-xl"
                 >
                   12 voisins actifs
                 </motion.div>
@@ -485,8 +480,6 @@ const LandingPage: React.FC = () => {
           </div>
         </motion.section>
 
-        {/* Donation Section */}
-        <DonationSection />
 
         {/* CTA Section */}
         <motion.section 
