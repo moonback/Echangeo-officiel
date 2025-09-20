@@ -197,12 +197,12 @@ const MyProfilePage: React.FC = () => {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="mb-8"
       >
-        <Card className="relative overflow-hidden p-0 glass-strong">
+        <Card className="relative overflow-hidden p-0">
           {/* Animated Banner */}
-          <div className="h-32 md:h-40 bg-gradient-to-br from-brand-400/20 via-purple-400/20 to-blue-400/20 relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-brand-600/10 via-transparent to-purple-600/10" />
+          <div className="h-32 md:h-40 bg-gradient-to-br from-brand-400/20 via-brand-500/20 to-brand-600/20 relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-brand-600/10 via-transparent to-brand-500/10" />
             <div className="absolute top-4 right-4 w-24 h-24 bg-brand-200/30 rounded-full blur-2xl animate-pulse" />
-            <div className="absolute bottom-4 left-4 w-16 h-16 bg-purple-200/30 rounded-full blur-xl animate-pulse" style={{ animationDelay: '1s' }} />
+            <div className="absolute bottom-4 left-4 w-16 h-16 bg-brand-300/30 rounded-full blur-xl animate-pulse" style={{ animationDelay: '1s' }} />
           </div>
           
           {/* Profile Content */}
@@ -216,8 +216,8 @@ const MyProfilePage: React.FC = () => {
                 className="relative w-28 h-28 rounded-full mr-6 group"
               >
                 {/* Animated Glow Ring */}
-                <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-brand-400 via-purple-400 to-brand-600 opacity-20 blur-lg animate-pulse" />
-                <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-brand-500 to-purple-500 opacity-30 blur-md animate-pulse" style={{ animationDelay: '0.5s' }} />
+                <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-brand-400 via-brand-500 to-brand-600 opacity-20 blur-lg animate-pulse" />
+                <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-brand-500 to-brand-600 opacity-30 blur-md animate-pulse" style={{ animationDelay: '0.5s' }} />
                 
                 {/* Avatar Container */}
                 <div className="relative w-28 h-28 rounded-full bg-white border-4 border-white shadow-2xl overflow-hidden">
@@ -251,23 +251,23 @@ const MyProfilePage: React.FC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4, duration: 0.5 }}
               >
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 gradient-text">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
                   {profile?.full_name || 'Nom non renseigné'}
                 </h1>
-                <div className="flex items-center gap-4 text-sm text-gray-600 mb-3 flex-wrap">
-                  <span className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm px-3 py-1.5 rounded-full border border-gray-200/50">
-                    <Mail className="w-4 h-4 text-brand-600" /> 
+                <div className="flex items-center gap-3 text-xs text-gray-600 mb-3 flex-wrap">
+                  <span className="inline-flex items-center gap-1.5 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-gray-200/50 shadow-sm">
+                    <Mail className="w-3 h-3 text-brand-600" /> 
                     {profile?.email || '—'}
                   </span>
                   {profile?.phone && (
-                    <span className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm px-3 py-1.5 rounded-full border border-gray-200/50">
-                      <Phone className="w-4 h-4 text-brand-600" /> 
+                    <span className="inline-flex items-center gap-1.5 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-gray-200/50 shadow-sm">
+                      <Phone className="w-3 h-3 text-brand-600" /> 
                       {profile.phone}
                     </span>
                   )}
                   {profile?.address && (
-                    <span className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm px-3 py-1.5 rounded-full border border-gray-200/50">
-                      <MapPin className="w-4 h-4 text-brand-600" /> 
+                    <span className="inline-flex items-center gap-1.5 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-gray-200/50 shadow-sm">
+                      <MapPin className="w-3 h-3 text-brand-600" /> 
                       {profile.address}
                     </span>
                   )}
@@ -295,18 +295,33 @@ const MyProfilePage: React.FC = () => {
             </div>
             <div className="flex items-center gap-2 self-end md:self-auto">
               {!isEditing ? (
-                <Button onClick={() => setIsEditing(true)} leftIcon={<Edit3 size={16} />}>Modifier</Button>
+                <Button 
+                  onClick={() => setIsEditing(true)} 
+                  leftIcon={<Edit3 size={14} />}
+                  size="sm"
+                  className="shadow-md hover:shadow-lg"
+                >
+                  Modifier
+                </Button>
               ) : (
-                <Button variant="ghost" className="border border-gray-300" onClick={handleCancel} leftIcon={<X size={16} />}>Annuler</Button>
+                <Button 
+                  variant="ghost" 
+                  onClick={handleCancel} 
+                  leftIcon={<X size={14} />}
+                  size="sm"
+                  className="hover:bg-brand-50 hover:text-brand-700"
+                >
+                  Annuler
+                </Button>
               )}
             </div>
           </div>
           <div className="px-6 pb-6 md:px-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[{ icon: <Star className="w-4 h-4" />, label: 'Note moyenne', value: averageItemRating != null ? `${averageItemRating.toFixed(1)}/5 (${ratingsCount})` : '—' }, { icon: <Calendar className="w-4 h-4" />, label: 'Membre depuis', value: (profile as any)?.created_at ? new Date((profile as any).created_at).toLocaleDateString('fr-FR') : '—' }, { icon: <Shield className="w-4 h-4" />, label: 'Réputation', value: overallReputation != null ? `${overallReputation.toFixed(1)}/5` : '—' }].map((s) => (
-              <div key={s.label} className="p-4 rounded-xl border border-gray-200 bg-white flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center">{s.icon}</div>
+              <div key={s.label} className="p-3 rounded-xl border border-gray-200/50 bg-white/80 backdrop-blur-sm flex items-center gap-3 shadow-sm hover:shadow-md transition-all duration-200">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-brand-500 to-brand-600 text-white flex items-center justify-center shadow-md">{s.icon}</div>
                 <div>
-                  <p className="text-xs text-gray-500">{s.label}</p>
+                  <p className="text-xs text-gray-500 font-medium">{s.label}</p>
                   <p className="text-sm font-semibold text-gray-900">{s.value}</p>
                 </div>
               </div>
@@ -322,7 +337,7 @@ const MyProfilePage: React.FC = () => {
         transition={{ delay: 0.2, duration: 0.4 }}
         className="mb-6"
       >
-        <div className="flex gap-1 p-1.5 rounded-2xl bg-white/80 backdrop-blur-sm border border-gray-200/50 shadow-lg w-fit">
+        <div className="flex gap-1 p-1.5 rounded-2xl bg-white/90 backdrop-blur-sm border border-gray-200/50 shadow-lg w-fit">
           {[
             { id: 'profil', label: 'Profil', icon: User },
             { id: 'gamification', label: 'Gamification', icon: Trophy },
@@ -335,13 +350,13 @@ const MyProfilePage: React.FC = () => {
               onClick={() => setActiveTab(tab.id)}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className={`px-6 py-3 text-sm font-medium rounded-xl transition-all duration-200 flex items-center gap-2 ${
+              className={`px-4 py-2 text-xs font-medium rounded-xl transition-all duration-200 flex items-center gap-2 ${
                 activeTab === tab.id 
-                  ? 'bg-gradient-to-r from-brand-600 to-brand-700 text-white shadow-lg shadow-brand-500/25' 
-                  : 'text-gray-700 hover:bg-gray-50/80 hover:text-brand-600'
+                  ? 'bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-md' 
+                  : 'text-gray-700 hover:bg-brand-50/80 hover:text-brand-600'
               }`}
             >
-              <tab.icon className="w-4 h-4" />
+              <tab.icon className="w-3 h-3" />
               {tab.label}
             </motion.button>
           ))}
@@ -353,36 +368,38 @@ const MyProfilePage: React.FC = () => {
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* Carte Infos personnelles */}
-            <Card className="p-6 lg:col-span-2 glass">
+            <Card className="p-6 lg:col-span-2">
               {!isEditing ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-1">Nom complet</label>
-                    <p className="text-gray-900">{profile?.full_name || 'Non renseigné'}</p>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">Nom complet</label>
+                    <p className="text-sm text-gray-900 font-medium">{profile?.full_name || 'Non renseigné'}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-1">Téléphone</label>
-                    <p className="text-gray-900">{profile?.phone || 'Non renseigné'}</p>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">Téléphone</label>
+                    <p className="text-sm text-gray-900 font-medium">{profile?.phone || 'Non renseigné'}</p>
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-500 mb-1">Bio</label>
-                    <p className="text-gray-900">{profile?.bio || 'Aucune bio renseignée'}</p>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">Bio</label>
+                    <p className="text-sm text-gray-900 font-medium">{profile?.bio || 'Aucune bio renseignée'}</p>
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-500 mb-1">Adresse</label>
-                    <p className="text-gray-900">{profile?.address || 'Non renseignée'}</p>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">Adresse</label>
+                    <p className="text-sm text-gray-900 font-medium">{profile?.address || 'Non renseignée'}</p>
                   </div>
                   {signupCommunity && (
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-gray-500 mb-1">Quartier d'inscription</label>
-                      <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                        <MapPin className="w-4 h-4 text-blue-600" />
-                        <div>
-                          <p className="text-blue-900 font-medium">{signupCommunity.name}</p>
-                          <p className="text-blue-700 text-sm">{signupCommunity.city} • {signupCommunity.postal_code}</p>
+                      <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-brand-50 to-brand-100 border border-brand-200 rounded-xl shadow-sm">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-brand-500 to-brand-600 flex items-center justify-center">
+                          <MapPin className="w-4 h-4 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-brand-900 font-semibold text-sm">{signupCommunity.name}</p>
+                          <p className="text-brand-700 text-xs">{signupCommunity.city} • {signupCommunity.postal_code}</p>
                         </div>
                         <div className="ml-auto">
-                          <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full font-medium">
+                          <span className="px-3 py-1 text-xs bg-brand-500 text-white rounded-full font-medium shadow-sm">
                             🏠 Quartier d'inscription
                           </span>
                         </div>
@@ -446,33 +463,50 @@ const MyProfilePage: React.FC = () => {
                   </Button>
                 </div>
                   <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                    <Button type="submit" disabled={loading} className="disabled:opacity-50" leftIcon={<Save size={16} />}>{loading ? 'Enregistrement...' : 'Enregistrer'}</Button>
-                    <Button type="button" variant="ghost" className="border border-gray-300" onClick={handleCancel} leftIcon={<X size={16} />}>Annuler</Button>
+                    <Button 
+                      type="submit" 
+                      disabled={loading} 
+                      className="disabled:opacity-50 shadow-md hover:shadow-lg" 
+                      leftIcon={<Save size={14} />}
+                      size="sm"
+                    >
+                      {loading ? 'Enregistrement...' : 'Enregistrer'}
+                    </Button>
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      onClick={handleCancel} 
+                      leftIcon={<X size={14} />}
+                      size="sm"
+                      className="hover:bg-brand-50 hover:text-brand-700"
+                    >
+                      Annuler
+                    </Button>
                   </div>
                 </form>
               )}
             </Card>
 
             {/* Carte Confiance & Statistiques */}
-            <Card className="p-6 glass">
+            <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-gray-900">Confiance & Statistiques</h3>
-                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-green-100 text-green-700 pop-in">
+                <h3 className="text-lg font-bold text-gray-900">Confiance & Statistiques</h3>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border border-green-200 shadow-sm">
                   <CheckCircle className="w-3 h-3" /> Vérifié
                 </span>
               </div>
               <div className="grid grid-cols-3 gap-3 text-center">
-                <div className="p-3 rounded-xl bg-white/70 border border-gray-100">
-                  <p className="text-xs text-gray-500">Objets</p>
-                  <p className="text-lg font-semibold text-gray-900">{itemsCount}</p>
+                <div className="p-4 rounded-xl bg-gradient-to-br from-brand-50 to-brand-100 border border-brand-200/50 shadow-sm hover:shadow-md transition-all duration-200">
+                  <p className="text-xs text-brand-600 font-semibold uppercase tracking-wide">Objets</p>
+                  <p className="text-xl font-bold text-brand-900">{itemsCount}</p>
                 </div>
-                <div className="p-3 rounded-xl bg-white/70 border border-gray-100">
-                  <p className="text-xs text-gray-500">Emprunts</p>
-                  <p className="text-lg font-semibold text-gray-900">{completedBorrows}</p>
+                <div className="p-4 rounded-xl bg-gradient-to-br from-brand-50 to-brand-100 border border-brand-200/50 shadow-sm hover:shadow-md transition-all duration-200">
+                  <p className="text-xs text-brand-600 font-semibold uppercase tracking-wide">Emprunts</p>
+                  <p className="text-xl font-bold text-brand-900">{completedBorrows}</p>
                 </div>
-                <div className="p-3 rounded-xl bg-white/70 border border-gray-100">
-                  <p className="text-xs text-gray-500">Note</p>
-                  <p className="text-lg font-semibold text-gray-900">{averageItemRating != null ? averageItemRating.toFixed(1) : '—'}</p>
+                <div className="p-4 rounded-xl bg-gradient-to-br from-brand-50 to-brand-100 border border-brand-200/50 shadow-sm hover:shadow-md transition-all duration-200">
+                  <p className="text-xs text-brand-600 font-semibold uppercase tracking-wide">Note</p>
+                  <p className="text-xl font-bold text-brand-900">{averageItemRating != null ? averageItemRating.toFixed(1) : '—'}</p>
                 </div>
               </div>
             </Card>
@@ -509,10 +543,16 @@ const MyProfilePage: React.FC = () => {
             />
           ) : (
             <Card className="p-8 text-center">
-              <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Gamification</h3>
-              <p className="text-gray-600 mb-4">Commencez à utiliser la plateforme pour débloquer vos premiers badges et points !</p>
-              <Button onClick={() => setActiveTab('profil')}>
+              <div className="w-16 h-16 bg-gradient-to-r from-brand-500 to-brand-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Trophy className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Gamification</h3>
+              <p className="text-sm text-gray-600 mb-6">Commencez à utiliser la plateforme pour débloquer vos premiers badges et points !</p>
+              <Button 
+                onClick={() => setActiveTab('profil')}
+                size="sm"
+                className="shadow-md hover:shadow-lg"
+              >
                 Compléter mon profil
               </Button>
             </Card>
@@ -524,29 +564,29 @@ const MyProfilePage: React.FC = () => {
       {activeTab === 'transactions' && (
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
           <Card className="p-0 overflow-hidden">
-            <div className="p-6 border-b border-gray-100">
-              <h2 className="text-xl font-semibold text-gray-900">Historique des transactions</h2>
+            <div className="p-6 border-b border-gray-200/50 bg-gradient-to-r from-brand-50 to-brand-100">
+              <h2 className="text-lg font-bold text-gray-900">Historique des transactions</h2>
             </div>
             <ul className="divide-y divide-gray-100">
               {transactions?.map((t: any) => (
-                <li key={t.id} className="p-4 flex items-start justify-between hover:bg-gray-50">
+                <li key={t.id} className="p-4 flex items-start justify-between hover:bg-brand-50/50 transition-all duration-200">
                   <div>
-                    <div className="text-gray-900 font-medium">
+                    <div className="text-sm text-gray-900 font-semibold">
                       {t.role === 'borrower' ? 'Emprunt' : 'Prêt'} — {t.item?.title}
                     </div>
-                    <div className="text-xs text-gray-500 mt-0.5">
+                    <div className="text-xs text-gray-500 mt-1">
                       Le {new Date(t.created_at).toLocaleDateString('fr-FR')} • Statut: {t.status}
                     </div>
                   </div>
                   <div className="flex items-center text-xs">
                     {t.status === 'completed' ? (
-                      <span className="inline-flex items-center px-2 py-1 rounded bg-green-100 text-green-700"><CheckCircle className="w-4 h-4 mr-1" /> Terminé</span>
+                      <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border border-green-200 shadow-sm"><CheckCircle className="w-3 h-3 mr-1" /> Terminé</span>
                     ) : t.status === 'pending' ? (
-                      <span className="inline-flex items-center px-2 py-1 rounded bg-yellow-100 text-yellow-700"><Clock className="w-4 h-4 mr-1" /> En attente</span>
+                      <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-700 border border-yellow-200 shadow-sm"><Clock className="w-3 h-3 mr-1" /> En attente</span>
                     ) : t.status === 'rejected' ? (
-                      <span className="inline-flex items-center px-2 py-1 rounded bg-red-100 text-red-700"><XCircle className="w-4 h-4 mr-1" /> Refusé</span>
+                      <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-gradient-to-r from-red-100 to-pink-100 text-red-700 border border-red-200 shadow-sm"><XCircle className="w-3 h-3 mr-1" /> Refusé</span>
                     ) : (
-                      <span className="inline-flex items-center px-2 py-1 rounded bg-gray-100 text-gray-700"><ArrowRight className="w-4 h-4 mr-1" /> {t.status}</span>
+                      <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 border border-gray-200 shadow-sm"><ArrowRight className="w-3 h-3 mr-1" /> {t.status}</span>
                     )}
                   </div>
                 </li>
@@ -573,30 +613,50 @@ const MyProfilePage: React.FC = () => {
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Confidentialité</h3>
-              <p className="text-sm text-gray-600">Gérez la visibilité de vos informations et votre sécurité.</p>
-              <div className="mt-4 space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-lg border border-gray-200">
-                  <div className="flex items-center gap-2 text-sm text-gray-700"><Shield className="w-4 h-4 text-brand-700" /> Compte vérifié</div>
-                  <span className="text-xs text-green-700 bg-green-100 px-2 py-1 rounded">Actif</span>
+              <h3 className="text-lg font-bold text-gray-900 mb-3">Confidentialité</h3>
+              <p className="text-sm text-gray-600 mb-4">Gérez la visibilité de vos informations et votre sécurité.</p>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-4 rounded-xl border border-gray-200/50 bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200">
+                  <div className="flex items-center gap-3 text-sm text-gray-700">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-brand-500 to-brand-600 flex items-center justify-center">
+                      <Shield className="w-4 h-4 text-white" />
+                    </div>
+                    Compte vérifié
+                  </div>
+                  <span className="text-xs text-green-700 bg-gradient-to-r from-green-100 to-emerald-100 px-3 py-1.5 rounded-full border border-green-200 shadow-sm font-medium">Actif</span>
                 </div>
-                <div className="flex items-center justify-between p-3 rounded-lg border border-gray-200">
-                  <div className="flex items-center gap-2 text-sm text-gray-700"><Mail className="w-4 h-4 text-brand-700" /> Notifications email</div>
-                  <span className="text-xs text-gray-700 bg-gray-100 px-2 py-1 rounded">Bientôt</span>
+                <div className="flex items-center justify-between p-4 rounded-xl border border-gray-200/50 bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200">
+                  <div className="flex items-center gap-3 text-sm text-gray-700">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-brand-500 to-brand-600 flex items-center justify-center">
+                      <Mail className="w-4 h-4 text-white" />
+                    </div>
+                    Notifications email
+                  </div>
+                  <span className="text-xs text-gray-700 bg-gradient-to-r from-gray-100 to-gray-200 px-3 py-1.5 rounded-full border border-gray-200 shadow-sm font-medium">Bientôt</span>
                 </div>
               </div>
             </Card>
             <Card className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Préférences</h3>
-              <p className="text-sm text-gray-600">Personnalisez votre expérience.</p>
-              <div className="mt-4 space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-lg border border-gray-200">
-                  <div className="flex items-center gap-2 text-sm text-gray-700"><Star className="w-4 h-4 text-brand-700" /> Suggestions d’objets</div>
-                  <span className="text-xs text-gray-700 bg-gray-100 px-2 py-1 rounded">Bientôt</span>
+              <h3 className="text-lg font-bold text-gray-900 mb-3">Préférences</h3>
+              <p className="text-sm text-gray-600 mb-4">Personnalisez votre expérience.</p>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-4 rounded-xl border border-gray-200/50 bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200">
+                  <div className="flex items-center gap-3 text-sm text-gray-700">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-brand-500 to-brand-600 flex items-center justify-center">
+                      <Star className="w-4 h-4 text-white" />
+                    </div>
+                    Suggestions d'objets
+                  </div>
+                  <span className="text-xs text-gray-700 bg-gradient-to-r from-gray-100 to-gray-200 px-3 py-1.5 rounded-full border border-gray-200 shadow-sm font-medium">Bientôt</span>
                 </div>
-                <div className="flex items-center justify-between p-3 rounded-lg border border-gray-200">
-                  <div className="flex items-center gap-2 text-sm text-gray-700"><Calendar className="w-4 h-4 text-brand-700" /> Disponibilités</div>
-                  <span className="text-xs text-gray-700 bg-gray-100 px-2 py-1 rounded">Bientôt</span>
+                <div className="flex items-center justify-between p-4 rounded-xl border border-gray-200/50 bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200">
+                  <div className="flex items-center gap-3 text-sm text-gray-700">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-brand-500 to-brand-600 flex items-center justify-center">
+                      <Calendar className="w-4 h-4 text-white" />
+                    </div>
+                    Disponibilités
+                  </div>
+                  <span className="text-xs text-gray-700 bg-gradient-to-r from-gray-100 to-gray-200 px-3 py-1.5 rounded-full border border-gray-200 shadow-sm font-medium">Bientôt</span>
                 </div>
               </div>
             </Card>
