@@ -7,6 +7,7 @@ import { User, Edit3, Save, X, CheckCircle, Clock, XCircle, ArrowRight, Mail, Ph
 import { useAuthStore } from '../store/authStore';
 import { useTransactions } from '../hooks/useProfiles';
 import { useGamificationStats, useUserLevel, useUserBadges } from '../hooks/useGamification';
+import { useUserSignupCommunity } from '../hooks/useCommunities';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import TextArea from '../components/ui/TextArea';
@@ -38,6 +39,9 @@ const MyProfilePage: React.FC = () => {
   const { data: userBadges } = useUserBadges();
   const [avatarUploading, setAvatarUploading] = useState(false);
   const { data: transactions } = useTransactions(profile?.id);
+  
+  // Quartier d'inscription
+  const { data: signupCommunity } = useUserSignupCommunity(profile?.id);
   const [activeTab, setActiveTab] = useState<'profil' | 'gamification' | 'transactions' | 'communities' | 'parametres'>('profil');
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const [itemsCount, setItemsCount] = useState<number>(0);
@@ -368,6 +372,23 @@ const MyProfilePage: React.FC = () => {
                     <label className="block text-sm font-medium text-gray-500 mb-1">Adresse</label>
                     <p className="text-gray-900">{profile?.address || 'Non renseignée'}</p>
                   </div>
+                  {signupCommunity && (
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-500 mb-1">Quartier d'inscription</label>
+                      <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <MapPin className="w-4 h-4 text-blue-600" />
+                        <div>
+                          <p className="text-blue-900 font-medium">{signupCommunity.name}</p>
+                          <p className="text-blue-700 text-sm">{signupCommunity.city} • {signupCommunity.postal_code}</p>
+                        </div>
+                        <div className="ml-auto">
+                          <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full font-medium">
+                            🏠 Quartier d'inscription
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

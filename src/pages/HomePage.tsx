@@ -9,7 +9,7 @@ import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import { useAuthStore } from '../store/authStore';
 import { useItems } from '../hooks/useItems';
-import { useCommunities } from '../hooks/useCommunities';
+import { useCommunities, useUserSignupCommunity } from '../hooks/useCommunities';
 import type { Item, CommunityOverview } from '../types';
 
 const HomePage: React.FC = () => {
@@ -20,6 +20,7 @@ const HomePage: React.FC = () => {
   const { data: recentItems, isLoading: itemsLoading } = useItems();
   
   const { data: nearbyCommunities, isLoading: communitiesLoading } = useCommunities();
+  const { data: signupCommunity } = useUserSignupCommunity(profile?.id);
 
   const quickActions = [
     {
@@ -74,9 +75,16 @@ const HomePage: React.FC = () => {
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 Bonjour {profile?.full_name || 'Voisin'} ! 👋
               </h1>
-              <p className="text-gray-600">
-                Découvrez ce qui se passe dans votre quartier aujourd'hui
-              </p>
+              <div className="flex items-center gap-2 mb-2">
+                <p className="text-gray-600">
+                  Découvrez ce qui se passe dans votre quartier aujourd'hui
+                </p>
+                {signupCommunity && (
+                  <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full font-medium">
+                    🏠 {signupCommunity.name}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="hidden md:flex items-center gap-3">
               <Button 
