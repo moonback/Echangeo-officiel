@@ -267,7 +267,7 @@ const CommunitiesPage: React.FC = () => {
         />
       </div>
 
-      <div className="relative p-4 max-w-7xl mx-auto">
+      <div className="relative p-4 max-w-12xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

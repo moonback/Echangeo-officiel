@@ -147,7 +147,7 @@ const ItemsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="p-4 max-w-7xl mx-auto">
+      <div className="p-4 max-w-12xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

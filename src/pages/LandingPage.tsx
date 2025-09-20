@@ -88,7 +88,7 @@ const LandingPage: React.FC = () => {
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-brand-200/5 to-brand-300/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '4s' }} />
       </div>
       
-      <header className="relative max-w-7xl mx-auto px-6 py-8">
+      <header className="relative max-w-12xl mx-auto px-6 py-8">
         {/* Desktop Layout */}
         <div className="hidden md:flex items-center justify-between">
           <Link to="/" className="group">
@@ -120,7 +120,7 @@ const LandingPage: React.FC = () => {
         </div>
       </header>
 
-      <main className="relative max-w-7xl mx-auto px-6">
+      <main className="relative max-w-12xl mx-auto px-6">
         {/* Hero Section */}
         <motion.section 
           initial={{ opacity: 0, y: 30 }} 
@@ -532,7 +532,7 @@ const LandingPage: React.FC = () => {
 
       {/* Footer */}
       <footer className="relative bg-gray-900 text-white">
-        <div className="max-w-7xl mx-auto px-6 py-16">
+        <div className="max-w-12xl mx-auto px-6 py-16">
           <div className="grid md:grid-cols-4 gap-8">
             {/* Logo & Description */}
             <div className="md:col-span-2">

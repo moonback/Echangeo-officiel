@@ -320,7 +320,7 @@ const HowItWorksPage: React.FC = () => {
       </div>
 
       {/* Header identique à LandingPage */}
-      <header className="relative max-w-7xl mx-auto px-6 py-8">
+      <header className="relative max-w-12xl mx-auto px-6 py-8">
         {/* Desktop Layout */}
         <div className="hidden md:flex items-center justify-between">
           <Link to="/" className="group">
@@ -352,7 +352,7 @@ const HowItWorksPage: React.FC = () => {
         </div>
       </header>
 
-      <div className="relative max-w-7xl mx-auto px-6 py-8">
+      <div className="relative max-w-12xl mx-auto px-6 py-8">
         {/* Titre principal */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

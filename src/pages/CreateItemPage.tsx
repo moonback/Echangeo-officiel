@@ -382,7 +382,7 @@ const CreateItemPage: React.FC = () => {
         />
       </div>
 
-      <div className="relative p-4 max-w-7xl mx-auto">
+      <div className="relative p-4 max-w-12xl mx-auto">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}

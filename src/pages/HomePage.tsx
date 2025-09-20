@@ -190,7 +190,7 @@ const HomePage: React.FC = () => {
         />
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 py-8">
+      <div className="relative max-w-12xl mx-auto px-4 py-8">
         {/* Hero Section Ultra-Moderne */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
