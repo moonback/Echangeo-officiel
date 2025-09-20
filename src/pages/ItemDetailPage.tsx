@@ -708,7 +708,7 @@ const ItemDetailPage: React.FC = () => {
                   </p>
                 </div>
               )}
-               {(item.latitude !== undefined && item.longitude !== undefined) && (
+               {false && (
                  <div className="sm:col-span-2 lg:col-span-3 xl:col-span-4">
                    <span className="text-gray-500 block mb-3">Position</span>
                    <div className="space-y-3">

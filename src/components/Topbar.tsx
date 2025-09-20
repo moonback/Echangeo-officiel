@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, Search, MessageCircle, User, LogOut, Menu, X, Users, 
-  HelpCircle, Star, Settings, Sparkles, Trophy, CheckCircle, ChevronDown, Shield, Zap, MapPin
+  HelpCircle, Star, Settings, Sparkles, Trophy, CheckCircle, ChevronDown, Shield
 } from 'lucide-react';
 import { Link, useNavigate, useLocation, NavLink } from 'react-router-dom';
 import Button from './ui/Button';
@@ -142,7 +142,19 @@ const Topbar: React.FC = () => {
   const UserMenu = () => (
     <div className="relative" ref={userMenuRef}>
       <button onClick={() => setIsUserMenuOpen(p => !p)} className="flex items-center gap-2 rounded-full p-1 pr-3 hover:bg-gray-100 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
-        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center text-white font-bold">
+        {profile?.avatar_url ? (
+          <img 
+            src={profile.avatar_url} 
+            alt="Photo de profil" 
+            className="w-9 h-9 rounded-full object-cover border-2 border-white shadow-sm"
+            onError={(e) => {
+              // Fallback vers l'initiale si l'image ne charge pas
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.nextElementSibling?.classList.remove('hidden');
+            }}
+          />
+        ) : null}
+        <div className={`w-9 h-9 rounded-full bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center text-white font-bold ${profile?.avatar_url ? 'hidden' : ''}`}>
           {(profile?.full_name || user?.email || 'U')?.slice(0, 1).toUpperCase()}
         </div>
         <span className="text-sm font-medium text-gray-700 hidden lg:block">{profile?.full_name || 'Mon Compte'}</span>
@@ -159,7 +171,19 @@ const Topbar: React.FC = () => {
           >
             <div className="p-2">
               <div className="flex items-center gap-3 p-3">
-                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center text-white font-bold text-lg">
+                {profile?.avatar_url ? (
+                  <img 
+                    src={profile.avatar_url} 
+                    alt="Photo de profil" 
+                    className="w-11 h-11 rounded-full object-cover border-2 border-white shadow-sm"
+                    onError={(e) => {
+                      // Fallback vers l'initiale si l'image ne charge pas
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                    }}
+                  />
+                ) : null}
+                <div className={`w-11 h-11 rounded-full bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center text-white font-bold text-lg ${profile?.avatar_url ? 'hidden' : ''}`}>
                   {(profile?.full_name || user?.email || 'U')?.slice(0, 1).toUpperCase()}
                 </div>
                 <div>
@@ -172,7 +196,6 @@ const Topbar: React.FC = () => {
               <UserMenuItem to="/items?favorites=1" icon={Star} label="Favoris" badge={favoritesCount} />
               <UserMenuItem to="/gamification" icon={Trophy} label="Récompenses" />
               <UserMenuItem to="/ai-features" icon={Sparkles} label="Fonctionnalités IA" />
-              <UserMenuItem to="/stats-test" icon={Sparkles} label="Test Stats" />
               {isAdmin && <UserMenuItem to="/admin" icon={Shield} label="Panel Admin" special />}
               <div className="h-px bg-gray-100 my-1" />
               <UserMenuItem to="/settings" icon={Settings} label="Paramètres" />
@@ -228,7 +251,6 @@ const Topbar: React.FC = () => {
             </div>
             <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
                 <MobileNavItem to="/items" icon={Search} label="Objets" />
-                <MobileNavItem to="/map" icon={MapPin} label="Carte" />
                 <MobileNavItem to="/communities" icon={Users} label="Quartiers" />
                 <MobileNavItem to="/messages" icon={MessageCircle} label="Messages" />
                 <MobileNavItem to="/requests" icon={CheckCircle} label="Échanges" />
@@ -344,7 +366,6 @@ const Topbar: React.FC = () => {
 
             <div className="flex items-center gap-2">
               <Button variant="primary" size="sm" onClick={() => navigate('/create')} leftIcon={<Plus size={16} />}>Publier</Button>
-              <Link to="/map" title="Carte" className="p-2.5 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"><MapPin size={18} /></Link>
               <Link to="/messages" title="Messages" className="p-2.5 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"><MessageCircle size={18} /></Link>
               <NotificationSystem notifications={notifications} onMarkAsRead={markAsRead} onDismiss={dismiss} />
               {user ? (
