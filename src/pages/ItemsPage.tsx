@@ -167,10 +167,10 @@ const ItemsPage: React.FC = () => {
               </div>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <Button variant="secondary" size="sm" onClick={refetch} disabled={isLoading} className="flex items-center gap-2 w-full sm:w-auto">
-                  <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} /> Actualiser
+                   Actualiser
                 </Button>
-                <Button className="flex items-center gap-2 w-full sm:w-auto" onClick={handleCreateItem}>
-                  <Plus className="w-4 h-4" /> Publier un objet
+                <Button variant="primary" size="sm" onClick={handleCreateItem} className="flex items-center gap-2 w-full sm:w-auto">
+                   Publier un objet
                 </Button>
               </div>
             </div>
