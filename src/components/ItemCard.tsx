@@ -12,7 +12,8 @@ import {
   Mail,
   Phone,
   MapPin,
-  Calendar
+  Calendar,
+  Users
 } from 'lucide-react';
 import type { Item } from '../types';
 import { getCategoryIcon, getCategoryLabel } from '../utils/categories';
@@ -72,8 +73,9 @@ const ItemCard: React.FC<ItemCardProps> = memo(({
   const { data: isFavorited = false } = useIsItemFavorited(item.id);
   const deleteItem = useDeleteItem();
   
-  // État pour le popup du propriétaire
+  // État pour les popups
   const [showOwnerPopup, setShowOwnerPopup] = useState(false);
+  const [showCommunityPopup, setShowCommunityPopup] = useState(false);
   
   // Optimisation: mise en cache des icônes
   const CategoryIcon = useMemo(() => getCategoryIcon(item.category), [item.category]);
@@ -151,13 +153,21 @@ const ItemCard: React.FC<ItemCardProps> = memo(({
     navigate(`/profile/${item.owner_id}`);
   }, [navigate, item.owner_id]);
 
-  // Handlers pour le popup du propriétaire
+  // Handlers pour les popups
   const handleOwnerMouseEnter = useCallback(() => {
     setShowOwnerPopup(true);
   }, []);
 
   const handleOwnerMouseLeave = useCallback(() => {
     setShowOwnerPopup(false);
+  }, []);
+
+  const handleCommunityMouseEnter = useCallback(() => {
+    setShowCommunityPopup(true);
+  }, []);
+
+  const handleCommunityMouseLeave = useCallback(() => {
+    setShowCommunityPopup(false);
   }, []);
 
   // Optimisation des classes CSS
@@ -534,13 +544,99 @@ const ItemCard: React.FC<ItemCardProps> = memo(({
                 </AnimatePresence>
               </div>
               
-              {/* Quartier compact */}
+              {/* Quartier compact avec popup */}
               {community && (
-                <div className="flex items-center text-xs text-gray-500 bg-gradient-to-r from-blue-50/90 to-blue-100/90 rounded-full px-2 py-1 backdrop-blur-sm border border-blue-200/50 group-hover:from-blue-100/90 group-hover:to-blue-200/90 group-hover:border-blue-300/50 transition-all duration-300">
-                  <Building2 className="w-3 h-3 mr-1 group-hover:text-blue-600 transition-colors duration-300" />
-                  <span className="font-medium group-hover:text-blue-700 transition-colors duration-300 truncate max-w-16">
-                    {community.name}
-                  </span>
+                <div className="relative">
+                  <div 
+                    className="flex items-center text-xs text-gray-500 bg-gradient-to-r from-blue-50/90 to-blue-100/90 rounded-full px-2 py-1 backdrop-blur-sm border border-blue-200/50 group-hover:from-blue-100/90 group-hover:to-blue-200/90 group-hover:border-blue-300/50 transition-all duration-300 cursor-pointer"
+                    onMouseEnter={handleCommunityMouseEnter}
+                    onMouseLeave={handleCommunityMouseLeave}
+                  >
+                    <Building2 className="w-3 h-3 mr-1 group-hover:text-blue-600 transition-colors duration-300" />
+                    <span className="font-medium group-hover:text-blue-700 transition-colors duration-300 truncate max-w-16">
+                      {community.name}
+                    </span>
+                  </div>
+
+                  {/* Popup d'informations du quartier */}
+                  <AnimatePresence>
+                    {showCommunityPopup && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className="absolute bottom-full right-0 mb-2 z-50"
+                        onMouseEnter={handleCommunityMouseEnter}
+                        onMouseLeave={handleCommunityMouseLeave}
+                      >
+                        <div className="bg-white/95 backdrop-blur-md border border-gray-200/60 rounded-xl shadow-xl p-4 min-w-[280px] max-w-[320px]">
+                          {/* Header du popup */}
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-blue-400 to-blue-600 border border-white shadow-lg flex items-center justify-center">
+                              <Building2 className="w-6 h-6 text-white" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-gray-900 text-sm truncate">
+                                {community.name}
+                              </h4>
+                              <p className="text-xs text-gray-600 truncate">
+                                {community.city}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Informations détaillées */}
+                          <div className="space-y-2">
+                            {community.description && (
+                              <div className="text-xs text-gray-600 leading-relaxed">
+                                <p className="line-clamp-3">{community.description}</p>
+                              </div>
+                            )}
+                            
+                            <div className="flex items-center gap-2 text-xs text-gray-600">
+                              <MapPin className="w-3 h-3 text-gray-400" />
+                              <span>{community.city}, {community.country}</span>
+                            </div>
+                            
+                            {community.postal_code && (
+                              <div className="flex items-center gap-2 text-xs text-gray-600">
+                                <span className="w-3 h-3 text-gray-400 text-center">📮</span>
+                                <span>{community.postal_code}</span>
+                              </div>
+                            )}
+                            
+                            {community.stats && (
+                              <div className="flex items-center gap-2 text-xs text-gray-600">
+                                <Users className="w-3 h-3 text-gray-400" />
+                                <span>{community.stats.total_members || 0} membres</span>
+                              </div>
+                            )}
+                            
+                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                              <Calendar className="w-3 h-3 text-gray-400" />
+                              <span>Créé le {new Date(community.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                            </div>
+                          </div>
+
+                          {/* Footer avec bouton d'action */}
+                          <div className="mt-3 pt-3 border-t border-gray-100">
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                navigate(`/communities/${community.id}`);
+                              }}
+                              className="w-full bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium py-2 px-3 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                            >
+                              <Building2 className="w-3 h-3" />
+                              Voir le quartier
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               )}
             </div>
